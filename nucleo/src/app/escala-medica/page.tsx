@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { HospitalNav } from '../components/HospitalNav';
+import { VigiaSidebarLayout } from '../../components/VigiaSidebarLayout';
 import {
   UserCheck,
   Calendar,
@@ -212,10 +212,10 @@ export default function EscalaMedicaPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 pb-16">
-      <HospitalNav />
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+    <VigiaSidebarLayout
+      activeTitle="Escala Médica & Plantonistas"
+      activeSubtitle="Ponto eletrônico por geofencing (<100m), guarda de documentações (CFM) e antecipação PIX"
+    >
         {/* Cabeçalho */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-6">
           <div className="flex items-center gap-3">
@@ -697,7 +697,6 @@ export default function EscalaMedicaPage() {
             </div>
           </div>
         )}
-      </main>
-    </div>
+    </VigiaSidebarLayout>
   );
 }

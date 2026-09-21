@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { HospitalNav } from '../components/HospitalNav';
+import { VigiaSidebarLayout } from '../../components/VigiaSidebarLayout';
 import {
   BarChart3,
   TrendingUp,
@@ -66,8 +67,32 @@ export default function ExecutiveDashboardPage() {
   const hubMargin = totalExtraRevenue * 0.22;
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#0B1120] text-slate-100 font-sans">
-      <HospitalNav />
+    <VigiaSidebarLayout
+      activeTitle="Custo do Paciente (Core 360)"
+      activeSubtitle="Junção e consolidação de todos os módulos assistenciais, suprimentos e escalas"
+    >
+      {/* Banner de Integração: O Custo do Paciente como Módulo Unificador */}
+      <div className="bg-gradient-to-r from-blue-900 to-indigo-900 border border-blue-700/60 rounded-2xl p-5 mb-6 text-white shadow-md">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="max-w-3xl">
+            <span className="text-[10px] font-black uppercase tracking-wider bg-blue-500/30 border border-blue-400/40 px-2 py-0.5 rounded text-blue-200">
+              MÓDULO INTEGRADOR UNIVERSAL
+            </span>
+            <h2 className="text-lg font-black mt-1">Custo Door-to-Door • Apuração Real vs SIGTAP & TUSS</h2>
+            <p className="text-xs text-blue-200 mt-1 leading-relaxed">
+              Este módulo consolida automaticamente os dados gerados em todo o ecossistema: prescrições do <strong>OpenEMR</strong>, medicamentos do <strong>Estoque FEFO</strong>, exames do <strong>LIMS Senaite</strong>, diárias de <strong>Leitos</strong>, compras nas <strong>Atas ARP</strong> e plantões da <strong>Escala Médica</strong>. Também recebe importações diretas de sistemas externos via CSV.
+            </p>
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <Link
+              href="/ingestao-modulos"
+              className="px-4 py-2 bg-white text-blue-900 hover:bg-blue-50 font-black text-xs rounded-xl shadow transition-all"
+            >
+              Importar Dados (CSV)
+            </Link>
+          </div>
+        </div>
+      </div>
 
       {/* Toast Flutuante Dark */}
       {toastMessage && (
@@ -589,7 +614,6 @@ export default function ExecutiveDashboardPage() {
           </div>
         </div>
       )}
-
-    </div>
+    </VigiaSidebarLayout>
   );
 }
