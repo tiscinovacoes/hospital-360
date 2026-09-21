@@ -1,0 +1,1842 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AIVIQ Saúde — Plataforma de Custeio e Inteligência Hospitalar 360</title>
+  
+  <!-- Google Fonts: Inter & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Material Symbols Icons -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#EFF6FF',
+              100: '#DBEAFE',
+              200: '#BFDBFE',
+              500: '#3B82F6',
+              600: '#2563EB',
+              700: '#1D4ED8',
+              800: '#1E40AF',
+              900: '#1E3A8A'
+            },
+            health: {
+              50: '#ECFDF5',
+              100: '#D1FAE5',
+              500: '#10B981',
+              600: '#059669',
+              700: '#047857'
+            },
+            deficit: {
+              50: '#FFF1F2',
+              100: '#FFE4E6',
+              500: '#F43F5E',
+              600: '#E11D48',
+              700: '#BE123C'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Plus Jakarta Sans', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      vertical-align: middle;
+    }
+    .material-symbols-outlined.filled {
+      font-variation-settings: 'FILL' 1;
+    }
+    /* Estilo suave para scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #F1F5F9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #CBD5E1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94A3B8;
+    }
+  </style>
+</head>
+<body class="bg-[#F8FAFC] text-slate-800 font-sans antialiased min-h-screen flex flex-col selection:bg-brand-100 selection:text-brand-900">
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Top Global Header -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
+    <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      
+      <!-- Brand & Municipality -->
+      <div class="flex items-center gap-6">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-600 to-indigo-600 flex items-center justify-center text-white font-display font-extrabold text-base shadow-sm">
+            AI
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-display font-bold text-lg text-slate-900 leading-none">AIVIQ SAÚDE</span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-brand-50 text-brand-700 border border-brand-200">
+                360 CUSTEIO
+              </span>
+            </div>
+            <p class="text-xs text-slate-500 font-medium leading-tight">Inteligência que Transforma Visão em Decisões</p>
+          </div>
+        </div>
+
+        <div class="hidden md:block h-6 w-px bg-slate-200"></div>
+
+        <!-- Seletor de Município / Competência -->
+        <div class="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-700 font-medium">
+          <span class="material-symbols-outlined text-base text-slate-500">location_city</span>
+          <span>Campo Grande / MS</span>
+          <span class="text-slate-300">•</span>
+          <span class="text-slate-500">Competência:</span>
+          <select id="select-competencia" class="bg-transparent font-semibold text-slate-800 cursor-pointer focus:outline-none">
+            <option value="2026-09">Setembro / 2026 (Atual)</option>
+            <option value="2026-08">Agosto / 2026</option>
+            <option value="2026-07">Julho / 2026</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Compliance Badges & User Actions -->
+      <div class="flex items-center gap-3">
+        <div class="hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-700">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span>RLS Multi-Tenant Ativo</span>
+        </div>
+
+        <div class="hidden xl:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-600">
+          <span class="material-symbols-outlined text-sm text-slate-500">verified</span>
+          <span>Conforme TCE-MS & Portaria 2.048</span>
+        </div>
+
+        <!-- Botão Exportar Relatório Oficial (Funcional) -->
+        <button onclick="abrirModalExportar()" class="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 text-xs font-semibold shadow-xs transition-colors">
+          <span class="material-symbols-outlined text-base text-slate-500">download</span>
+          <span class="hidden sm:inline">Exportar TCE</span>
+        </button>
+
+        <!-- Botão Simulação Rápida -->
+        <button onclick="abrirDrawerSimulacao()" class="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold shadow-xs transition-colors">
+          <span class="material-symbols-outlined text-base">tune</span>
+          <span>Simulador</span>
+        </button>
+
+        <div class="h-6 w-px bg-slate-200"></div>
+
+        <!-- Perfil do Usuário -->
+        <div class="flex items-center gap-2">
+          <div class="w-9 h-9 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-700 font-bold text-xs">
+            CM
+          </div>
+          <div class="hidden 2xl:block text-left">
+            <p class="text-xs font-bold text-slate-900 leading-none">Dr. Carlos Medeiros</p>
+            <p class="text-[11px] text-slate-500 leading-tight">Secretário Municipal de Saúde</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Navigation Bar (Clean Tabs) -->
+  <div class="bg-white border-b border-slate-200 sticky top-16 z-20 shadow-2xs">
+    <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+      <nav class="flex space-x-1 sm:space-x-4 overflow-x-auto py-2" aria-label="Navegação de Módulos">
+        
+        <button onclick="trocarAba('dashboard')" id="tab-dashboard" class="tab-btn active flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-colors bg-brand-50 text-brand-700">
+          <span class="material-symbols-outlined text-lg">dashboard</span>
+          <span>Dashboard 360</span>
+        </button>
+
+        <button onclick="trocarAba('jornada')" id="tab-jornada" class="tab-btn flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-colors text-slate-600 hover:text-slate-900 hover:bg-slate-100">
+          <span class="material-symbols-outlined text-lg">person_search</span>
+          <span>Jornada por CPF / NIS</span>
+          <span class="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-100 text-slate-600 border border-slate-200">Paciente</span>
+        </button>
+
+        <button onclick="trocarAba('rateio')" id="tab-rateio" class="tab-btn flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-colors text-slate-600 hover:text-slate-900 hover:bg-slate-100">
+          <span class="material-symbols-outlined text-lg">account_tree</span>
+          <span>Centros de Custo & Rateio Dual</span>
+          <span class="px-1.5 py-0.2 rounded-full text-[10px] bg-indigo-50 text-indigo-700 border border-indigo-200">Absorção + ABC</span>
+        </button>
+
+        <button onclick="trocarAba('estoque')" id="tab-estoque" class="tab-btn flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-colors text-slate-600 hover:text-slate-900 hover:bg-slate-100">
+          <span class="material-symbols-outlined text-lg">medication</span>
+          <span>Farmácia & Estoque FEFO</span>
+        </button>
+
+        <button onclick="trocarAba('rh')" id="tab-rh" class="tab-btn flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-colors text-slate-600 hover:text-slate-900 hover:bg-slate-100">
+          <span class="material-symbols-outlined text-lg">badge</span>
+          <span>Vigia RH (Pessoal)</span>
+        </button>
+
+        <button onclick="trocarAba('apresentacao')" id="tab-apresentacao" class="tab-btn flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-colors text-slate-600 hover:text-slate-900 hover:bg-slate-100">
+          <span class="material-symbols-outlined text-lg">presentation</span>
+          <span>Roteiro de Aprovação</span>
+        </button>
+
+      </nav>
+    </div>
+  </div>
+
+  <!-- Main Container -->
+  <main class="flex-1 max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- ================================================================= -->
+    <!-- ABA 1: DASHBOARD EXECUTIVO 360 -->
+    <!-- ================================================================= -->
+    <div id="view-dashboard" class="space-y-6">
+      
+      <!-- Context Notification / Status Banner -->
+      <div class="p-4 rounded-xl bg-gradient-to-r from-blue-50/70 via-indigo-50/40 to-slate-50 border border-blue-100 flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-brand-600 text-white flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-lg">analytics</span>
+          </div>
+          <div>
+            <p class="text-xs font-bold text-slate-900">Visão Geral Consolidada da Rede Pública Municipal</p>
+            <p class="text-xs text-slate-600">Dados integrados em tempo real do e-SUS, SIA, SIH, Vigia RH e Farmácia Central FEFO.</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 self-end md:self-auto">
+          <span class="text-[11px] text-slate-500">Última conciliação: Hoje às 08:00</span>
+          <button onclick="sincronizarDados()" class="px-2.5 py-1 rounded bg-white hover:bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 flex items-center gap-1 shadow-2xs">
+            <span class="material-symbols-outlined text-sm text-brand-600">sync</span> Atualizar
+          </button>
+        </div>
+      </div>
+
+      <!-- 5 KPIs Executivos com Visual Clean -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        
+        <!-- KPI 1 -->
+        <div class="p-5 rounded-xl bg-white border border-slate-200 shadow-xs hover:border-slate-300 transition-all">
+          <div class="flex items-center justify-between text-xs text-slate-500 mb-2">
+            <span class="font-medium">Custo Real da Saúde</span>
+            <span class="p-1 rounded bg-slate-100 text-slate-600">
+              <span class="material-symbols-outlined text-sm">payments</span>
+            </span>
+          </div>
+          <div class="text-2xl font-display font-extrabold text-slate-900" id="kpi-custo-total">R$ 14.820.450</div>
+          <div class="flex items-center gap-1.5 mt-2 text-xs">
+            <span class="px-1.5 py-0.5 rounded font-semibold bg-slate-100 text-slate-700">+3,2%</span>
+            <span class="text-slate-500">vs. mês anterior</span>
+          </div>
+          <p class="text-[11px] text-slate-400 mt-2">Apuração Dual (Absorção + ABC)</p>
+        </div>
+
+        <!-- KPI 2 -->
+        <div class="p-5 rounded-xl bg-white border border-slate-200 shadow-xs hover:border-slate-300 transition-all">
+          <div class="flex items-center justify-between text-xs text-slate-500 mb-2">
+            <span class="font-medium">Repasse SUS (SIGTAP)</span>
+            <span class="p-1 rounded bg-amber-50 text-amber-600">
+              <span class="material-symbols-outlined text-sm">account_balance</span>
+            </span>
+          </div>
+          <div class="text-2xl font-display font-extrabold text-slate-900" id="kpi-repasse-sus">R$ 4.560.120</div>
+          <div class="flex items-center gap-1.5 mt-2 text-xs">
+            <span class="px-1.5 py-0.5 rounded font-bold bg-amber-100 text-amber-800">Cobre 30,8%</span>
+            <span class="text-slate-500">do custo real</span>
+          </div>
+          <p class="text-[11px] text-slate-400 mt-2">Teto MAC + Atenção Básica</p>
+        </div>
+
+        <!-- KPI 3: O DÉFICIT REAL (Argumento Político/Financeiro) -->
+        <div class="p-5 rounded-xl bg-white border-2 border-deficit-200 bg-deficit-50/30 shadow-xs transition-all">
+          <div class="flex items-center justify-between text-xs text-deficit-700 mb-2">
+            <span class="font-bold">Déficit Real do Município</span>
+            <span class="p-1 rounded bg-deficit-100 text-deficit-700">
+              <span class="material-symbols-outlined text-sm">warning</span>
+            </span>
+          </div>
+          <div class="text-2xl font-display font-extrabold text-deficit-700" id="kpi-deficit">R$ 10.260.330</div>
+          <div class="flex items-center gap-1.5 mt-2 text-xs">
+            <span class="px-1.5 py-0.5 rounded font-bold bg-deficit-100 text-deficit-800">69,2%</span>
+            <span class="text-slate-600 font-medium">Bancado pelo Tesouro</span>
+          </div>
+          <p class="text-[11px] text-slate-500 mt-2 font-medium">Defesa e amparo perante o TCE</p>
+        </div>
+
+        <!-- KPI 4: Economia FEFO -->
+        <div class="p-5 rounded-xl bg-white border border-slate-200 shadow-xs hover:border-slate-300 transition-all">
+          <div class="flex items-center justify-between text-xs text-slate-500 mb-2">
+            <span class="font-medium">Economia FEFO & Gestão</span>
+            <span class="p-1 rounded bg-emerald-50 text-emerald-600">
+              <span class="material-symbols-outlined text-sm">savings</span>
+            </span>
+          </div>
+          <div class="text-2xl font-display font-extrabold text-emerald-700" id="kpi-economia">R$ 842.100</div>
+          <div class="flex items-center gap-1.5 mt-2 text-xs">
+            <span class="px-1.5 py-0.5 rounded font-bold bg-emerald-100 text-emerald-800">Zero perdas</span>
+            <span class="text-slate-500">por validade</span>
+          </div>
+          <p class="text-[11px] text-slate-400 mt-2">Dispensação prioritária por lote</p>
+        </div>
+
+        <!-- KPI 5: Cidadãos Atendidos -->
+        <div class="p-5 rounded-xl bg-white border border-slate-200 shadow-xs hover:border-slate-300 transition-all">
+          <div class="flex items-center justify-between text-xs text-slate-500 mb-2">
+            <span class="font-medium">Pacientes Únicos (CPF)</span>
+            <span class="p-1 rounded bg-indigo-50 text-indigo-600">
+              <span class="material-symbols-outlined text-sm">group</span>
+            </span>
+          </div>
+          <div class="text-2xl font-display font-extrabold text-slate-900" id="kpi-pacientes">38.490</div>
+          <div class="flex items-center gap-1.5 mt-2 text-xs">
+            <span class="px-1.5 py-0.5 rounded font-semibold bg-indigo-50 text-indigo-700">R$ 385,04</span>
+            <span class="text-slate-500">custo médio/cidadão</span>
+          </div>
+          <p class="text-[11px] text-slate-400 mt-2">100% rastreado por NIS/CPF</p>
+        </div>
+
+      </div>
+
+      <!-- Seção Central: Comparativo Científico de Defasagem SUS -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Gráfico / Barras Comparativas: Tabela SUS vs Custo Real -->
+        <div class="lg:col-span-2 p-6 rounded-xl bg-white border border-slate-200 shadow-xs">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-slate-100">
+            <div>
+              <h3 class="text-base font-display font-bold text-slate-900">Evidência Científica da Defasagem da Tabela SUS</h3>
+              <p class="text-xs text-slate-500">Comparativo do Custo Real Unitário do Município vs. Valor de Repasse SIGTAP/DATASUS</p>
+            </div>
+            <span class="self-start sm:self-auto px-2.5 py-1 rounded bg-slate-100 text-slate-600 text-xs font-semibold">
+              Fonte: Portaria GM/MS & Apuração AIVIQ
+            </span>
+          </div>
+
+          <div class="mt-6 space-y-6">
+            
+            <!-- Item 1: Internação por Pneumonia -->
+            <div>
+              <div class="flex justify-between items-center text-xs font-semibold mb-1.5">
+                <span class="text-slate-800">Internação Clínica por Pneumonia (CID-10 J15)</span>
+                <span class="text-deficit-600 font-bold">Déficit: -69,2% (-R$ 687,00)</span>
+              </div>
+              <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                  <span class="w-20 text-[11px] text-slate-500 font-medium">Custo Real:</span>
+                  <div class="flex-1 bg-slate-100 rounded-full h-3.5 overflow-hidden">
+                    <div class="bg-brand-600 h-full rounded-full" style="width: 100%"></div>
+                  </div>
+                  <span class="w-24 text-right text-xs font-bold text-slate-900">R$ 992,50</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="w-20 text-[11px] text-slate-500 font-medium">SUS/SIGTAP:</span>
+                  <div class="flex-1 bg-slate-100 rounded-full h-3.5 overflow-hidden">
+                    <div class="bg-slate-400 h-full rounded-full" style="width: 30.8%"></div>
+                  </div>
+                  <span class="w-24 text-right text-xs font-medium text-slate-600">R$ 305,50</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Item 2: Parto Normal Humanizado -->
+            <div>
+              <div class="flex justify-between items-center text-xs font-semibold mb-1.5">
+                <span class="text-slate-800">Parto Normal Hospitalar Humanizado (CID-10 O80)</span>
+                <span class="text-deficit-600 font-bold">Déficit: -70,6% (-R$ 1.300,00)</span>
+              </div>
+              <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                  <span class="w-20 text-[11px] text-slate-500 font-medium">Custo Real:</span>
+                  <div class="flex-1 bg-slate-100 rounded-full h-3.5 overflow-hidden">
+                    <div class="bg-brand-600 h-full rounded-full" style="width: 100%"></div>
+                  </div>
+                  <span class="w-24 text-right text-xs font-bold text-slate-900">R$ 1.840,00</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="w-20 text-[11px] text-slate-500 font-medium">SUS/SIGTAP:</span>
+                  <div class="flex-1 bg-slate-100 rounded-full h-3.5 overflow-hidden">
+                    <div class="bg-slate-400 h-full rounded-full" style="width: 29.4%"></div>
+                  </div>
+                  <span class="w-24 text-right text-xs font-medium text-slate-600">R$ 540,00</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Item 3: Diária de UTI Adulto -->
+            <div>
+              <div class="flex justify-between items-center text-xs font-semibold mb-1.5">
+                <span class="text-slate-800">Diária de Leito em UTI Adulto Tipo III (Método ABC)</span>
+                <span class="text-deficit-600 font-bold">Déficit: -67,3% (-R$ 1.650,00)</span>
+              </div>
+              <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                  <span class="w-20 text-[11px] text-slate-500 font-medium">Custo Real:</span>
+                  <div class="flex-1 bg-slate-100 rounded-full h-3.5 overflow-hidden">
+                    <div class="bg-brand-600 h-full rounded-full" style="width: 100%"></div>
+                  </div>
+                  <span class="w-24 text-right text-xs font-bold text-slate-900">R$ 2.450,00</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="w-20 text-[11px] text-slate-500 font-medium">SUS/SIGTAP:</span>
+                  <div class="flex-1 bg-slate-100 rounded-full h-3.5 overflow-hidden">
+                    <div class="bg-slate-400 h-full rounded-full" style="width: 32.7%"></div>
+                  </div>
+                  <span class="w-24 text-right text-xs font-medium text-slate-600">R$ 800,00</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Item 4: Consulta Especializada c/ Exames -->
+            <div>
+              <div class="flex justify-between items-center text-xs font-semibold mb-1.5">
+                <span class="text-slate-800">Consulta Médica Especializada com Exames Básicos</span>
+                <span class="text-deficit-600 font-bold">Déficit: -73,2% (-R$ 123,00)</span>
+              </div>
+              <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                  <span class="w-20 text-[11px] text-slate-500 font-medium">Custo Real:</span>
+                  <div class="flex-1 bg-slate-100 rounded-full h-3.5 overflow-hidden">
+                    <div class="bg-brand-600 h-full rounded-full" style="width: 100%"></div>
+                  </div>
+                  <span class="w-24 text-right text-xs font-bold text-slate-900">R$ 168,00</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="w-20 text-[11px] text-slate-500 font-medium">SUS/SIGTAP:</span>
+                  <div class="flex-1 bg-slate-100 rounded-full h-3.5 overflow-hidden">
+                    <div class="bg-slate-400 h-full rounded-full" style="width: 26.8%"></div>
+                  </div>
+                  <span class="w-24 text-right text-xs font-medium text-slate-600">R$ 45,00</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="mt-6 p-3 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-600 flex items-center justify-between">
+            <span>Média ponderada do subfinanciamento federal: <strong>69,2%</strong> absorvido pelo município.</span>
+            <button onclick="trocarAba('jornada')" class="text-brand-600 font-bold hover:underline">Ver Paciente Exemplo →</button>
+          </div>
+        </div>
+
+        <!-- Decomposição Metodológica Dual -->
+        <div class="p-6 rounded-xl bg-white border border-slate-200 shadow-xs flex flex-col justify-between">
+          <div>
+            <h3 class="text-base font-display font-bold text-slate-900 mb-1">Metodologia Dual de Custeio</h3>
+            <p class="text-xs text-slate-500 mb-6">Segregação técnica de apuração conforme complexidade assistencial</p>
+
+            <!-- Card Absorção -->
+            <div class="p-4 rounded-xl bg-blue-50/50 border border-blue-100 mb-4">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold text-brand-900">Custeio por Absorção</span>
+                <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-brand-100 text-brand-800">60,2% da rede</span>
+              </div>
+              <p class="text-lg font-display font-extrabold text-brand-900">R$ 8.920.000,00</p>
+              <p class="text-xs text-slate-600 mt-2">
+                Aplicado a <strong>UBSs, UPAs e Enfermarias</strong>. Rateio de indiretos (limpeza, portaria, energia) ponderado por <strong>m² de área útil e servidores alocados</strong>.
+              </p>
+            </div>
+
+            <!-- Card ABC -->
+            <div class="p-4 rounded-xl bg-indigo-50/50 border border-indigo-100">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold text-indigo-900">Microcusteio ABC (Atividades)</span>
+                <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-indigo-100 text-indigo-800">39,8% da rede</span>
+              </div>
+              <p class="text-lg font-display font-extrabold text-indigo-900">R$ 5.900.450,00</p>
+              <p class="text-xs text-slate-600 mt-2">
+                Aplicado a <strong>UTIs e Centros Cirúrgicos</strong>. Rastreabilidade direta de direcionadores: <strong>horas de ventilador pulmonar, minutos de sala cirúrgica e fármacos FEFO por CPF</strong>.
+              </p>
+            </div>
+          </div>
+
+          <button onclick="trocarAba('rateio')" class="mt-6 w-full py-2.5 px-4 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition-colors flex items-center justify-center gap-1.5">
+            <span class="material-symbols-outlined text-sm">settings_suggest</span>
+            <span>Explorar Matriz de Rateio Passo a Passo</span>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Tabela Analítica de Unidades de Saúde com Filtro Funcional -->
+      <div class="p-6 rounded-xl bg-white border border-slate-200 shadow-xs">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+          <div>
+            <h3 class="text-base font-display font-bold text-slate-900">Ranking e Telemetria dos Estabelecimentos Municipais</h3>
+            <p class="text-xs text-slate-500">Acompanhamento de volume, custo médio e eficiência por Centro de Custo</p>
+          </div>
+
+          <!-- Filtros Interativos Funcionais -->
+          <div class="flex flex-wrap items-center gap-2">
+            <div class="relative">
+              <input type="text" id="filtro-busca-unidade" onkeyup="filtrarTabelaUnidades()" placeholder="Buscar unidade ou CNES..." class="pl-8 pr-3 py-1.5 text-xs rounded-lg border border-slate-300 focus:outline-none focus:border-brand-500 w-48 sm:w-64">
+              <span class="material-symbols-outlined absolute left-2 top-2 text-slate-400 text-sm">search</span>
+            </div>
+
+            <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-lg">
+              <button onclick="filtrarTipoUnidade('TODOS')" class="filtro-tipo-btn active px-2.5 py-1 rounded text-xs font-semibold bg-white text-slate-900 shadow-2xs">Todos</button>
+              <button onclick="filtrarTipoUnidade('HOSPITAL')" class="filtro-tipo-btn px-2.5 py-1 rounded text-xs font-semibold text-slate-600 hover:text-slate-900">Hospital</button>
+              <button onclick="filtrarTipoUnidade('UPA')" class="filtro-tipo-btn px-2.5 py-1 rounded text-xs font-semibold text-slate-600 hover:text-slate-900">UPA 24h</button>
+              <button onclick="filtrarTipoUnidade('UBS')" class="filtro-tipo-btn px-2.5 py-1 rounded text-xs font-semibold text-slate-600 hover:text-slate-900">UBS</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabela -->
+        <div class="overflow-x-auto mt-4">
+          <table class="w-full text-left border-collapse text-xs" id="tabela-unidades">
+            <thead>
+              <tr class="border-b border-slate-200 text-slate-500 font-semibold uppercase tracking-wider text-[11px] bg-slate-50/50">
+                <th class="py-3 px-4">Estabelecimento de Saúde / CNES</th>
+                <th class="py-3 px-3">Tipo</th>
+                <th class="py-3 px-3">Metodologia</th>
+                <th class="py-3 px-3 text-right">Pacientes</th>
+                <th class="py-3 px-3 text-right">Custo Médio / Paciente</th>
+                <th class="py-3 px-3 text-right">Déficit Tabela SUS</th>
+                <th class="py-3 px-3 text-center">Status Operacional</th>
+                <th class="py-3 px-4 text-center">Ações</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 text-slate-700" id="tabela-unidades-body">
+              <!-- Linha 1 -->
+              <tr class="hover:bg-slate-50 transition-colors" data-tipo="HOSPITAL">
+                <td class="py-3.5 px-4 font-semibold text-slate-900">
+                  Hospital Municipal Dia Campo Grande
+                  <span class="block text-[11px] font-normal text-slate-500 font-mono">CNES: 249102 • Leitos Clínicos e Cirúrgicos</span>
+                </td>
+                <td class="py-3.5 px-3">
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200">Hospital</span>
+                </td>
+                <td class="py-3.5 px-3">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-50 text-indigo-700">Mista (Absorção + ABC)</span>
+                </td>
+                <td class="py-3.5 px-3 text-right font-medium">4.120</td>
+                <td class="py-3.5 px-3 text-right font-bold text-slate-900">R$ 1.280,40</td>
+                <td class="py-3.5 px-3 text-right font-bold text-deficit-600">-71,4%</td>
+                <td class="py-3.5 px-3 text-center">
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> FEFO Ativo
+                  </span>
+                </td>
+                <td class="py-3.5 px-4 text-center">
+                  <button onclick="verDetalheUnidade('Hospital Municipal Dia', '249102', 'R$ 5.275.248,00', '4.120', 'R$ 1.280,40', '-71,4%')" class="px-2.5 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold transition-colors">
+                    Detalhes
+                  </button>
+                </td>
+              </tr>
+
+              <!-- Linha 2 -->
+              <tr class="hover:bg-slate-50 transition-colors" data-tipo="UPA">
+                <td class="py-3.5 px-4 font-semibold text-slate-900">
+                  UPA 24h Coronel Antonino
+                  <span class="block text-[11px] font-normal text-slate-500 font-mono">CNES: 693011 • Pronto Atendimento 24h</span>
+                </td>
+                <td class="py-3.5 px-3">
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">UPA 24h</span>
+                </td>
+                <td class="py-3.5 px-3">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700">Absorção Plena</span>
+                </td>
+                <td class="py-3.5 px-3 text-right font-medium">9.840</td>
+                <td class="py-3.5 px-3 text-right font-bold text-slate-900">R$ 342,10</td>
+                <td class="py-3.5 px-3 text-right font-bold text-deficit-600">-68,9%</td>
+                <td class="py-3.5 px-3 text-center">
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Eficiente
+                  </span>
+                </td>
+                <td class="py-3.5 px-4 text-center">
+                  <button onclick="verDetalheUnidade('UPA 24h Coronel Antonino', '693011', 'R$ 3.366.264,00', '9.840', 'R$ 342,10', '-68,9%')" class="px-2.5 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold transition-colors">
+                    Detalhes
+                  </button>
+                </td>
+              </tr>
+
+              <!-- Linha 3 -->
+              <tr class="hover:bg-slate-50 transition-colors" data-tipo="UBS">
+                <td class="py-3.5 px-4 font-semibold text-slate-900">
+                  UBS Dr. Gabriel Teodoro (Vila Nasser)
+                  <span class="block text-[11px] font-normal text-slate-500 font-mono">CNES: 183920 • Atenção Básica e ESF</span>
+                </td>
+                <td class="py-3.5 px-3">
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">UBS</span>
+                </td>
+                <td class="py-3.5 px-3">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700">Absorção Plena</span>
+                </td>
+                <td class="py-3.5 px-3 text-right font-medium">6.450</td>
+                <td class="py-3.5 px-3 text-right font-bold text-slate-900">R$ 118,50</td>
+                <td class="py-3.5 px-3 text-right font-bold text-deficit-600">-64,2%</td>
+                <td class="py-3.5 px-3 text-center">
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Otimizado
+                  </span>
+                </td>
+                <td class="py-3.5 px-4 text-center">
+                  <button onclick="verDetalheUnidade('UBS Dr. Gabriel Teodoro', '183920', 'R$ 764.325,00', '6.450', 'R$ 118,50', '-64,2%')" class="px-2.5 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold transition-colors">
+                    Detalhes
+                  </button>
+                </td>
+              </tr>
+
+              <!-- Linha 4 -->
+              <tr class="hover:bg-slate-50 transition-colors" data-tipo="UPA">
+                <td class="py-3.5 px-4 font-semibold text-slate-900">
+                  UPA 24h Vila Almeida
+                  <span class="block text-[11px] font-normal text-slate-500 font-mono">CNES: 693022 • Pronto Atendimento 24h</span>
+                </td>
+                <td class="py-3.5 px-3">
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">UPA 24h</span>
+                </td>
+                <td class="py-3.5 px-3">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700">Absorção Plena</span>
+                </td>
+                <td class="py-3.5 px-3 text-right font-medium">8.980</td>
+                <td class="py-3.5 px-3 text-right font-bold text-slate-900">R$ 365,00</td>
+                <td class="py-3.5 px-3 text-right font-bold text-deficit-600">-69,5%</td>
+                <td class="py-3.5 px-3 text-center">
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Eficiente
+                  </span>
+                </td>
+                <td class="py-3.5 px-4 text-center">
+                  <button onclick="verDetalheUnidade('UPA 24h Vila Almeida', '693022', 'R$ 3.277.700,00', '8.980', 'R$ 365,00', '-69,5%')" class="px-2.5 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold transition-colors">
+                    Detalhes
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- ABA 2: JORNADA 360° DO CIDADÃO POR CPF/NIS -->
+    <!-- ================================================================= -->
+    <div id="view-jornada" class="space-y-6 hidden">
+      
+      <!-- Barra de Pesquisa de Paciente & Seletor de Demonstração -->
+      <div class="p-5 rounded-xl bg-white border border-slate-200 shadow-xs">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h3 class="text-base font-display font-bold text-slate-900">Prontuário & Linha do Tempo de Custeio por Paciente</h3>
+            <p class="text-xs text-slate-500">Pesquise por CPF, NIS ou selecione um caso clínico demonstrativo</p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-3">
+            <span class="text-xs font-medium text-slate-500">Casos Clínicos de Exemplo:</span>
+            <select id="select-paciente" onchange="trocarPaciente(this.value)" class="px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold text-slate-800 bg-white focus:outline-none focus:border-brand-500 cursor-pointer">
+              <option value="maria">Maria da Silva Silveira (Pneumonia • R$ 3.842,50)</option>
+              <option value="joao">João Pedro Albuquerque (Infarto / UTI • R$ 12.450,00)</option>
+              <option value="ana">Ana Beatriz Ferreira (Parto Normal • R$ 1.840,00)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Header do Paciente Ativo -->
+      <div class="p-6 rounded-xl bg-white border border-slate-200 shadow-xs" id="paciente-header-card">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-slate-100">
+          
+          <div class="flex items-center gap-4">
+            <div id="paciente-avatar" class="w-14 h-14 rounded-2xl bg-brand-50 border border-brand-200 flex items-center justify-center font-display font-bold text-xl text-brand-700">
+              MS
+            </div>
+            <div>
+              <div class="flex flex-wrap items-center gap-2">
+                <h2 id="paciente-nome" class="text-xl font-display font-bold text-slate-900">Maria da Silva Silveira</h2>
+                <span id="paciente-badge" class="px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-brand-700 border border-blue-200">
+                  CID-10 J15.9 (Pneumonia)
+                </span>
+                <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  Alta Curada
+                </span>
+              </div>
+              <p class="text-xs text-slate-500 mt-1" id="paciente-dados">
+                54 anos • Feminino • CPF: 142.***.***-09 • CNS: 898.0012.3344.5501 • Bairro Vila Nasser
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <button onclick="imprimirDossiePaciente()" class="px-4 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-colors">
+              <span class="material-symbols-outlined text-base">print</span>
+              <span>Emitir Dossiê Auditável (PDF)</span>
+            </button>
+          </div>
+
+        </div>
+
+        <!-- 4 Badges Financeiros do Paciente -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+          <div class="p-3.5 rounded-lg bg-slate-50 border border-slate-200">
+            <span class="text-[11px] font-medium text-slate-500 block">Custo Real Apurado</span>
+            <span id="paciente-custo-total" class="text-xl font-display font-extrabold text-slate-900">R$ 3.842,50</span>
+            <span class="text-[10px] text-slate-500 block mt-0.5">Absorção + ABC</span>
+          </div>
+
+          <div class="p-3.5 rounded-lg bg-amber-50/60 border border-amber-200">
+            <span class="text-[11px] font-medium text-amber-800 block">Repasse Tabela SUS</span>
+            <span id="paciente-repasse-sus" class="text-xl font-display font-extrabold text-amber-900">R$ 1.120,00</span>
+            <span class="text-[10px] text-amber-700 block mt-0.5">AIH Faturada</span>
+          </div>
+
+          <div class="p-3.5 rounded-lg bg-deficit-50/60 border border-deficit-200">
+            <span class="text-[11px] font-medium text-deficit-800 block">Aporte Próprio do Município</span>
+            <span id="paciente-aporte-municipio" class="text-xl font-display font-extrabold text-deficit-700">R$ 2.722,50</span>
+            <span class="text-[10px] text-deficit-600 block mt-0.5 font-bold">70,8% de déficit coberto</span>
+          </div>
+
+          <div class="p-3.5 rounded-lg bg-emerald-50/60 border border-emerald-200">
+            <span class="text-[11px] font-medium text-emerald-800 block">Auditoria & Rastreabilidade</span>
+            <span class="text-sm font-bold text-emerald-800 flex items-center gap-1 mt-1">
+              <span class="material-symbols-outlined text-base">check_circle</span> 100% Conforme
+            </span>
+            <span class="text-[10px] text-emerald-700 block mt-0.5">Rastreio por lote FEFO</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Split: Linha do Tempo (65%) e Decomposição (35%) -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Linha do Tempo Interativa -->
+        <div class="lg:col-span-2 p-6 rounded-xl bg-white border border-slate-200 shadow-xs">
+          <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+            <div>
+              <h3 class="text-base font-display font-bold text-slate-900">Jornada Assistencial Cronológica & Custo por Evento</h3>
+              <p class="text-xs text-slate-500">Clique em qualquer evento para expandir a memória de cálculo</p>
+            </div>
+            <span class="text-xs text-slate-400 font-mono">5 Eventos Registrados</span>
+          </div>
+
+          <div class="mt-6 space-y-4" id="timeline-container">
+            <!-- Evento 1 -->
+            <div class="p-4 rounded-xl border border-slate-200 hover:border-brand-300 transition-all cursor-pointer bg-slate-50/30" onclick="toggleDetalheEvento('detalhe-ev-1')">
+              <div class="flex items-start justify-between gap-4">
+                <div class="flex items-start gap-3">
+                  <div class="w-8 h-8 rounded-full bg-blue-100 text-brand-700 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
+                    1
+                  </div>
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <span class="text-xs font-bold text-slate-900">Atenção Básica — UBS Dr. Gabriel Teodoro</span>
+                      <span class="px-2 py-0.2 rounded text-[10px] font-semibold bg-blue-50 text-blue-700">14/09 08:30</span>
+                    </div>
+                    <p class="text-xs text-slate-600 mt-0.5">Consulta Médica da Família c/ Dr. Carlos Medeiros (CRM/MS 8412)</p>
+                  </div>
+                </div>
+                <div class="text-right shrink-0">
+                  <span class="text-xs font-bold text-slate-900">R$ 85,00</span>
+                  <span class="block text-[10px] text-slate-400">Ver itens ↓</span>
+                </div>
+              </div>
+
+              <!-- Detalhes expandíveis -->
+              <div id="detalhe-ev-1" class="hidden mt-3 pt-3 border-t border-slate-200 text-xs space-y-1.5 text-slate-600 bg-white p-3 rounded-lg">
+                <div class="flex justify-between">
+                  <span>Mão de Obra Médica (40 min de consulta / Vigia RH):</span>
+                  <span class="font-semibold text-slate-800">R$ 62,00</span>
+                </div>
+                <div class="flex justify-between">
+                  <span>Rateio de Custos Indiretos UBS (Área m² + Limpeza):</span>
+                  <span class="font-semibold text-slate-800">R$ 23,00</span>
+                </div>
+                <p class="text-[11px] text-brand-700 font-medium pt-1">Prescrição gerada: Amoxicilina 500mg (21 cápsulas)</p>
+              </div>
+            </div>
+
+            <!-- Evento 2 -->
+            <div class="p-4 rounded-xl border border-slate-200 hover:border-brand-300 transition-all cursor-pointer bg-slate-50/30" onclick="toggleDetalheEvento('detalhe-ev-2')">
+              <div class="flex items-start justify-between gap-4">
+                <div class="flex items-start gap-3">
+                  <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
+                    2
+                  </div>
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <span class="text-xs font-bold text-slate-900">Farmácia Municipal Central — Dispensação FEFO</span>
+                      <span class="px-2 py-0.2 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700">14/09 09:15</span>
+                    </div>
+                    <p class="text-xs text-slate-600 mt-0.5">Dispensação de Amoxicilina 500mg • Lote AMX-2026A (Venc. 11/2026)</p>
+                  </div>
+                </div>
+                <div class="text-right shrink-0">
+                  <span class="text-xs font-bold text-slate-900">R$ 28,40</span>
+                  <span class="block text-[10px] text-slate-400">Ver itens ↓</span>
+                </div>
+              </div>
+
+              <!-- Detalhes expandíveis -->
+              <div id="detalhe-ev-2" class="hidden mt-3 pt-3 border-t border-slate-200 text-xs space-y-1.5 text-slate-600 bg-white p-3 rounded-lg">
+                <div class="flex justify-between">
+                  <span>21 cápsulas Amoxicilina (Preço unitário do lote):</span>
+                  <span class="font-semibold text-slate-800">R$ 28,40</span>
+                </div>
+                <p class="text-[11px] text-emerald-700 font-medium pt-1">
+                  Algoritmo FEFO selecionou automaticamente o lote com vencimento mais próximo (evitou perda de medicamento por expiração).
+                </p>
+              </div>
+            </div>
+
+            <!-- Evento 3 -->
+            <div class="p-4 rounded-xl border border-slate-200 hover:border-brand-300 transition-all cursor-pointer bg-slate-50/30" onclick="toggleDetalheEvento('detalhe-ev-3')">
+              <div class="flex items-start justify-between gap-4">
+                <div class="flex items-start gap-3">
+                  <div class="w-8 h-8 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
+                    3
+                  </div>
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <span class="text-xs font-bold text-slate-900">Acolhimento & Exames — UPA 24h Coronel Antonino</span>
+                      <span class="px-2 py-0.2 rounded text-[10px] font-semibold bg-amber-50 text-amber-700">15/09 19:40</span>
+                    </div>
+                    <p class="text-xs text-slate-600 mt-0.5">Triagem Manchester Amarela + Raio-X Tórax Digital + Hemograma</p>
+                  </div>
+                </div>
+                <div class="text-right shrink-0">
+                  <span class="text-xs font-bold text-slate-900">R$ 142,00</span>
+                  <span class="block text-[10px] text-slate-400">Ver itens ↓</span>
+                </div>
+              </div>
+
+              <div id="detalhe-ev-3" class="hidden mt-3 pt-3 border-t border-slate-200 text-xs space-y-1.5 text-slate-600 bg-white p-3 rounded-lg">
+                <div class="flex justify-between">
+                  <span>Raio-X Tórax Digital PA/Perfil (Equipamento + Laudo):</span>
+                  <span class="font-semibold text-slate-800">R$ 48,00</span>
+                </div>
+                <div class="flex justify-between">
+                  <span>Hemograma Completo Laboratorial:</span>
+                  <span class="font-semibold text-slate-800">R$ 20,00</span>
+                </div>
+                <div class="flex justify-between">
+                  <span>Mão de obra plantonista e enfermagem UPA:</span>
+                  <span class="font-semibold text-slate-800">R$ 74,00</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Evento 4 -->
+            <div class="p-4 rounded-xl border border-slate-200 hover:border-brand-300 transition-all cursor-pointer bg-slate-50/30" onclick="toggleDetalheEvento('detalhe-ev-4')">
+              <div class="flex items-start justify-between gap-4">
+                <div class="flex items-start gap-3">
+                  <div class="w-8 h-8 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
+                    4
+                  </div>
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <span class="text-xs font-bold text-slate-900">Internação Clínica — Hospital Municipal Dia</span>
+                      <span class="px-2 py-0.2 rounded text-[10px] font-semibold bg-purple-50 text-purple-700">16/09 a 18/09</span>
+                    </div>
+                    <p class="text-xs text-slate-600 mt-0.5">2 Diárias em Enfermaria Geral + Antibioticoterapia EV + Hotelaria</p>
+                  </div>
+                </div>
+                <div class="text-right shrink-0">
+                  <span class="text-xs font-bold text-slate-900">R$ 1.720,00</span>
+                  <span class="block text-[10px] text-slate-400">Ver itens ↓</span>
+                </div>
+              </div>
+
+              <div id="detalhe-ev-4" class="hidden mt-3 pt-3 border-t border-slate-200 text-xs space-y-1.5 text-slate-600 bg-white p-3 rounded-lg">
+                <div class="flex justify-between">
+                  <span>2 Diárias de Leito Clínico (R$ 480,00/dia):</span>
+                  <span class="font-semibold text-slate-800">R$ 960,00</span>
+                </div>
+                <div class="flex justify-between">
+                  <span>Medicamentos EV (Ceftriaxona + Claritromicina):</span>
+                  <span class="font-semibold text-slate-800">R$ 340,00</span>
+                </div>
+                <div class="flex justify-between">
+                  <span>Hotelaria Hospitalar, Nutrição e Higienização:</span>
+                  <span class="font-semibold text-slate-800">R$ 420,00</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Evento 5 -->
+            <div class="p-4 rounded-xl border border-slate-200 hover:border-brand-300 transition-all cursor-pointer bg-slate-50/30" onclick="toggleDetalheEvento('detalhe-ev-5')">
+              <div class="flex items-start justify-between gap-4">
+                <div class="flex items-start gap-3">
+                  <div class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
+                    5
+                  </div>
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <span class="text-xs font-bold text-slate-900">Suporte Intensivo Semi-Crítico (Metodologia ABC)</span>
+                      <span class="px-2 py-0.2 rounded text-[10px] font-semibold bg-indigo-50 text-indigo-700">17/09 02h às 20h</span>
+                    </div>
+                    <p class="text-xs text-slate-600 mt-0.5">18h Ventilador Mecânico Não-Invasivo CPAP + O2 Medicinal Líquido</p>
+                  </div>
+                </div>
+                <div class="text-right shrink-0">
+                  <span class="text-xs font-bold text-slate-900">R$ 1.867,10</span>
+                  <span class="block text-[10px] text-slate-400">Ver itens ↓</span>
+                </div>
+              </div>
+
+              <div id="detalhe-ev-5" class="hidden mt-3 pt-3 border-t border-slate-200 text-xs space-y-1.5 text-slate-600 bg-white p-3 rounded-lg">
+                <div class="flex justify-between">
+                  <span>18 Horas de Ventilador Mecânico (Depreciação + Filtros):</span>
+                  <span class="font-semibold text-slate-800">R$ 648,00</span>
+                </div>
+                <div class="flex justify-between">
+                  <span>Consumo de Oxigênio Medicinal Líquido (m³ medido):</span>
+                  <span class="font-semibold text-slate-800">R$ 412,00</span>
+                </div>
+                <div class="flex justify-between">
+                  <span>Equipe de Fisioterapia Respiratória e Intensivista:</span>
+                  <span class="font-semibold text-slate-800">R$ 807,10</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Decomposição dos Custos do Paciente -->
+        <div class="p-6 rounded-xl bg-white border border-slate-200 shadow-xs flex flex-col justify-between">
+          <div>
+            <h3 class="text-base font-display font-bold text-slate-900 mb-1">Composição por Natureza</h3>
+            <p class="text-xs text-slate-500 mb-6">Divisão percentual dos custos acumulados da paciente</p>
+
+            <div class="space-y-4">
+              <!-- Item 1 -->
+              <div>
+                <div class="flex justify-between text-xs font-semibold text-slate-800 mb-1">
+                  <span>Pessoal & Médicos (42%)</span>
+                  <span>R$ 1.613,85</span>
+                </div>
+                <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                  <div class="bg-brand-600 h-full rounded-full" style="width: 42%"></div>
+                </div>
+              </div>
+
+              <!-- Item 2 -->
+              <div>
+                <div class="flex justify-between text-xs font-semibold text-slate-800 mb-1">
+                  <span>Diárias & Hotelaria (28%)</span>
+                  <span>R$ 1.075,90</span>
+                </div>
+                <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                  <div class="bg-indigo-600 h-full rounded-full" style="width: 28%"></div>
+                </div>
+              </div>
+
+              <!-- Item 3 -->
+              <div>
+                <div class="flex justify-between text-xs font-semibold text-slate-800 mb-1">
+                  <span>Medicamentos FEFO (18%)</span>
+                  <span>R$ 691,65</span>
+                </div>
+                <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                  <div class="bg-emerald-600 h-full rounded-full" style="width: 18%"></div>
+                </div>
+              </div>
+
+              <!-- Item 4 -->
+              <div>
+                <div class="flex justify-between text-xs font-semibold text-slate-800 mb-1">
+                  <span>Exames & Diagnóstico (12%)</span>
+                  <span>R$ 461,10</span>
+                </div>
+                <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                  <div class="bg-amber-500 h-full rounded-full" style="width: 12%"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Resumo de Auditoria Legal -->
+            <div class="mt-8 p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-2">
+              <span class="font-bold text-slate-800 flex items-center gap-1">
+                <span class="material-symbols-outlined text-sm text-brand-600">gavel</span>
+                Validade Jurídica TCE-MS
+              </span>
+              <p class="text-slate-600 leading-relaxed">
+                Este prontuário de custos possui rastreabilidade biométrica dos profissionais e hash digital dos insumos, servindo como documento de comprovação de despesa em saúde pública (LC 141/2012).
+              </p>
+            </div>
+          </div>
+
+          <button onclick="abrirModalExportar()" class="mt-6 w-full py-2.5 px-4 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold text-xs transition-colors flex items-center justify-center gap-1.5">
+            <span class="material-symbols-outlined text-sm">download</span>
+            <span>Baixar Prontuário Contábil Completo</span>
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- ABA 3: CENTROS DE CUSTO & MATRIZ DE RATEIO DUAL -->
+    <!-- ================================================================= -->
+    <div id="view-rateio" class="space-y-6 hidden">
+      
+      <div class="p-6 rounded-xl bg-white border border-slate-200 shadow-xs">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-100">
+          <div>
+            <h2 class="text-xl font-display font-bold text-slate-900">Centros de Custo & Matriz de Rateio Dual (Step-Down)</h2>
+            <p class="text-xs text-slate-500">Distribuição progressiva dos custos indiretos e microcusteio direto em setores críticos</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <button onclick="executarMotorRateio()" id="btn-executar-rateio" class="px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-colors">
+              <span class="material-symbols-outlined text-base">play_arrow</span>
+              <span>Executar Motor de Rateio (Step-Down)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Pipeline Visual Step-Down -->
+        <div class="mt-6">
+          <p class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-4">Fluxo Progressivo de Alocação de Custos:</p>
+
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            
+            <!-- Etapa 1 -->
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-200 text-slate-700">1. Centros Auxiliares</span>
+              <p class="text-sm font-bold text-slate-900 mt-2">R$ 4.280.000,00</p>
+              <ul class="text-xs text-slate-600 mt-2 space-y-1">
+                <li>• SESAU Central (Gestão)</li>
+                <li>• TI & Engenharia Clínica</li>
+                <li>• Limpeza & Hotelaria</li>
+              </ul>
+              <div class="mt-3 pt-2 border-t border-slate-200 text-[11px] text-slate-500">
+                Direcionador: m² e chamados
+              </div>
+            </div>
+
+            <!-- Seta 1 -->
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-200 text-slate-700">2. Intermediários</span>
+              <p class="text-sm font-bold text-slate-900 mt-2">R$ 2.660.000,00</p>
+              <ul class="text-xs text-slate-600 mt-2 space-y-1">
+                <li>• Farmácia Central FEFO</li>
+                <li>• Laboratório Municipal</li>
+                <li>• Central de Regulação</li>
+              </ul>
+              <div class="mt-3 pt-2 border-t border-slate-200 text-[11px] text-slate-500">
+                Direcionador: Exames & Dispensações
+              </div>
+            </div>
+
+            <!-- Etapa 3: Absorção -->
+            <div class="p-4 rounded-xl bg-blue-50/70 border border-blue-200">
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-brand-800">3A. Absorção Plena</span>
+              <p class="text-sm font-bold text-brand-900 mt-2">R$ 8.920.000,00</p>
+              <ul class="text-xs text-slate-600 mt-2 space-y-1">
+                <li>• 24 UBSs e USFs</li>
+                <li>• 6 UPAs 24 Horas</li>
+                <li>• Enfermarias Clínicas</li>
+              </ul>
+              <div class="mt-3 pt-2 border-t border-blue-200 text-[11px] text-brand-700 font-semibold">
+                Taxa Média: R$ 38,40 / m²
+              </div>
+            </div>
+
+            <!-- Etapa 4: ABC -->
+            <div class="p-4 rounded-xl bg-indigo-50/70 border border-indigo-200">
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-100 text-indigo-800">3B. Microcusteio ABC</span>
+              <p class="text-sm font-bold text-indigo-900 mt-2">R$ 5.900.450,00</p>
+              <ul class="text-xs text-slate-600 mt-2 space-y-1">
+                <li>• UTI Geral Adulto (20 leitos)</li>
+                <li>• Bloco Cirúrgico (4 salas)</li>
+                <li>• Sala Vermelha Emergência</li>
+              </ul>
+              <div class="mt-3 pt-2 border-t border-indigo-200 text-[11px] text-indigo-700 font-semibold">
+                Custo Minuto: R$ 14,20 / min
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Simulador Rápido de Direcionadores -->
+        <div class="mt-8 p-5 rounded-xl bg-slate-50 border border-slate-200">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h4 class="text-sm font-bold text-slate-900">Simulador de Parametrização dos Direcionadores</h4>
+              <p class="text-xs text-slate-500">Altere os direcionadores para visualizar o impacto no balanço em tempo real</p>
+            </div>
+            <button onclick="resetarSimuladores()" class="text-xs font-semibold text-slate-500 hover:text-slate-800 underline">
+              Restaurar Padrão
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+              <div class="flex justify-between text-xs font-medium text-slate-700 mb-1">
+                <span>Direcionador de Área (m² útil):</span>
+                <span id="label-slider-area" class="font-bold">18.450 m²</span>
+              </div>
+              <input type="range" id="slider-area" min="15000" max="22000" value="18450" oninput="atualizarSliderArea(this.value)" class="w-full accent-brand-600 cursor-pointer">
+              <span class="text-[11px] text-slate-400">Pondera limpeza e energia elétrica</span>
+            </div>
+
+            <div>
+              <div class="flex justify-between text-xs font-medium text-slate-700 mb-1">
+                <span>Custo Médio Minuto Cirúrgico:</span>
+                <span id="label-slider-cirurgico" class="font-bold">R$ 14,20 / min</span>
+              </div>
+              <input type="range" id="slider-cirurgico" min="10" max="20" step="0.5" value="14.2" oninput="atualizarSliderCirurgico(this.value)" class="w-full accent-indigo-600 cursor-pointer">
+              <span class="text-[11px] text-slate-400">Pondera bloco cirúrgico e gases medicinais</span>
+            </div>
+
+            <div>
+              <div class="flex justify-between text-xs font-medium text-slate-700 mb-1">
+                <span>Horas de Ventilação Pulmonar UTI:</span>
+                <span id="label-slider-uti" class="font-bold">14.200 horas/mês</span>
+              </div>
+              <input type="range" id="slider-uti" min="10000" max="18000" value="14200" oninput="atualizarSliderUti(this.value)" class="w-full accent-emerald-600 cursor-pointer">
+              <span class="text-[11px] text-slate-400">Microcusteio direto por leito</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- ABA 4: FARMÁCIA & ESTOQUE FEFO (SATÉLITE INTEGRADO) -->
+    <!-- ================================================================= -->
+    <div id="view-estoque" class="space-y-6 hidden">
+      
+      <div class="p-6 rounded-xl bg-white border border-slate-200 shadow-xs">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+          <div>
+            <h2 class="text-xl font-display font-bold text-slate-900">Vigia Estoque — Farmácia Municipal & Gestão FEFO</h2>
+            <p class="text-xs text-slate-500">Controle rigoroso por lote e validade (First Expire, First Out) com dispensação por CPF</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="abrirModalDispensacao()" class="px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1 shadow-xs transition-colors">
+              <span class="material-symbols-outlined text-base">local_pharmacy</span>
+              <span>Dispensar Medicamento (CPF)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Lotes Ativos -->
+        <div class="mt-6 overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="border-b border-slate-200 text-slate-500 font-semibold uppercase text-[11px] bg-slate-50/50">
+                <th class="py-3 px-4">Medicamento / Princípio Ativo</th>
+                <th class="py-3 px-3">Lote</th>
+                <th class="py-3 px-3">Validade</th>
+                <th class="py-3 px-3 text-right">Saldo em Estoque</th>
+                <th class="py-3 px-3 text-right">Custo Unitário</th>
+                <th class="py-3 px-3 text-center">Prioridade FEFO</th>
+                <th class="py-3 px-4 text-center">Ações</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 text-slate-700">
+              <tr class="hover:bg-slate-50">
+                <td class="py-3 px-4 font-semibold text-slate-900">
+                  Amoxicilina 500mg (Cápsulas)
+                  <span class="block text-[11px] text-slate-400 font-normal">Antibacteriano sistêmico • Código CATMAT 150244</span>
+                </td>
+                <td class="py-3 px-3 font-mono font-medium">AMX-2026A</td>
+                <td class="py-3 px-3 text-amber-700 font-semibold">15/11/2026 (59 dias)</td>
+                <td class="py-3 px-3 text-right font-medium">1.420 caps</td>
+                <td class="py-3 px-3 text-right font-bold">R$ 1,35</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">
+                    Prioridade 1 (FEFO)
+                  </span>
+                </td>
+                <td class="py-3 px-4 text-center">
+                  <button onclick="abrirModalDispensacaoRapida('Amoxicilina 500mg', 'AMX-2026A', 1.35)" class="px-2.5 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold">
+                    Dispensar
+                  </button>
+                </td>
+              </tr>
+
+              <tr class="hover:bg-slate-50">
+                <td class="py-3 px-4 font-semibold text-slate-900">
+                  Amoxicilina 500mg (Cápsulas)
+                  <span class="block text-[11px] text-slate-400 font-normal">Lote de reposição novo</span>
+                </td>
+                <td class="py-3 px-3 font-mono font-medium">AMX-2027B</td>
+                <td class="py-3 px-3 text-slate-600">30/08/2027 (340 dias)</td>
+                <td class="py-3 px-3 text-right font-medium">12.000 caps</td>
+                <td class="py-3 px-3 text-right font-bold">R$ 1,28</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 text-slate-600">
+                    Aguardando Lote Anterior
+                  </span>
+                </td>
+                <td class="py-3 px-4 text-center">
+                  <span class="text-[11px] text-slate-400">Travado p/ FEFO</span>
+                </td>
+              </tr>
+
+              <tr class="hover:bg-slate-50">
+                <td class="py-3 px-4 font-semibold text-slate-900">
+                  Ceftriaxona 1g Injetável (Frasco-ampola)
+                  <span class="block text-[11px] text-slate-400 font-normal">Uso hospitalar e UPA • Lote de alto giro</span>
+                </td>
+                <td class="py-3 px-3 font-mono font-medium">CFT-9921</td>
+                <td class="py-3 px-3 text-slate-600">10/02/2027 (146 dias)</td>
+                <td class="py-3 px-3 text-right font-medium">850 frascos</td>
+                <td class="py-3 px-3 text-right font-bold">R$ 18,50</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                    Regular
+                  </span>
+                </td>
+                <td class="py-3 px-4 text-center">
+                  <button onclick="abrirModalDispensacaoRapida('Ceftriaxona 1g', 'CFT-9921', 18.50)" class="px-2.5 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold">
+                    Dispensar
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- ABA 5: VIGIA RH (PESSOAL & ESCALAS) -->
+    <!-- ================================================================= -->
+    <div id="view-rh" class="space-y-6 hidden">
+      
+      <div class="p-6 rounded-xl bg-white border border-slate-200 shadow-xs">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+          <div>
+            <h2 class="text-xl font-display font-bold text-slate-900">Vigia RH — Custo de Pessoal & Encargos</h2>
+            <p class="text-xs text-slate-500">Cálculo de custo/hora real ponderado com encargos trabalhistas e alocação em centros de custo</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs px-2.5 py-1 rounded bg-slate-100 text-slate-700 font-semibold">3.120 Servidores Integrados</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+            <span class="text-xs text-slate-500 font-medium">Médicos Plantonistas (Custo Médio/Hora)</span>
+            <p class="text-xl font-display font-extrabold text-slate-900 mt-1">R$ 148,50 / hora</p>
+            <span class="text-[11px] text-slate-500">Salário Base + Insalubridade + Plantão</span>
+          </div>
+
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+            <span class="text-xs text-slate-500 font-medium">Enfermeiros e Técnicos (Custo Médio/Hora)</span>
+            <p class="text-xl font-display font-extrabold text-slate-900 mt-1">R$ 48,20 / hora</p>
+            <span class="text-[11px] text-slate-500">Piso da Enfermagem + Encargos Patronais</span>
+          </div>
+
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+            <span class="text-xs text-slate-500 font-medium">Equipe Multiprofissional (Fisio, Nutri, Farm.)</span>
+            <p class="text-xl font-display font-extrabold text-slate-900 mt-1">R$ 56,80 / hora</p>
+            <span class="text-[11px] text-slate-500">Absorvido diretamente nos atendimentos</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- ABA 6: ROTEIRO DE APROVAÇÃO EXECUTIVA -->
+    <!-- ================================================================= -->
+    <div id="view-apresentacao" class="space-y-6 hidden">
+      
+      <div class="p-8 rounded-2xl bg-white border border-slate-200 shadow-sm max-w-4xl mx-auto">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="w-12 h-12 rounded-xl bg-brand-100 text-brand-700 flex items-center justify-center">
+            <span class="material-symbols-outlined text-2xl">co_present</span>
+          </div>
+          <div>
+            <h2 class="text-2xl font-display font-bold text-slate-900">Roteiro para Apresentação e Aprovação do Cliente</h2>
+            <p class="text-sm text-slate-500">Guia de condução da reunião para Secretário de Saúde, Prefeito e Equipe Técnica</p>
+          </div>
+        </div>
+
+        <div class="space-y-6">
+          <div class="p-5 rounded-xl border border-slate-200 bg-slate-50/50">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="w-6 h-6 rounded-full bg-brand-600 text-white font-bold text-xs flex items-center justify-center">1</span>
+              <h3 class="text-base font-bold text-slate-900">O Problema Político & Financeiro (Dashboard 360)</h3>
+            </div>
+            <p class="text-xs text-slate-600 leading-relaxed ml-8">
+              Comece abrindo o <strong>Dashboard 360</strong>. Aponte para o card vermelho do <strong>Déficit Real de R$ 10,2 Milhões</strong>. Explique ao gestor que o AIVIQ Saúde não é um software contábil comum: ele gera o dossiê formal para o TCE e Ministério Público provando que o município não gasta mal, mas sim que a <strong>Tabela do SUS está defasada em 69,2%</strong>.
+            </p>
+          </div>
+
+          <div class="p-5 rounded-xl border border-slate-200 bg-slate-50/50">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="w-6 h-6 rounded-full bg-indigo-600 text-white font-bold text-xs flex items-center justify-center">2</span>
+              <h3 class="text-base font-bold text-slate-900">A Rastreabilidade por Paciente (Jornada CPF/NIS)</h3>
+            </div>
+            <p class="text-xs text-slate-600 leading-relaxed ml-8">
+              Mude para a aba <strong>Jornada por CPF/NIS</strong>. Selecione Maria da Silva Silveira e clique nos eventos da timeline. Mostre que cada comprimido entregue na farmácia pelo algoritmo FEFO e cada hora de oxigênio na UTI estão documentados com precisão cirúrgica, prontos para qualquer auditoria.
+            </p>
+          </div>
+
+          <div class="p-5 rounded-xl border border-slate-200 bg-slate-50/50">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="w-6 h-6 rounded-full bg-emerald-600 text-white font-bold text-xs flex items-center justify-center">3</span>
+              <h3 class="text-base font-bold text-slate-900">A Solidez Técnica & Contábil (Centros de Custo & Rateio)</h3>
+            </div>
+            <p class="text-xs text-slate-600 leading-relaxed ml-8">
+              Para o Diretor Financeiro e Controladoria, abra a aba <strong>Centros de Custo & Rateio Dual</strong>. Mostre o fluxo Step-Down e clique em "Executar Motor de Rateio". Mova os sliders para mostrar que o sistema permite simular o impacto de contratações e novos leitos no orçamento municipal.
+            </p>
+          </div>
+        </div>
+
+        <div class="mt-8 pt-6 border-t border-slate-200 flex items-center justify-between">
+          <span class="text-xs text-slate-500">Pronto para a demonstração?</span>
+          <button onclick="trocarAba('dashboard')" class="px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs transition-colors shadow-sm">
+            Iniciar pelo Dashboard 360 →
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ================================================================= -->
+  <!-- MODAIS FUNCIONAIS INTERATIVOS -->
+  <!-- ================================================================= -->
+
+  <!-- Modal 1: Exportar Relatório TCE-MS -->
+  <div id="modal-exportar" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 animate-in fade-in zoom-in duration-150">
+      <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-blue-50 text-brand-600 flex items-center justify-center">
+            <span class="material-symbols-outlined text-lg">description</span>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-slate-900">Exportar Dossiê Oficial TCE-MS / SIOPS</h3>
+            <p class="text-[11px] text-slate-500">Documentação comprobatória de despesas em saúde</p>
+          </div>
+        </div>
+        <button onclick="fecharModalExportar()" class="text-slate-400 hover:text-slate-600">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="py-4 space-y-3">
+        <label class="flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer">
+          <input type="radio" name="tipo_relatorio" value="dossie" checked class="accent-brand-600">
+          <div>
+            <p class="text-xs font-bold text-slate-900">Dossiê Completo de Defasagem SUS (PDF Assinado)</p>
+            <p class="text-[11px] text-slate-500">Comparações SIGTAP vs Custo Real com memórias de cálculo</p>
+          </div>
+        </label>
+
+        <label class="flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer">
+          <input type="radio" name="tipo_relatorio" value="rateio" class="accent-brand-600">
+          <div>
+            <p class="text-xs font-bold text-slate-900">Matriz de Rateio Step-Down por Centro de Custo (CSV/Excel)</p>
+            <p class="text-[11px] text-slate-500">Discriminação de despesas indiretas por m² e servidores</p>
+          </div>
+        </label>
+
+        <label class="flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer">
+          <input type="radio" name="tipo_relatorio" value="pacientes" class="accent-brand-600">
+          <div>
+            <p class="text-xs font-bold text-slate-900">Relação Nominal de Pacientes e Microcusteio (SIOPS)</p>
+            <p class="text-[11px] text-slate-500">Extrato detalhado por CPF e Cartão Nacional de Saúde</p>
+          </div>
+        </label>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-4 border-t border-slate-100">
+        <button onclick="fecharModalExportar()" class="px-4 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100">
+          Cancelar
+        </button>
+        <button onclick="baixarRelatorioSimulado()" class="px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold shadow-xs flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-sm">download</span>
+          <span>Gerar e Baixar Arquivo</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2: Detalhes da Unidade de Saúde -->
+  <div id="modal-unidade" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
+      <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+        <div>
+          <h3 id="modal-unidade-titulo" class="text-base font-bold text-slate-900">Nome da Unidade</h3>
+          <p id="modal-unidade-cnes" class="text-xs text-slate-500 font-mono">CNES: 000000</p>
+        </div>
+        <button onclick="fecharModalUnidade()" class="text-slate-400 hover:text-slate-600">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="py-4 space-y-3 text-xs">
+        <div class="flex justify-between py-1.5 border-b border-slate-100">
+          <span class="text-slate-500">Custo Total Apurado:</span>
+          <span id="modal-unidade-custo" class="font-bold text-slate-900">R$ 0,00</span>
+        </div>
+        <div class="flex justify-between py-1.5 border-b border-slate-100">
+          <span class="text-slate-500">Pacientes Atendidos:</span>
+          <span id="modal-unidade-pacientes" class="font-bold text-slate-900">0</span>
+        </div>
+        <div class="flex justify-between py-1.5 border-b border-slate-100">
+          <span class="text-slate-500">Custo Médio Unitário:</span>
+          <span id="modal-unidade-medio" class="font-bold text-brand-700">R$ 0,00</span>
+        </div>
+        <div class="flex justify-between py-1.5 border-b border-slate-100">
+          <span class="text-slate-500">Defasagem vs Tabela SUS:</span>
+          <span id="modal-unidade-deficit" class="font-bold text-deficit-600">0%</span>
+        </div>
+        <p class="text-[11px] text-slate-500 pt-2">
+          Esta unidade opera com estoque FEFO integrado e escala de servidores registrada no Vigia RH.
+        </p>
+      </div>
+
+      <div class="pt-4 border-t border-slate-100 flex justify-end">
+        <button onclick="fecharModalUnidade()" class="px-4 py-2 rounded-lg bg-slate-900 text-white text-xs font-semibold">
+          Fechar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 3: Dispensação de Medicamentos FEFO -->
+  <div id="modal-dispensacao" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
+      <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-emerald-600">local_pharmacy</span>
+          <h3 class="text-base font-bold text-slate-900">Dispensação de Medicamento FEFO</h3>
+        </div>
+        <button onclick="fecharModalDispensacao()" class="text-slate-400 hover:text-slate-600">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <form id="form-dispensacao" onsubmit="confirmarDispensacao(event)" class="py-4 space-y-3 text-xs">
+        <div>
+          <label class="block font-medium text-slate-700 mb-1">Medicamento / Lote Selecionado</label>
+          <input type="text" id="disp-med-nome" value="Amoxicilina 500mg • Lote AMX-2026A" readonly class="w-full px-3 py-2 rounded-lg bg-slate-100 border border-slate-200 text-slate-700 font-semibold">
+        </div>
+
+        <div>
+          <label class="block font-medium text-slate-700 mb-1">CPF do Paciente</label>
+          <input type="text" id="disp-cpf" required placeholder="000.000.000-00" value="142.984.102-09" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:border-brand-500 font-mono">
+        </div>
+
+        <div>
+          <label class="block font-medium text-slate-700 mb-1">Quantidade a Dispensar</label>
+          <input type="number" id="disp-qtd" required min="1" max="100" value="21" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:border-brand-500">
+        </div>
+
+        <div class="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px]">
+          <strong>Regra FEFO Ativa:</strong> O sistema priorizará o lote com vencimento em 15/11/2026, debitando o valor automaticamente do custo do paciente.
+        </div>
+
+        <div class="pt-4 border-t border-slate-100 flex justify-end gap-2">
+          <button type="button" onclick="fecharModalDispensacao()" class="px-4 py-2 rounded-lg text-slate-600 hover:bg-slate-100 font-semibold">
+            Cancelar
+          </button>
+          <button type="submit" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shadow-xs">
+            Confirmar Dispensação
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Drawer Lateral: Simulador de Orçamento & Déficit -->
+  <div id="drawer-simulacao" class="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white border-l border-slate-200 shadow-2xl p-6 flex flex-col justify-between transform translate-x-full transition-transform duration-200 ease-in-out">
+    <div>
+      <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-brand-600">tune</span>
+          <h3 class="text-base font-bold text-slate-900">Simulador de Cenários SUS</h3>
+        </div>
+        <button onclick="fecharDrawerSimulacao()" class="text-slate-400 hover:text-slate-600">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="py-6 space-y-6 text-xs">
+        <div>
+          <div class="flex justify-between font-semibold mb-1">
+            <span>Reajuste da Tabela SUS Federal:</span>
+            <span id="sim-reajuste-val" class="text-brand-600 font-bold">0%</span>
+          </div>
+          <input type="range" id="sim-reajuste" min="0" max="50" step="5" value="0" oninput="simularImpacto()" class="w-full accent-brand-600 cursor-pointer">
+          <span class="text-[11px] text-slate-400">Simula portaria do Ministério da Saúde</span>
+        </div>
+
+        <div>
+          <div class="flex justify-between font-semibold mb-1">
+            <span>Otimização FEFO (Redução de Perdas):</span>
+            <span id="sim-fefo-val" class="text-emerald-600 font-bold">10%</span>
+          </div>
+          <input type="range" id="sim-fefo" min="0" max="30" step="5" value="10" oninput="simularImpacto()" class="w-full accent-emerald-600 cursor-pointer">
+          <span class="text-[11px] text-slate-400">Economia direta na farmácia central</span>
+        </div>
+
+        <!-- Painel de Resultado Simulado -->
+        <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+          <span class="font-bold text-slate-800 text-xs block">Projeção do Balanço Municipal:</span>
+          
+          <div class="flex justify-between">
+            <span class="text-slate-500">Novo Repasse SUS:</span>
+            <span id="sim-novo-repasse" class="font-bold text-slate-900">R$ 4.560.120</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">Economia Adicional:</span>
+            <span id="sim-nova-economia" class="font-bold text-emerald-700">+ R$ 84.210</span>
+          </div>
+          <div class="flex justify-between pt-2 border-t border-slate-200">
+            <span class="text-slate-800 font-bold">Déficit Projetado:</span>
+            <span id="sim-novo-deficit" class="font-bold text-deficit-600">R$ 10.176.120</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pt-4 border-t border-slate-100 flex gap-2">
+      <button onclick="fecharDrawerSimulacao()" class="flex-1 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold text-xs">
+        Fechar
+      </button>
+      <button onclick="aplicarCenarioSimulado()" class="flex-1 py-2 rounded-lg bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs">
+        Aplicar Cenário
+      </button>
+    </div>
+  </div>
+
+  <!-- JavaScript Interativo e Lógica dos Fluxos -->
+  <script>
+    // -------------------------------------------------------------
+    // CONTROLE DE NAVEGAÇÃO ENTRE ABAS
+    // -------------------------------------------------------------
+    function trocarAba(abaId) {
+      const abas = ['dashboard', 'jornada', 'rateio', 'estoque', 'rh', 'apresentacao'];
+      
+      abas.forEach(id => {
+        const view = document.getElementById('view-' + id);
+        const tab = document.getElementById('tab-' + id);
+        
+        if (id === abaId) {
+          view.classList.remove('hidden');
+          tab.classList.add('active', 'bg-brand-50', 'text-brand-700');
+          tab.classList.remove('text-slate-600', 'hover:bg-slate-100');
+        } else {
+          view.classList.add('hidden');
+          tab.classList.remove('active', 'bg-brand-50', 'text-brand-700');
+          tab.classList.add('text-slate-600', 'hover:bg-slate-100');
+        }
+      });
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // -------------------------------------------------------------
+    // SISTEMA DE TOAST / FEEDBACK AO USUÁRIO
+    // -------------------------------------------------------------
+    function showToast(mensagem, tipo = 'sucesso') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      
+      const bgColor = tipo === 'sucesso' ? 'bg-slate-900 text-white' : 'bg-deficit-600 text-white';
+      const icon = tipo === 'sucesso' ? 'check_circle' : 'info';
+
+      toast.className = `${bgColor} px-4 py-3 rounded-xl shadow-xl flex items-center gap-2 text-xs font-semibold pointer-events-auto transition-all duration-200 opacity-0 translate-y-2`;
+      toast.innerHTML = `<span class="material-symbols-outlined text-base">${icon}</span> <span>${mensagem}</span>`;
+
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.classList.remove('opacity-0', 'translate-y-2');
+      }, 10);
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    // -------------------------------------------------------------
+    // INTERAÇÃO DA JORNADA DO PACIENTE (CPF/NIS)
+    // -------------------------------------------------------------
+    const dadosPacientes = {
+      maria: {
+        nome: "Maria da Silva Silveira",
+        dados: "54 anos • Feminino • CPF: 142.***.***-09 • CNS: 898.0012.3344.5501 • Bairro Vila Nasser",
+        badge: "CID-10 J15.9 (Pneumonia)",
+        avatar: "MS",
+        custoTotal: "R$ 3.842,50",
+        repasseSus: "R$ 1.120,00",
+        deficit: "R$ 2.722,50 (70,8%)"
+      },
+      joao: {
+        nome: "João Pedro Albuquerque",
+        dados: "62 anos • Masculino • CPF: 231.***.***-34 • CNS: 721.4421.9902.1102 • Bairro Aero Rancho",
+        badge: "CID-10 I21.0 (Infarto / UTI)",
+        avatar: "JA",
+        custoTotal: "R$ 12.450,00",
+        repasseSus: "R$ 3.890,00",
+        deficit: "R$ 8.560,00 (68,7%)"
+      },
+      ana: {
+        nome: "Ana Beatriz Ferreira",
+        dados: "28 anos • Feminino • CPF: 450.***.***-81 • CNS: 902.1103.4412.8890 • Bairro Moreninhas",
+        badge: "CID-10 O80 (Parto Normal)",
+        avatar: "AF",
+        custoTotal: "R$ 1.840,00",
+        repasseSus: "R$ 540,00",
+        deficit: "R$ 1.300,00 (70,6%)"
+      }
+    };
+
+    function trocarPaciente(id) {
+      const p = dadosPacientes[id];
+      if (!p) return;
+
+      document.getElementById('paciente-nome').textContent = p.nome;
+      document.getElementById('paciente-dados').textContent = p.dados;
+      document.getElementById('paciente-badge').textContent = p.badge;
+      document.getElementById('paciente-avatar').textContent = p.avatar;
+      document.getElementById('paciente-custo-total').textContent = p.custoTotal;
+      document.getElementById('paciente-repasse-sus').textContent = p.repasseSus;
+      document.getElementById('paciente-aporte-municipio').textContent = p.deficit;
+
+      showToast(`Prontuário de ${p.nome} carregado com sucesso.`);
+    }
+
+    function toggleDetalheEvento(id) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.classList.toggle('hidden');
+      }
+    }
+
+    function imprimirDossiePaciente() {
+      const paciente = document.getElementById('paciente-nome').textContent;
+      showToast(`Gerando Dossiê Clínico-Financeiro de ${paciente}...`);
+      setTimeout(() => {
+        window.print();
+      }, 600);
+    }
+
+    // -------------------------------------------------------------
+    // FILTROS DA TABELA DE UNIDADES DE SAÚDE
+    // -------------------------------------------------------------
+    let tipoAtivo = 'TODOS';
+
+    function filtrarTipoUnidade(tipo) {
+      tipoAtivo = tipo;
+      
+      document.querySelectorAll('.filtro-tipo-btn').forEach(btn => {
+        if (btn.textContent.toUpperCase().includes(tipo) || (tipo === 'TODOS' && btn.textContent === 'Todos')) {
+          btn.classList.add('bg-white', 'text-slate-900', 'shadow-2xs');
+          btn.classList.remove('text-slate-600');
+        } else {
+          btn.classList.remove('bg-white', 'text-slate-900', 'shadow-2xs');
+          btn.classList.add('text-slate-600');
+        }
+      });
+
+      filtrarTabelaUnidades();
+    }
+
+    function filtrarTabelaUnidades() {
+      const texto = document.getElementById('filtro-busca-unidade').value.toLowerCase();
+      const linhas = document.querySelectorAll('#tabela-unidades-body tr');
+
+      linhas.forEach(linha => {
+        const tipoLinha = linha.getAttribute('data-tipo');
+        const conteudoLinha = linha.textContent.toLowerCase();
+
+        const matchTipo = (tipoAtivo === 'TODOS' || tipoLinha === tipoAtivo);
+        const matchTexto = conteudoLinha.includes(texto);
+
+        if (matchTipo && matchTexto) {
+          linha.style.display = '';
+        } else {
+          linha.style.display = 'none';
+        }
+      });
+    }
+
+    function verDetalheUnidade(nome, cnes, custo, pacientes, medio, deficit) {
+      document.getElementById('modal-unidade-titulo').textContent = nome;
+      document.getElementById('modal-unidade-cnes').textContent = 'CNES: ' + cnes;
+      document.getElementById('modal-unidade-custo').textContent = custo;
+      document.getElementById('modal-unidade-pacientes').textContent = pacientes;
+      document.getElementById('modal-unidade-medio').textContent = medio;
+      document.getElementById('modal-unidade-deficit').textContent = deficit;
+
+      document.getElementById('modal-unidade').classList.remove('hidden');
+    }
+
+    function fecharModalUnidade() {
+      document.getElementById('modal-unidade').classList.add('hidden');
+    }
+
+    // -------------------------------------------------------------
+    // MODAL DE EXPORTAÇÃO TCE-MS
+    // -------------------------------------------------------------
+    function abrirModalExportar() {
+      document.getElementById('modal-exportar').classList.remove('hidden');
+    }
+
+    function fecharModalExportar() {
+      document.getElementById('modal-exportar').classList.add('hidden');
+    }
+
+    function baixarRelatorioSimulado() {
+      const tipo = document.querySelector('input[name="tipo_relatorio"]:checked').value;
+      fecharModalExportar();
+
+      // Gerar arquivo CSV real para download no navegador
+      let csvContent = "data:text/csv;charset=utf-8,";
+      csvContent += "Estabelecimento,CNES,Custo_Real_Apurado,Repasse_SUS,Deficit_Municipal,Percentual_Cobertura\n";
+      csvContent += "Hospital Municipal Dia Campo Grande,249102,5275248.00,1508720.00,3766528.00,28.6%\n";
+      csvContent += "UPA 24h Coronel Antonino,693011,3366264.00,1046908.00,2319356.00,31.1%\n";
+      csvContent += "UBS Dr. Gabriel Teodoro,183920,764325.00,273628.00,490697.00,35.8%\n";
+      csvContent += "TOTAL GERAL CONSOLIDADO,SET/2026,14820450.00,4560120.00,10260330.00,30.8%\n";
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `AIVIQ_Dossie_Deficit_TCE_MS_${tipo}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      showToast("Dossiê baixado com sucesso! Arquivo formatado para o TCE-MS.");
+    }
+
+    // -------------------------------------------------------------
+    // DISPENSAÇÃO DE MEDICAMENTOS FEFO
+    // -------------------------------------------------------------
+    function abrirModalDispensacao() {
+      document.getElementById('modal-dispensacao').classList.remove('hidden');
+    }
+
+    function abrirModalDispensacaoRapida(nome, lote, preco) {
+      document.getElementById('disp-med-nome').value = `${nome} • Lote ${lote}`;
+      document.getElementById('modal-dispensacao').classList.remove('hidden');
+    }
+
+    function fecharModalDispensacao() {
+      document.getElementById('modal-dispensacao').classList.add('hidden');
+    }
+
+    function confirmarDispensacao(e) {
+      e.preventDefault();
+      const med = document.getElementById('disp-med-nome').value;
+      const cpf = document.getElementById('disp-cpf').value;
+      const qtd = document.getElementById('disp-qtd').value;
+
+      fecharModalDispensacao();
+      showToast(`Dispensadas ${qtd} unidades de ${med} para o CPF ${cpf}. Evento registrado na jornada!`);
+    }
+
+    // -------------------------------------------------------------
+    // DRAWER DE SIMULAÇÃO DE CENÁRIOS
+    // -------------------------------------------------------------
+    function abrirDrawerSimulacao() {
+      const drawer = document.getElementById('drawer-simulacao');
+      drawer.classList.remove('translate-x-full');
+    }
+
+    function fecharDrawerSimulacao() {
+      const drawer = document.getElementById('drawer-simulacao');
+      drawer.classList.add('translate-x-full');
+    }
+
+    function simularImpacto() {
+      const reajuste = parseFloat(document.getElementById('sim-reajuste').value);
+      const fefo = parseFloat(document.getElementById('sim-fefo').value);
+
+      document.getElementById('sim-reajuste-val').textContent = `+${reajuste}%`;
+      document.getElementById('sim-fefo-val').textContent = `+${fefo}%`;
+
+      const repasseBase = 4560120;
+      const economiaBase = 842100;
+      const custoTotal = 14820450;
+
+      const novoRepasse = repasseBase * (1 + reajuste / 100);
+      const novaEconomia = economiaBase * (1 + fefo / 100);
+      const novoDeficit = custoTotal - novoRepasse - (novaEconomia - economiaBase);
+
+      document.getElementById('sim-novo-repasse').textContent = `R$ ${Math.round(novoRepasse).toLocaleString('pt-BR')}`;
+      document.getElementById('sim-nova-economia').textContent = `+ R$ ${Math.round(novaEconomia - economiaBase).toLocaleString('pt-BR')}`;
+      document.getElementById('sim-novo-deficit').textContent = `R$ ${Math.round(novoDeficit).toLocaleString('pt-BR')}`;
+    }
+
+    function aplicarCenarioSimulado() {
+      const deficit = document.getElementById('sim-novo-deficit').textContent;
+      document.getElementById('kpi-deficit').textContent = deficit;
+      fecharDrawerSimulacao();
+      showToast("Cenário de simulação aplicado aos indicadores principais.");
+    }
+
+    // -------------------------------------------------------------
+    // MOTOR DE RATEIO (STEP-DOWN)
+    // -------------------------------------------------------------
+    function executarMotorRateio() {
+      const btn = document.getElementById('btn-executar-rateio');
+      btn.innerHTML = '<span class="material-symbols-outlined text-base animate-spin">sync</span> <span>Calculando Rateio Step-Down...</span>';
+      btn.disabled = true;
+
+      setTimeout(() => {
+        btn.innerHTML = '<span class="material-symbols-outlined text-base">check</span> <span>Rateio Concluído (100% Alocado)</span>';
+        btn.classList.remove('bg-brand-600');
+        btn.classList.add('bg-emerald-600');
+        btn.disabled = false;
+
+        showToast("Motor Step-Down executado: R$ 4,28M de custos indiretos 100% alocados sem resíduo!");
+      }, 1000);
+    }
+
+    function atualizarSliderArea(val) {
+      document.getElementById('label-slider-area').textContent = `${parseInt(val).toLocaleString('pt-BR')} m²`;
+    }
+    function atualizarSliderCirurgico(val) {
+      document.getElementById('label-slider-cirurgico').textContent = `R$ ${parseFloat(val).toFixed(2).replace('.', ',')} / min`;
+    }
+    function atualizarSliderUti(val) {
+      document.getElementById('label-slider-uti').textContent = `${parseInt(val).toLocaleString('pt-BR')} horas/mês`;
+    }
+
+    function resetarSimuladores() {
+      document.getElementById('slider-area').value = 18450;
+      document.getElementById('slider-cirurgico').value = 14.2;
+      document.getElementById('slider-uti').value = 14200;
+      atualizarSliderArea(18450);
+      atualizarSliderCirurgico(14.2);
+      atualizarSliderUti(14200);
+      showToast("Direcionadores restaurados para a apuração contábil padrão.");
+    }
+
+    function sincronizarDados() {
+      showToast("Dados sincronizados com sucesso com o e-SUS e SIH municipal.");
+    }
+  </script>
+
+</body>
+</html>

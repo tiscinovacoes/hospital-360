@@ -1,0 +1,117 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Hospital 360 — Contratos Oficiais de Eventos de Integração (Sprint 1)",
+  "description": "Especificação formal de governança técnica para mensageria assíncrona entre OpenEMR, OpenBoxes, SENAITE LIMS, Bahmni, Hyperswitch e Core 360",
+  "version": "1.0.0",
+  "definitions": {
+    "EventoBase": {
+      "type": "object",
+      "required": ["evento_id", "timestamp", "topico", "origem", "versao_schema"],
+      "properties": {
+        "evento_id": { "type": "string", "example": "EVT-89201" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "topico": { "type": "string" },
+        "origem": { "type": "string", "example": "OpenEMR_Sala204" },
+        "versao_schema": { "type": "string", "default": "1.0.0" }
+      }
+    },
+    "EventoPrescricao": {
+      "allOf": [
+        { "$ref": "#/definitions/EventoBase" },
+        {
+          "type": "object",
+          "required": ["paciente_id", "medico_crm", "medicamentos"],
+          "properties": {
+            "paciente_id": { "type": "string", "example": "PAC-101" },
+            "medico_crm": { "type": "string", "example": "CRM-SP 148920" },
+            "medicamentos": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["codigo_insumo", "quantidade", "posologia"],
+                "properties": {
+                  "codigo_insumo": { "type": "string", "example": "MED-AMX-500" },
+                  "quantidade": { "type": "integer", "minimum": 1 },
+                  "posologia": { "type": "string", "example": "1 comprimido de 8/8h por 7 dias" }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "EventoBaixaFEFO": {
+      "allOf": [
+        { "$ref": "#/definitions/EventoBase" },
+        {
+          "type": "object",
+          "required": ["paciente_id", "codigo_insumo", "numero_lote", "data_validade", "custo_unitario", "quantidade_baixada"],
+          "properties": {
+            "paciente_id": { "type": "string" },
+            "codigo_insumo": { "type": "string" },
+            "numero_lote": { "type": "string", "example": "LT-2026-09A" },
+            "data_validade": { "type": "string", "format": "date" },
+            "custo_unitario": { "type": "number", "minimum": 0 },
+            "quantidade_baixada": { "type": "integer", "minimum": 1 },
+            "algoritmo_utilizado": { "type": "string", "enum": ["FEFO_FIRST_EXPIRED_FIRST_OUT"] }
+          }
+        }
+      ]
+    },
+    "EventoExameLIMS": {
+      "allOf": [
+        { "$ref": "#/definitions/EventoBase" },
+        {
+          "type": "object",
+          "required": ["paciente_id", "work_order_id", "tubo_cor", "exames_solicitados"],
+          "properties": {
+            "paciente_id": { "type": "string" },
+            "work_order_id": { "type": "string", "example": "WO-9912" },
+            "tubo_cor": { "type": "string", "enum": ["Roxo (EDTA)", "Amarelo (Gel Separador)", "Azul (Citrato)", "Cinza (Fluoreto)"] },
+            "exames_solicitados": {
+              "type": "array",
+              "items": { "type": "string", "example": "Hemograma Completo" }
+            },
+            "status_laudo": { "type": "string", "enum": ["COLETADO", "EM_ANALISE", "LIBERADO_ASSINADO"] }
+          }
+        }
+      ]
+    },
+    "EventoSplitFinanceiro": {
+      "allOf": [
+        { "$ref": "#/definitions/EventoBase" },
+        {
+          "type": "object",
+          "required": ["codigo_transacao", "clinica_sala", "valor_total", "repasse_medico_85", "taxa_condominio_15", "status_liquidacao"],
+          "properties": {
+            "codigo_transacao": { "type": "string" },
+            "clinica_sala": { "type": "string", "example": "SALA_204" },
+            "valor_total": { "type": "number", "minimum": 0 },
+            "repasse_medico_85": { "type": "number", "minimum": 0 },
+            "taxa_condominio_15": { "type": "number", "minimum": 0 },
+            "metodo_pagamento": { "type": "string", "enum": ["PIX_D0", "CARTAO_CREDITO", "CARTAO_DEBITO"] },
+            "status_liquidacao": { "type": "string", "enum": ["LIQUIDADO_INSTANTANEO", "PROCESSANDO", "ESTORNADO"] },
+            "nfse_numero": { "type": "string", "example": "NFS-2026-8812" }
+          }
+        }
+      ]
+    },
+    "EventoCustoDoorToDoor": {
+      "allOf": [
+        { "$ref": "#/definitions/EventoBase" },
+        {
+          "type": "object",
+          "required": ["paciente_id", "estacao_origem", "custo_adicional", "descricao_evento", "saldo_acumulado_paciente"],
+          "properties": {
+            "paciente_id": { "type": "string" },
+            "estacao_origem": { "type": "string", "enum": ["Recepção/Triagem", "Consultório Médico", "Farmácia FEFO", "Laboratório LIMS", "Leito Internação", "Facilities Limpeza"] },
+            "custo_adicional": { "type": "number", "minimum": 0 },
+            "descricao_evento": { "type": "string" },
+            "saldo_acumulado_paciente": { "type": "number", "minimum": 0 },
+            "teto_sigtap_sus_comparativo": { "type": "number" }
+          }
+        }
+      ]
+    }
+  }
+}

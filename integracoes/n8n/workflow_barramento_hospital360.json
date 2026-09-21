@@ -1,0 +1,194 @@
+{
+  "name": "Hospital 360 — Barramento Central Assistencial, LIMS, Split & Contábil",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "webhook/paciente.prescricao",
+        "options": {
+          "responseMode": "onReceived"
+        }
+      },
+      "name": "Webhook Prescrição Médica (OpenEMR)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [200, 180],
+      "webhookId": "wh-prescricao-001"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Validação HMAC-SHA256 e Normalização de Contrato Assistencial (n8n-workflow-patterns)\nconst headers = items[0].json.headers || {};\nconst body = items[0].json.body || items[0].json;\n\nconst hmacSignature = headers['x-signature-hmac-sha256'] || headers['x-signature'];\nconst isAuthorized = hmacSignature || headers['authorization'] || body.hmac_validado;\n\nreturn [{\n  json: {\n    evento_id: 'EVT-N8N-' + Date.now(),\n    timestamp: new Date().toISOString(),\n    topico: 'paciente.prescricao_emitida',\n    autenticado_hmac: Boolean(isAuthorized),\n    paciente_id: body.paciente_id || 'PAC-789456',\n    medicamento_codigo: body.medicamento_codigo || 'MED-001',\n    quantidade: Number(body.quantidade || 1)\n  }\n}];"
+      },
+      "name": "Normalizar Prescrição",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [440, 180]
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "http://localhost:3000/api/estoque/fefo-baixa",
+        "options": {},
+        "bodyParametersUi": {
+          "parameter": [
+            { "name": "codigoMedicamento", "value": "={{$node['Normalizar Prescrição'].json.medicamento_codigo}}" },
+            { "name": "quantidadeRequisitada", "value": "={{$node['Normalizar Prescrição'].json.quantidade}}" }
+          ]
+        }
+      },
+      "name": "Baixa FEFO OpenBoxes",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [680, 180]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "webhook/paciente.solicitacao_exame",
+        "options": {
+          "responseMode": "onReceived"
+        }
+      },
+      "name": "Webhook Pedido Exame LIMS (Sprint 3)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [200, 360],
+      "webhookId": "wh-exame-lims-002"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Normalização de Ordem de Serviço Laboratorial para o SENAITE (python-pro)\nconst body = items[0].json.body || items[0].json;\n\nreturn [{\n  json: {\n    workorder_id: 'WO-REQ-' + Date.now(),\n    paciente_id: body.paciente_id || 'PAC-789456',\n    paciente_nome: body.paciente_nome || 'Mariana Oliveira dos Santos',\n    cpf: body.cpf || '789.456.123-00',\n    medico_solicitante: body.medico_nome || 'Dr. Ricardo Mendes',\n    crm: body.crm || 'CRM/MS 8492',\n    exames: body.exames || ['LOINC-6598-7'],\n    prioridade: 'URGENTE'\n  }\n}];"
+      },
+      "name": "Normalizar Pedido LIMS",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [440, 360]
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "http://localhost:3000/api/laboratorio",
+        "options": {},
+        "bodyParametersUi": {
+          "parameter": [
+            { "name": "pacienteId", "value": "={{$node['Normalizar Pedido LIMS'].json.paciente_id}}" },
+            { "name": "pacienteNome", "value": "={{$node['Normalizar Pedido LIMS'].json.paciente_nome}}" },
+            { "name": "examesSolicitados", "value": "={{$node['Normalizar Pedido LIMS'].json.exames}}" }
+          ]
+        }
+      },
+      "name": "Criar WorkOrder no SENAITE LIMS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [680, 360]
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "http://localhost:3000/api/poli/whatsapp",
+        "options": {},
+        "bodyParametersUi": {
+          "parameter": [
+            { "name": "tipoNotificacao", "value": "LAUDO_LIBERADO" },
+            { "name": "pacienteNome", "value": "={{$node['Normalizar Pedido LIMS'].json.paciente_nome}}" },
+            { "name": "laudoUrl", "value": "={{$node['Criar WorkOrder no SENAITE LIMS'].json.data.pdfLaudoUrl}}" }
+          ]
+        }
+      },
+      "name": "Notificar Paciente WhatsApp (Poli CRM)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [940, 360]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "webhook/hyperswitch.checkout_split",
+        "options": {
+          "responseMode": "onReceived"
+        }
+      },
+      "name": "Webhook Checkout Split & NFS-e (Sprint 3)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [200, 540],
+      "webhookId": "wh-split-nfse-003"
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "http://localhost:3000/api/hyperswitch/split",
+        "options": {},
+        "bodyParametersUi": {
+          "parameter": [
+            { "name": "valorTotal", "value": "={{$json.body.valorTotal || 280.0}}" },
+            { "name": "pacienteId", "value": "={{$json.body.pacienteId || 'PAC-789456'}}" }
+          ]
+        }
+      },
+      "name": "Executar Split Hyperswitch (Rust)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [440, 540]
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "http://localhost:3000/api/contabil/nfse",
+        "options": {},
+        "bodyParametersUi": {
+          "parameter": [
+            { "name": "transacaoId", "value": "={{$node['Executar Split Hyperswitch (Rust)'].json.data.transacaoId}}" },
+            { "name": "valorCondominio", "value": "={{$node['Executar Split Hyperswitch (Rust)'].json.data.split.valorCondominio}}" },
+            { "name": "valorTotal", "value": "={{$node['Executar Split Hyperswitch (Rust)'].json.data.valorTotal}}" }
+          ]
+        }
+      },
+      "name": "Emitir NFS-e HealVista (.NET)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [720, 540]
+    }
+  ],
+  "connections": {
+    "Webhook Prescrição Médica (OpenEMR)": {
+      "main": [
+        [{ "node": "Normalizar Prescrição", "type": "main", "index": 0 }]
+      ]
+    },
+    "Normalizar Prescrição": {
+      "main": [
+        [{ "node": "Baixa FEFO OpenBoxes", "type": "main", "index": 0 }]
+      ]
+    },
+    "Webhook Pedido Exame LIMS (Sprint 3)": {
+      "main": [
+        [{ "node": "Normalizar Pedido LIMS", "type": "main", "index": 0 }]
+      ]
+    },
+    "Normalizar Pedido LIMS": {
+      "main": [
+        [{ "node": "Criar WorkOrder no SENAITE LIMS", "type": "main", "index": 0 }]
+      ]
+    },
+    "Criar WorkOrder no SENAITE LIMS": {
+      "main": [
+        [{ "node": "Notificar Paciente WhatsApp (Poli CRM)", "type": "main", "index": 0 }]
+      ]
+    },
+    "Webhook Checkout Split & NFS-e (Sprint 3)": {
+      "main": [
+        [{ "node": "Executar Split Hyperswitch (Rust)", "type": "main", "index": 0 }]
+      ]
+    },
+    "Executar Split Hyperswitch (Rust)": {
+      "main": [
+        [{ "node": "Emitir NFS-e HealVista (.NET)", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

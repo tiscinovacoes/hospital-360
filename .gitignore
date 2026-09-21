@@ -1,0 +1,21 @@
+# Segredos — nunca versionar
+.env
+.env.*
+!.env.example
+SUPABASE_TOKENS.md
+
+# Dependências e build
+node_modules/
+.next/
+*.tsbuildinfo
+
+# Supabase CLI cache
+supabase/.temp/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.log
+*.zip
+.claude/
+references/

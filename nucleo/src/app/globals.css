@@ -1,0 +1,242 @@
+@import "tailwindcss";
+
+:root {
+  /* ── Azul Institucional — Primary ── */
+  --vs-blue-900: #1E3A5F;   /* Sidebar, headers escuros, fundo de destaque */
+  --vs-blue-700: #1A56DB;   /* Cor primária, CTAs, links, estados ativos */
+  --vs-blue-500: #2563EB;   /* Hover de elementos primários */
+  --vs-blue-100: #EBF0FB;   /* Backgrounds secundários, itens selecionados */
+  --vs-blue-50:  #F0F4FF;   /* Fundo de seções com ênfase azul */
+
+  /* ── Verde Sucesso — Accent / Success ── */
+  --vs-green:    #0E9F6E;   /* Sucesso, aprovação, IA, confirmação */
+  --vs-green-dk: #057A55;   /* Hover de sucesso, texto em contexto claro */
+  --vs-green-lt: #D1FAE5;   /* Background de alertas e badges de sucesso */
+
+  /* ── Amarelo Atenção — Warning ── */
+  --vs-yellow:    #FACA15;  /* Atenção, pendente, prazo próximo */
+  --vs-yellow-dk: #C27803;  /* Texto de aviso em fundo claro */
+  --vs-yellow-lt: #FEF9C3;  /* Background de alertas de atenção */
+
+  /* ── Vermelho Crítico — Danger ── */
+  --vs-red:    #F05252;     /* Erro, rejeição, crítico, emergência */
+  --vs-red-dk: #C81E1E;     /* Texto de erro em fundo claro */
+  --vs-red-lt: #FDE8E8;     /* Background de alertas críticos */
+
+  /* ── Cinza Neutro — Neutral ── */
+  --vs-gray-900: #111928;   /* Texto principal, títulos */
+  --vs-gray-700: #374151;   /* Texto secundário, labels */
+  --vs-gray-500: #6B7280;   /* Placeholders, captions, ícones suaves */
+  --vs-gray-300: #D1D5DB;   /* Bordas de inputs */
+  --vs-gray-200: #E5E7EB;   /* Bordas de cards, divisores */
+  --vs-gray-100: #F3F4F6;   /* Fundo de inputs, cabeçalho de tabelas */
+  --vs-gray-50:  #F9FAFB;   /* Background da página */
+  --white:       #FFFFFF;
+
+  /* ── Estrutura & Sombras ── */
+  --vs-radius: 8px;
+  --vs-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --vs-shadow:    0 1px 4px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.06);
+  --vs-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+
+  /* ── Variáveis Dinâmicas de Tema (ThemeContext) ── */
+  --theme-primary: #1A56DB;
+  --theme-secondary: #1E3A5F;
+  --theme-accent: #0E9F6E;
+  --theme-light: #EBF0FB;
+}
+
+@theme inline {
+  --color-vs-blue-900: var(--vs-blue-900);
+  --color-vs-blue-700: var(--vs-blue-700);
+  --color-vs-blue-500: var(--vs-blue-500);
+  --color-vs-blue-100: var(--vs-blue-100);
+  --color-vs-blue-50: var(--vs-blue-50);
+  --color-vs-green: var(--vs-green);
+  --color-vs-green-dk: var(--vs-green-dk);
+  --color-vs-green-lt: var(--vs-green-lt);
+  --color-vs-yellow: var(--vs-yellow);
+  --color-vs-yellow-dk: var(--vs-yellow-dk);
+  --color-vs-yellow-lt: var(--vs-yellow-lt);
+  --color-vs-red: var(--vs-red);
+  --color-vs-red-dk: var(--vs-red-dk);
+  --color-vs-red-lt: var(--vs-red-lt);
+  --color-vs-gray-900: var(--vs-gray-900);
+  --color-vs-gray-700: var(--vs-gray-700);
+  --color-vs-gray-500: var(--vs-gray-500);
+  --color-vs-gray-300: var(--vs-gray-300);
+  --color-vs-gray-200: var(--vs-gray-200);
+  --color-vs-gray-100: var(--vs-gray-100);
+  --color-vs-gray-50: var(--vs-gray-50);
+  
+  --font-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: var(--font-mono), "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+body {
+  background-color: var(--vs-gray-50);
+  color: var(--vs-gray-900);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Componentes Padrão do Design System ── */
+
+.card-vs {
+  background-color: var(--white);
+  border: 1px solid var(--vs-gray-200);
+  border-radius: 12px;
+  box-shadow: var(--vs-shadow-sm);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.card-vs:hover {
+  box-shadow: var(--vs-shadow);
+}
+
+/* Botões */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s, transform 0.1s;
+  text-decoration: none;
+  font-family: var(--font-sans);
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn-primary { background-color: var(--vs-blue-700); color: #ffffff; }
+.btn-primary:hover { background-color: var(--vs-blue-900); }
+
+.btn-secondary { background-color: var(--vs-blue-100); color: var(--vs-blue-700); }
+.btn-secondary:hover { background-color: #d9e4f8; }
+
+.btn-success { background-color: var(--vs-green); color: #ffffff; }
+.btn-success:hover { background-color: var(--vs-green-dk); }
+
+.btn-danger { background-color: var(--vs-red); color: #ffffff; }
+.btn-danger:hover { background-color: var(--vs-red-dk); }
+
+.btn-outline { background-color: transparent; border: 1.5px solid var(--vs-blue-700); color: var(--vs-blue-700); }
+.btn-outline:hover { background-color: var(--vs-blue-100); }
+
+.btn-ghost { background-color: transparent; color: var(--vs-gray-700); }
+.btn-ghost:hover { background-color: var(--vs-gray-200); }
+
+.btn-sm { padding: 5px 12px; font-size: 12px; border-radius: 6px; }
+.btn-lg { padding: 12px 24px; font-size: 16px; border-radius: 10px; }
+.btn-disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
+
+/* Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.badge-sq {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+
+/* Alertas */
+.alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border-left: 4px solid transparent;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.alert-info {
+  background-color: var(--vs-blue-100);
+  border-left-color: var(--vs-blue-700);
+  color: var(--vs-blue-900);
+}
+
+.alert-success {
+  background-color: var(--vs-green-lt);
+  border-left-color: var(--vs-green);
+  color: var(--vs-green-dk);
+}
+
+.alert-warning {
+  background-color: var(--vs-yellow-lt);
+  border-left-color: var(--vs-yellow);
+  color: var(--vs-yellow-dk);
+}
+
+.alert-danger {
+  background-color: var(--vs-red-lt);
+  border-left-color: var(--vs-red);
+  color: var(--vs-red-dk);
+}
+
+/* KPI Cards */
+.kpi-card {
+  padding: 20px;
+  background-color: var(--white);
+  border: 1px solid var(--vs-gray-200);
+  border-radius: 12px;
+  box-shadow: var(--vs-shadow-sm);
+}
+
+.kpi-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.kpi-val {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--vs-gray-900);
+  line-height: 1.2;
+}
+
+.kpi-label {
+  font-size: 12px;
+  color: var(--vs-gray-500);
+  margin-top: 2px;
+}
+
+.kpi-delta {
+  font-size: 12px;
+  font-weight: 500;
+  margin-top: 8px;
+}

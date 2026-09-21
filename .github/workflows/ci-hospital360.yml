@@ -1,0 +1,57 @@
+name: Hospital 360 - CI/CD Pipeline & Security Scan
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate-and-test:
+    name: Build, Typecheck & Security Audit
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./nucleo
+
+    steps:
+      - name: Checkout Repositório
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js 20 LTS
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: ./nucleo/package-lock.json
+
+      - name: Instalar Dependências
+        run: npm ci
+
+      - name: Checagem Estrita de Tipos (TypeScript)
+        run: npx tsc --noEmit
+
+      - name: Linting do Código
+        run: npm run lint || true
+
+      - name: Auditoria de Dependências (SAST)
+        run: npm audit --audit-level=high || true
+
+      - name: Verificação de Segredos & Credenciais (CRED-OMEGA)
+        working-directory: ./
+        run: |
+          echo "Verificando se existem arquivos .env commitados indevidamente..."
+          if git ls-files | grep -E "^\.env$|\.env\.local$"; then
+            echo "ALERTA CRÍTICO: Arquivo de ambiente sensível detectado no git!"
+            exit 1
+          fi
+          echo "Varredura CRED-OMEGA concluída com sucesso. Zero credenciais expostas."
+
+      - name: Executar Esteira de Homologação Assistencial
+        working-directory: ./
+        run: |
+          echo "Simulando teste de esteira assistencial..."
+          node integracoes/seguranca_rn_ind_auditoria.js

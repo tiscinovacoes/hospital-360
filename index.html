@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AIVIQ Saúde — Inteligência que Transforma Visão em Decisões</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <!-- Top Navigation Bar -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-icon" style="background: linear-gradient(135deg, #2563EB, #7C3AED, #EF4444); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; font-size: 14px;">AI</div>
+      <div class="brand-title">
+        <h1>AIVIQ SAÚDE</h1>
+        <p>Inteligência que Transforma Visão em Decisões (Módulos Satélites)</p>
+      </div>
+    </div>
+    <div class="path-badge">
+      <span class="status-dot"></span>
+      AIVIQ Platform • Sprints 5 a 11
+    </div>
+  </header>
+
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div>
+        <div class="nav-section-title">Grupo B — Satélites de Custo</div>
+        <ul class="nav-menu">
+          <li>
+            <a href="#" class="nav-item active">
+              <span>👥</span> Vigia RH
+              <span class="sprint-badge completed">Sprint 5</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" class="nav-item">
+              <span>📦</span> Vigia Estoque
+              <span class="sprint-badge">Sprint 6</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" class="nav-item">
+              <span>🧾</span> Compras & Patrimônio
+              <span class="sprint-badge">Sprint 7</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" class="nav-item">
+              <span>🔗</span> Integração Grupo A + B
+              <span class="sprint-badge">Sprint 8</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <div>
+        <div class="nav-section-title">Grupo C — Módulos Assistenciais</div>
+        <ul class="nav-menu">
+          <li>
+            <a href="agenda.html" class="nav-item">
+              <span>🩺</span> Médico / Clínica
+            </a>
+          </li>
+          <li>
+            <a href="#" class="nav-item">
+              <span>🛏️</span> Vigia Leitos
+              <span class="sprint-badge">Sprint 10</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" class="nav-item">
+              <span>📊</span> Vigia Faturamento / SUS
+              <span class="sprint-badge">Sprint 11</span>
+            </a>
+          </li>
+          <li>
+            <a href="facilities.html" class="nav-item">
+              <span>✨</span> Facilities (Limpeza)
+            </a>
+          </li>
+        </ul>
+      </div>
+    </aside>
+
+    <!-- Main Workspace Area -->
+    <main class="main-content">
+      <div class="page-header">
+        <div class="page-title">
+          <h2>Vigia RH — Custo de Pessoal & Servidores</h2>
+          <p>Sprint 5 • Cadastro de servidores, folha de pagamento, cálculo de custo/hora e distribuição por Centros de Custo.</p>
+        </div>
+        <div class="action-buttons">
+          <button class="btn btn-secondary" id="btn-importar-csv">
+            📥 Importar CSV/Planilha
+          </button>
+          <button class="btn btn-primary" id="btn-novo-servidor">
+            ➕ Cadastrar Servidor
+          </button>
+          <button class="btn btn-emerald" id="btn-emitir-eventos-rh">
+            ⚡ Transmitir Eventos de Custo
+          </button>
+        </div>
+      </div>
+
+      <!-- Key Metrics -->
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-title">Servidores Alocados</div>
+          <div class="metric-value" id="metric-total-servidores">0</div>
+          <div class="metric-subtitle">Vínculos ativos cadastrados no RH</div>
+        </div>
+
+        <div class="metric-card emerald">
+          <div class="metric-title">Custo Total de Folha</div>
+          <div class="metric-value" id="metric-custo-folha">R$ 0,00</div>
+          <div class="metric-subtitle">Salário base + encargos patronais + benefícios</div>
+        </div>
+
+        <div class="metric-card teal">
+          <div class="metric-title">Custo/Hora Médio</div>
+          <div class="metric-value" id="metric-custo-hora-medio">R$ 0,00/h</div>
+          <div class="metric-subtitle">Valor ponderado da hora de atendimento</div>
+        </div>
+
+        <div class="metric-card amber">
+          <div class="metric-title">Contrato de Integração</div>
+          <div class="metric-value" style="font-size: 1.1rem; color: var(--accent-amber);">CONTRATO MOCK (STUB)</div>
+          <div class="metric-subtitle">Aguardando fechamento do núcleo (Sprint 4)</div>
+        </div>
+      </div>
+
+      <!-- Servidores Table Card -->
+      <div class="content-card">
+        <div class="card-header">
+          <div class="card-title">Quadro de Servidores e Custo/Hora Calculado</div>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Servidor / CPF / Matrícula</th>
+                <th>Cargo / Função</th>
+                <th>Vínculo</th>
+                <th>Jornada</th>
+                <th>Custo Mensal (R$)</th>
+                <th>Custo/Hora Real</th>
+                <th>Centros de Custo Alocados</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-servidores">
+              <!-- Renderizado via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Eventos de Custo Emitidos (Stub Log) -->
+      <div class="content-card">
+        <div class="card-header">
+          <div class="card-title">Trilha de Eventos de Custo Transmitidos para o Núcleo (emitir_evento_custo)</div>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID Evento</th>
+                <th>Centro de Custo</th>
+                <th>Servidor Vinculado</th>
+                <th>Valor Alocado (R$)</th>
+                <th>Timestamp</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-eventos">
+              <!-- Renderizado via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal Cadastro de Servidor -->
+  <div class="modal-overlay" id="modal-servidor">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-title">Cadastrar Novo Servidor no Vigia RH</div>
+        <button class="close-btn close-modal">&times;</button>
+      </div>
+      <form id="form-servidor">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Nome Completo</label>
+            <input type="text" name="nome" class="form-control" placeholder="Ex: Dr. Fernando Costa" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">CPF</label>
+            <input type="text" name="cpf" class="form-control" placeholder="000.000.000-00" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Matrícula</label>
+            <input type="text" name="matricula" class="form-control" placeholder="MAT-2001" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Cargo / Função</label>
+            <input type="text" name="cargo" class="form-control" placeholder="Ex: Enfermeiro" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Vínculo Empregatício</label>
+            <select name="vinculo" class="form-control" required>
+              <option value="EFETIVO">EFETIVO</option>
+              <option value="COMISSIONADO">COMISSIONADO</option>
+              <option value="CONTRATADO">CONTRATADO (PSS)</option>
+              <option value="TERCEIRIZADO">TERCEIRIZADO</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Carga Horária Semanal (Horas)</label>
+            <input type="number" name="carga_horaria_semanal" class="form-control" value="40" min="1" max="60" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Salário Base (R$)</label>
+            <input type="number" step="0.01" name="salario_base" class="form-control" placeholder="5000.00" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Encargos Patronais (%)</label>
+            <input type="number" step="0.1" name="encargos_percentual" class="form-control" value="22" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Benefícios e Gratificações (R$)</label>
+            <input type="number" step="0.01" name="beneficios_valor" class="form-control" value="0.00">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Centro de Custo Principal</label>
+            <select name="centro_custo_id" class="form-control" required>
+              <option value="CC-04">CC-04 — UBS Central (Atendimento Clínico)</option>
+              <option value="CC-05">CC-05 — UBS Bairro Novo (Pediatria)</option>
+              <option value="CC-06">CC-06 — Enfermaria Geral</option>
+              <option value="CC-01">CC-01 — Administração Geral</option>
+              <option value="CC-02">CC-02 — Almoxarifado Central</option>
+              <option value="CC-03">CC-03 — Manutenção & Limpeza</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-secondary close-modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Salvar Servidor</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Importar CSV -->
+  <div class="modal-overlay" id="modal-importar">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-title">Importar Folha de Pagamento em CSV</div>
+        <button class="close-btn close-modal">&times;</button>
+      </div>
+
+      <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;">
+        Selecione uma planilha de RH nos formatos <code>.csv</code> contendo os dados dos servidores. O sistema calculará automaticamente o custo/hora e efetuará o vínculo nos Centros de Custo.
+      </p>
+
+      <div class="upload-area" id="upload-area">
+        <div class="upload-icon">📂</div>
+        <strong style="display: block; font-size: 1rem; margin-bottom: 4px;">Clique ou arraste seu arquivo CSV aqui</strong>
+        <span style="color: var(--text-muted); font-size: 0.8rem;">Formatos aceitos: CSV (delimitado por vírgula ou ponto e vírgula)</span>
+        <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem;">
+        <button type="button" class="btn btn-secondary" id="btn-download-modelo">
+          📄 Baixar Modelo CSV
+        </button>
+        <button type="button" class="btn btn-secondary close-modal">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Application Controller Script -->
+  <script type="module">
+    import { RHAppController } from './src/modules/rh/rhApp.js';
+    window.rhApp = new RHAppController();
+  </script>
+</body>
+</html>

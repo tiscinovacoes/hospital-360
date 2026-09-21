@@ -1,0 +1,57 @@
+# ============================================================================
+# HOSPITAL 360 - CONFIGURAÇÃO DO PROMETHEUS (SRE & OBSERVABILIDADE)
+# Padrão: prometheus-configuration (Scrape, Alerting & Job Discovery)
+# ============================================================================
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  scrape_timeout: 10s
+  external_labels:
+    environment: 'production'
+    cluster: 'hospital360-core-sp'
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['localhost:9093']
+
+rule_files:
+  - 'alert_rules_hospital360.yml'
+
+scrape_configs:
+  # 1. Aplicação Next.js 16 (Núcleo 360 & APIs Assistenciais)
+  - job_name: 'hospital360-nucleo'
+    metrics_path: '/api/metrics'
+    static_configs:
+      - targets: ['localhost:3000']
+        labels:
+          tier: 'core-frontend-api'
+          app: 'hospital360-nextjs'
+
+  # 2. Barramento de Eventos n8n
+  - job_name: 'hospital360-n8n-bus'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['localhost:5678']
+        labels:
+          tier: 'event-bus'
+          app: 'n8n'
+
+  # 3. Hyperswitch Multi-Gateway (Rust)
+  - job_name: 'hyperswitch-fintech'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['localhost:8080']
+        labels:
+          tier: 'fintech-split'
+          app: 'hyperswitch-rust'
+
+  # 4. Banco de Dados Supabase (PostgreSQL Exporter)
+  - job_name: 'supabase-postgresql'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['localhost:9187']
+        labels:
+          tier: 'database'
+          database: 'postgres-supabase'

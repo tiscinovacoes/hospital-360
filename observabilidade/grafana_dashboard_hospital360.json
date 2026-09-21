@@ -1,0 +1,143 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 100,
+      "title": "🏥 Cockpit Assistencial & Ocupação Hospitalar",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prom-hospital360" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 80 },
+              { "color": "red", "value": 90 }
+            ]
+          },
+          "unit": "percent"
+        }
+      },
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 1 },
+      "id": 1,
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+      "title": "Taxa de Ocupação UTI Geral",
+      "type": "gauge",
+      "targets": [{ "expr": "hospital360_leitos_ocupacao_percent{ala=\"uti_geral\"}", "refId": "A" }]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prom-hospital360" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 1 },
+              { "color": "red", "value": 3 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 1 },
+      "id": 2,
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+      "title": "Lotes FEFO Vencendo <30 Dias (ANVISA)",
+      "type": "stat",
+      "targets": [{ "expr": "hospital360_fefo_lotes_risco_vencimento{status=\"critico_urgente\"}", "refId": "A" }]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prom-hospital360" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 1 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 1 },
+      "id": 3,
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+      "title": "Eventos em Fila DLQ (Retentativa n8n)",
+      "type": "stat",
+      "targets": [{ "expr": "hospital360_n8n_dlq_mensagens_total", "refId": "A" }]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prom-hospital360" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "unit": "currencyBRL"
+        }
+      },
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 1 },
+      "id": 4,
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+      "title": "Taxa Condomínio Hospitalar (15% Split)",
+      "type": "stat",
+      "targets": [{ "expr": "hospital360_split_financeiro_reais_total{destinatario=\"condominio_hospitalar_15pct\"}", "refId": "A" }]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 7 },
+      "id": 101,
+      "title": "⚡ Desempenho RED & Latência das APIs",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prom-hospital360" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "unit": "reqps"
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "id": 5,
+      "title": "Taxa de Requisições por Serviço (RPS)",
+      "type": "timeseries",
+      "targets": [{ "expr": "rate(hospital360_http_requests_total[1m])", "refId": "A" }]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prom-hospital360" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "unit": "s"
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "id": 6,
+      "title": "Latência Média p95 (Baixa FEFO / LIMS)",
+      "type": "timeseries",
+      "targets": [{ "expr": "histogram_quantile(0.95, sum(rate(hospital360_http_request_duration_seconds_bucket[5m])) by (le, handler))", "refId": "A" }]
+    }
+  ],
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["hospital360", "sre", "fefo", "hyperswitch", "lims"],
+  "time": { "from": "now-6h", "to": "now" },
+  "timezone": "browser",
+  "title": "Hospital 360 — Painel Operacional SRE & C-Level",
+  "version": 1
+}

@@ -1,0 +1,88 @@
+# HOSPITAL 360 — INFRAESTRUTURA DA SPRINT 1
+# Responsável Técnica: Camila Medeiros (Squad 7 - DevOps / Automação)
+# Validação e Homologação: Lucas Reis (Líder Técnico Sênior)
+
+version: '3.8'
+
+services:
+  # 1. Banco de Dados Multi-Tenant Hospital 360 (Core, OpenEMR & HealVista)
+  postgres-core:
+    image: postgres:16-alpine
+    container_name: hospital360-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: hospital360_admin
+      POSTGRES_PASSWORD: hospital360_secure_pwd_2026
+      POSTGRES_DB: hospital360_core
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - hospital360-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hospital360_admin -d hospital360_core"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 2. Redis 7 — Fila de Eventos & Cache do Barramento
+  redis-bus:
+    image: redis:7-alpine
+    container_name: hospital360-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass hospital360_redis_pwd
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - hospital360-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 3. Barramento Central n8n — Orquestrador de Webhooks, DLQ e Integrações
+  n8n-bus:
+    image: n8nio/n8n:latest
+    container_name: hospital360-n8n
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=admin_hospital360
+      - N8N_BASIC_AUTH_PASSWORD=hospital360_n8n_master_pwd
+      - N8N_HOST=localhost
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - NODE_ENV=production
+      - WEBHOOK_URL=http://localhost:5678/
+      - EXECUTIONS_DATA_PRUNE=true
+      - EXECUTIONS_DATA_MAX_AGE=168
+      - QUEUE_BULL_REDIS_HOST=redis-bus
+      - QUEUE_BULL_REDIS_PORT=6379
+      - QUEUE_BULL_REDIS_PASSWORD=hospital360_redis_pwd
+    volumes:
+      - n8n_data:/home/node/.n8n
+    depends_on:
+      postgres-core:
+        condition: service_healthy
+      redis-bus:
+        condition: service_healthy
+    networks:
+      - hospital360-net
+
+networks:
+  hospital360-net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  n8n_data:
+    driver: local
