@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { HospitalNav } from '../components/HospitalNav';
+import { VigiaSidebarLayout } from '../../components/VigiaSidebarLayout';
 import {
   FlaskConical,
   ArrowLeft,
@@ -68,343 +68,309 @@ const initialSamples: LabSample[] = [
     loinc: '24331-1',
     tube: 'Amarelo (Gel Separador)',
     status: 'Em Análise',
-    collectedAt: '18/09/2026 às 08:30',
+    collectedAt: '18/09/2026 às 07:30',
     results: [
-      { param: 'Glicemia de Jejum', value: '104', ref: '70 - 99', unit: 'mg/dL', abnormal: true },
-      { param: 'Colesterol Total', value: '210', ref: '< 190', unit: 'mg/dL', abnormal: true },
-      { param: 'Triglicérides', value: '142', ref: '< 150', unit: 'mg/dL', abnormal: false },
-      { param: 'HDL Colesterol', value: '48', ref: '> 40', unit: 'mg/dL', abnormal: false },
+      { param: 'Glicemia em Jejum', value: '142', ref: '70 - 99', unit: 'mg/dL', abnormal: true },
+      { param: 'Colesterol Total', value: '230', ref: '< 190', unit: 'mg/dL', abnormal: true },
+      { param: 'Triglicerídeos', value: '180', ref: '< 150', unit: 'mg/dL', abnormal: true },
+      { param: 'HDL Colesterol', value: '38', ref: '> 40', unit: 'mg/dL', abnormal: true },
     ],
   },
   {
     id: 'lab-103',
-    patient: 'Fernando Dias Ramos',
-    patientAge: 55,
-    doctor: 'Dr. Roberto Brandão',
-    clinicRoom: 'Leito 201 (Internação)',
-    exam: 'Troponina I Ultrassensível & CPK-MB',
-    loinc: '49563-0',
+    patient: 'Mariana Duarte Prado',
+    patientAge: 28,
+    doctor: 'Dra. Camila Ribeiro',
+    clinicRoom: 'Sala 102',
+    exam: 'Beta HCG Quantitativo Soro',
+    loinc: '21198-7',
     tube: 'Amarelo (Gel Separador)',
     status: 'Pendente',
-    tubeColor: '#EAB308',
+    collectedAt: '18/09/2026 às 08:10',
   },
   {
     id: 'lab-104',
-    patient: 'Lucia Helena Alvarenga',
-    patientAge: 62,
-    doctor: 'Dra. Beatriz Santos',
-    clinicRoom: 'Leito 104 (Internação)',
-    exam: 'Coagulograma Completo (TP/TTPA/INR)',
-    loinc: '5902-2',
+    patient: 'João Batista Ferreira',
+    patientAge: 67,
+    doctor: 'Dra. Camila Ribeiro',
+    clinicRoom: 'Sala 102',
+    exam: 'Troponina I Ultrassensível & CPK-MB',
+    loinc: '49563-0',
+    tube: 'Verde (Heparina)' as any,
+    status: 'Em Análise',
+    collectedAt: '18/09/2026 às 08:15',
+    results: [
+      { param: 'Troponina I', value: '0.045', ref: '< 0.014', unit: 'ng/mL', abnormal: true },
+      { param: 'CPK-MB Massa', value: '7.8', ref: '< 5.0', unit: 'ng/mL', abnormal: true },
+    ],
+  },
+  {
+    id: 'lab-105',
+    patient: 'Beatriz Vasconcelos',
+    patientAge: 41,
+    doctor: 'Dr. Lucas Silveira',
+    clinicRoom: 'Sala 305',
+    exam: 'Coagulograma Completo (TP, TTPA, Fibrinogênio)',
+    loinc: '3187-2',
     tube: 'Azul (Citrato)',
     status: 'Pendente',
+    collectedAt: '18/09/2026 às 08:40',
   },
 ];
 
-export default function LaboratoryPage() {
+export default function LaboratorioPage() {
   const [samples, setSamples] = useState<LabSample[]>(initialSamples);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'Todos' | 'Pendente' | 'Em Análise' | 'Liberado'>('Todos');
   const [selectedSample, setSelectedSample] = useState<LabSample | null>(null);
+  const [statusFilter, setStatusFilter] = useState<'Todos' | 'Pendente' | 'Em Análise' | 'Liberado'>('Todos');
+  const [searchTerm, setSearchTerm] = useState('');
   const [showReportModal, setShowReportModal] = useState(false);
   const [showFhirJsonModal, setShowFhirJsonModal] = useState(false);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 4000);
-  };
+  const [actionSuccess, setActionSuccess] = useState<string | null>(null);
 
   const filteredSamples = samples.filter((s) => {
+    const matchesStatus = statusFilter === 'Todos' || s.status === statusFilter;
     const matchesSearch =
       s.patient.toLowerCase().includes(searchTerm.toLowerCase()) ||
       s.exam.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      s.loinc.includes(searchTerm);
-    const matchesStatus = statusFilter === 'Todos' || s.status === statusFilter;
-    return matchesSearch && matchesStatus;
+      s.doctor.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesStatus && matchesSearch;
   });
+
+  const handleStartAnalysis = (sample: LabSample) => {
+    setSamples((prev) =>
+      prev.map((item) => (item.id === sample.id ? { ...item, status: 'Em Análise' } : item))
+    );
+    setActionSuccess(`Amostra de ${sample.patient} enviada para os analisadores bioquímicos.`);
+    setTimeout(() => setActionSuccess(null), 4000);
+  };
 
   const handleOpenReport = (sample: LabSample) => {
     setSelectedSample(sample);
     setShowReportModal(true);
   };
 
-  const handleStartAnalysis = (sample: LabSample) => {
-    setSamples((prev) =>
-      prev.map((s) =>
-        s.id === sample.id
-          ? {
-              ...s,
-              status: 'Em Análise',
-              collectedAt: 'Hoje às ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-            }
-          : s
-      )
-    );
-    showToast(`Amostra ${sample.id} (${sample.tube}) colocada na centrífuga de análise.`);
-  };
-
   const handleReleaseReport = () => {
     if (!selectedSample) return;
     setSamples((prev) =>
-      prev.map((s) =>
-        s.id === selectedSample.id
-          ? {
-              ...s,
-              status: 'Liberado',
-              results: s.results || [
-                { param: 'Troponina I Ultrassensível', value: '0.012', ref: '< 0.014', unit: 'ng/mL', abnormal: false },
-                { param: 'CPK-MB Massa', value: '2.4', ref: '< 5.0', unit: 'ng/mL', abnormal: false },
-              ],
-            }
-          : s
-      )
+      prev.map((item) => (item.id === selectedSample.id ? { ...item, status: 'Liberado' } : item))
     );
     setShowReportModal(false);
-    showToast(
-      `Laudo do exame "${selectedSample.exam}" assinado e liberado! Notificação FHIR DiagnosticReport enviada ao Dr. ${selectedSample.doctor}.`
-    );
+    setActionSuccess(`Laudo de ${selectedSample.patient} assinado digitalmente e transmitido via FHIR R4.`);
+    setTimeout(() => setActionSuccess(null), 4000);
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F9FAFB] text-[#111928]">
-      <HospitalNav />
-
-      {/* Toast Flutuante */}
-      {toastMessage && (
-        <div className="fixed top-20 right-6 z-50 bg-[#1E3A5F] text-white px-5 py-3 rounded-xl shadow-2xl border border-[#3B82F6] flex items-center gap-3 animate-in slide-in-from-top-4 duration-300">
-          <CheckCircle2 className="w-5 h-5 text-[#0E9F6E]" />
-          <span className="text-xs font-semibold">{toastMessage}</span>
-          <button onClick={() => setToastMessage(null)} className="text-slate-300 hover:text-white ml-2">
+    <VigiaSidebarLayout
+      activeTitle="Laboratório Central & LIS do Hub (FHIR R4)"
+      activeSubtitle="Bancada técnica automatizada com protocolo HL7 / FHIR R4 e DiagnosticReport"
+      actions={
+        <div className="flex items-center gap-2.5">
+          <button
+            onClick={() => setShowFhirJsonModal(true)}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all shadow-sm"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-[#1A56DB]" />
+            <span>Ver Payload FHIR R4</span>
+          </button>
+        </div>
+      }
+    >
+      {actionSuccess && (
+        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-2xl flex items-center justify-between text-xs text-slate-800 animate-in fade-in">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-[#1A56DB]" />
+            <span className="font-bold">{actionSuccess}</span>
+          </div>
+          <button onClick={() => setActionSuccess(null)} className="text-slate-400 hover:text-slate-700">
             <X className="w-4 h-4" />
           </button>
         </div>
       )}
 
-      {/* Header Laboratório */}
-      <div className="bg-[#7C3AED] text-white py-6 px-4 sm:px-6 lg:px-8 border-b border-purple-800 shadow-sm">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Banner de Interoperabilidade com Médicos */}
+      <div className="bg-white border border-slate-200/80 p-5 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs text-slate-700 shadow-sm mb-6">
+        <div className="flex items-center gap-3.5">
+          <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#1A56DB] flex items-center justify-center flex-shrink-0">
+            <FlaskConical className="w-5 h-5" />
+          </div>
           <div>
-            <Link
-              href="/"
-              className="inline-flex items-center gap-1.5 text-xs text-purple-200 hover:text-white mb-2 transition-colors font-semibold"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Voltar para Seleção de Módulos</span>
-            </Link>
-            <div className="flex items-center gap-2.5">
-              <div className="p-2 bg-purple-900/80 rounded-xl border border-purple-600">
-                <FlaskConical className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-extrabold tracking-tight text-white flex items-center gap-2">
-                  Laboratório Central &amp; LIS do Hub (FHIR R4)
-                </h1>
-                <p className="text-xs text-purple-200 mt-0.5">
-                  Bancada Técnica Automatizada • Protocolo HL7 / FHIR R4 • DiagnosticReport &amp; Observation
-                </p>
-              </div>
-            </div>
+            <strong className="text-sm font-bold text-slate-900 block">
+              Interoperabilidade em Tempo Real com Consultórios &amp; Internação
+            </strong>
+            <p className="mt-0.5 text-slate-500">
+              Assim que um laudo é liberado aqui, o médico visualiza instantaneamente os valores de referência e o PDF timbrado no prontuário do paciente.
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={() => setShowFhirJsonModal(true)}
+          className="px-3.5 py-2 bg-[#1A56DB] hover:bg-blue-700 text-white rounded-xl font-mono text-xs font-bold whitespace-nowrap shadow-sm transition-all"
+        >
+          Ver FHIR R4
+        </button>
+      </div>
+
+      {/* Fila de Exames com Filtros e Ações */}
+      <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
+        <div className="flex flex-col md:flex-row md:items-center justify-between pb-4 border-b border-slate-100 gap-4 mb-4">
+          <div>
+            <h3 className="text-base font-extrabold text-slate-900">
+              Bancada de Triagem e Amostras Biológicas
+            </h3>
+            <p className="text-xs text-slate-400">
+              Acompanhe a chegada dos tubos, processamento bioquímico e liberação de laudos
+            </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2.5">
-            <span className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-purple-900/90 border border-purple-600 text-purple-100 flex items-center gap-1.5 shadow-sm">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              Interface LIS Conectada
-            </span>
+          <div className="flex flex-wrap items-center gap-2.5 text-xs">
+            {/* Filtro de Status */}
+            <div className="inline-flex bg-slate-100 p-1 rounded-xl border border-slate-200">
+              {(['Todos', 'Pendente', 'Em Análise', 'Liberado'] as const).map((st) => (
+                <button
+                  key={st}
+                  onClick={() => setStatusFilter(st)}
+                  className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
+                    statusFilter === st
+                      ? 'bg-white text-slate-900 shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  {st}
+                </button>
+              ))}
+            </div>
+
+            {/* Input Busca */}
+            <div className="relative">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder="Buscar exame ou paciente..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9 pr-4 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:ring-2 focus:ring-[#1A56DB]"
+              />
+            </div>
           </div>
+        </div>
+
+        {/* Tabela de Amostras */}
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs text-left">
+            <thead className="bg-slate-50 text-slate-500 uppercase tracking-wider font-semibold border-b border-slate-200 text-[10px]">
+              <tr>
+                <th className="py-3 px-4">Paciente</th>
+                <th className="py-3 px-4">Procedimento / LOINC</th>
+                <th className="py-3 px-4">Tubo Coletado</th>
+                <th className="py-3 px-4">Médico / Origem</th>
+                <th className="py-3 px-4 text-center">Status</th>
+                <th className="py-3 px-4 text-right">Ação Técnica</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 text-slate-700">
+              {filteredSamples.map((sample) => (
+                <tr key={sample.id} className="hover:bg-slate-50">
+                  <td className="py-3.5 px-4">
+                    <span className="font-bold text-slate-900 block">{sample.patient}</span>
+                    <span className="text-[10px] text-slate-400">{sample.patientAge} anos</span>
+                  </td>
+                  <td className="py-3.5 px-4">
+                    <span className="font-bold text-slate-900 block">{sample.exam}</span>
+                    <span className="font-mono text-[10px] text-[#1A56DB] bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100">
+                      LOINC {sample.loinc}
+                    </span>
+                  </td>
+                  <td className="py-3.5 px-4">
+                    <span className="inline-flex items-center gap-1.5 font-semibold text-slate-700 bg-slate-100 px-2 py-1 rounded-lg">
+                      <span className="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
+                      {sample.tube}
+                    </span>
+                  </td>
+                  <td className="py-3.5 px-4">
+                    <span className="font-semibold block">{sample.doctor}</span>
+                    <span className="text-[10px] text-slate-400">{sample.clinicRoom}</span>
+                  </td>
+                  <td className="py-3.5 px-4 text-center">
+                    <span
+                      className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
+                        sample.status === 'Liberado'
+                          ? 'bg-emerald-100 text-emerald-800'
+                          : sample.status === 'Em Análise'
+                          ? 'bg-amber-100 text-amber-800'
+                          : 'bg-slate-100 text-slate-600'
+                      }`}
+                    >
+                      {sample.status}
+                    </span>
+                  </td>
+                  <td className="py-3.5 px-4 text-right">
+                    {sample.status === 'Liberado' ? (
+                      <button
+                        onClick={() => handleOpenReport(sample)}
+                        className="px-3 py-1.5 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 font-bold flex items-center gap-1 ml-auto shadow-xs"
+                      >
+                        <Eye className="w-3.5 h-3.5 text-[#1A56DB]" /> Ver Laudo
+                      </button>
+                    ) : sample.status === 'Em Análise' ? (
+                      <button
+                        onClick={() => handleOpenReport(sample)}
+                        className="px-3 py-1.5 rounded-xl bg-[#1A56DB] hover:bg-blue-700 text-white font-bold flex items-center gap-1 ml-auto shadow-xs transition-colors"
+                      >
+                        <FileText className="w-3.5 h-3.5" /> Digitar Laudo
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleStartAnalysis(sample)}
+                        className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold flex items-center gap-1 ml-auto shadow-xs transition-colors"
+                      >
+                        <Play className="w-3.5 h-3.5" /> Iniciar Análise
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-        
-        {/* Banner de Interoperabilidade com Médicos */}
-        <div className="bg-[#F5F3FF] border border-[#DDD6FE] p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-[#5B21B6] shadow-sm">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-purple-100 rounded-xl">
-              <Sparkles className="w-5 h-5 text-[#7C3AED]" />
-            </div>
-            <div>
-              <strong className="text-sm font-bold block">
-                Interoperabilidade em Tempo Real com Consultórios &amp; Internação
-              </strong>
-              <p className="mt-0.5 text-purple-700">
-                Assim que um laudo é liberado aqui, o médico visualiza instantaneamente os valores de referência e o PDF timbrado no prontuário do paciente.
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={() => setShowFhirJsonModal(true)}
-            className="px-3.5 py-1.5 bg-[#7C3AED] hover:bg-purple-800 text-white rounded-xl font-mono text-xs font-bold whitespace-nowrap shadow-xs"
-          >
-            Ver Payload FHIR R4
-          </button>
-        </div>
-
-        {/* Fila de Exames com Filtros e Ações */}
-        <div className="bg-white p-6 rounded-2xl border border-[#E5E7EB] shadow-sm">
-          <div className="flex flex-col md:flex-row md:items-center justify-between pb-4 border-b border-[#F3F4F6] gap-4 mb-4">
-            <div>
-              <h3 className="text-base font-bold text-[#111928]">
-                Bancada de Triagem e Amostras Biológicas
-              </h3>
-              <p className="text-xs text-[#6B7280]">
-                Acompanhe a chegada dos tubos, processamento bioquímico e liberação de laudos
-              </p>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2 text-xs">
-              {/* Filtro de Status */}
-              <div className="inline-flex bg-slate-100 p-1 rounded-xl border border-slate-200">
-                {(['Todos', 'Pendente', 'Em Análise', 'Liberado'] as const).map((st) => (
-                  <button
-                    key={st}
-                    onClick={() => setStatusFilter(st)}
-                    className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
-                      statusFilter === st
-                        ? 'bg-white text-[#111928] shadow-xs'
-                        : 'text-slate-600 hover:text-slate-900'
-                    }`}
-                  >
-                    {st}
-                  </button>
-                ))}
-              </div>
-
-              {/* Input Busca */}
-              <div className="relative">
-                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
-                <input
-                  type="text"
-                  placeholder="Buscar exame ou paciente..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9 pr-4 py-2 rounded-xl border border-[#D1D5DB] text-xs outline-none focus:border-[#7C3AED]"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Tabela de Amostras */}
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs text-left">
-              <thead className="bg-[#F9FAFB] text-[#6B7280] uppercase tracking-wider font-semibold border-b border-[#E5E7EB]">
-                <tr>
-                  <th className="py-3 px-4">Paciente</th>
-                  <th className="py-3 px-4">Procedimento / LOINC</th>
-                  <th className="py-3 px-4">Tubo Coletado</th>
-                  <th className="py-3 px-4">Médico / Origem</th>
-                  <th className="py-3 px-4 text-center">Status</th>
-                  <th className="py-3 px-4 text-right">Ação Técnica</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#F3F4F6] text-[#374151]">
-                {filteredSamples.map((sample) => (
-                  <tr key={sample.id} className="hover:bg-[#F9FAFB]">
-                    <td className="py-3.5 px-4">
-                      <span className="font-bold text-[#111928] block">{sample.patient}</span>
-                      <span className="text-[10px] text-slate-500">{sample.patientAge} anos</span>
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <span className="font-bold text-[#111928] block">{sample.exam}</span>
-                      <span className="font-mono text-[10px] text-[#7C3AED] bg-purple-50 px-1.5 py-0.5 rounded">
-                        LOINC {sample.loinc}
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <span className="inline-flex items-center gap-1.5 font-semibold text-slate-700 bg-slate-100 px-2 py-1 rounded-lg">
-                        <span className="w-2.5 h-2.5 rounded-full bg-purple-600"></span>
-                        {sample.tube}
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <span className="font-semibold block">{sample.doctor}</span>
-                      <span className="text-[10px] text-slate-500">{sample.clinicRoom}</span>
-                    </td>
-                    <td className="py-3.5 px-4 text-center">
-                      <span
-                        className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
-                          sample.status === 'Liberado'
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : sample.status === 'Em Análise'
-                            ? 'bg-amber-100 text-amber-800'
-                            : 'bg-slate-100 text-slate-600'
-                        }`}
-                      >
-                        {sample.status}
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-4 text-right">
-                      {sample.status === 'Liberado' ? (
-                        <button
-                          onClick={() => handleOpenReport(sample)}
-                          className="px-3 py-1.5 rounded-xl border border-purple-300 text-purple-700 hover:bg-purple-50 font-bold flex items-center gap-1 ml-auto shadow-xs"
-                        >
-                          <Eye className="w-3.5 h-3.5" /> Ver Laudo
-                        </button>
-                      ) : sample.status === 'Em Análise' ? (
-                        <button
-                          onClick={() => handleOpenReport(sample)}
-                          className="px-3 py-1.5 rounded-xl bg-[#7C3AED] hover:bg-purple-800 text-white font-bold flex items-center gap-1 ml-auto shadow-xs"
-                        >
-                          <FileText className="w-3.5 h-3.5" /> Digitar Laudo
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => handleStartAnalysis(sample)}
-                          className="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold flex items-center gap-1 ml-auto shadow-xs"
-                        >
-                          <Play className="w-3.5 h-3.5" /> Iniciar Análise
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </main>
-
-      {/* =========================================================================
-          MODAL: DIGITAÇÃO & VALIDAÇÃO DE LAUDO LABORATORIAL
-         ========================================================================= */}
+      {/* MODAL: DIGITAÇÃO & VALIDAÇÃO DE LAUDO LABORATORIAL */}
       {showReportModal && selectedSample && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl max-w-2xl w-full border border-[#E5E7EB] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div className="bg-[#7C3AED] text-white p-5 flex items-center justify-between">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl max-w-2xl w-full border border-slate-200 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="bg-[#1A56DB] text-white p-5 flex items-center justify-between">
               <div>
                 <h3 className="text-base font-bold flex items-center gap-2">
-                  <FlaskConical className="w-5 h-5 text-purple-200" />
+                  <FlaskConical className="w-5 h-5 text-blue-200" />
                   Laudo Laboratorial — {selectedSample.exam}
                 </h3>
-                <p className="text-xs text-purple-100 mt-0.5">
+                <p className="text-xs text-blue-100 mt-0.5">
                   Paciente: <strong>{selectedSample.patient}</strong> • Solicitante: {selectedSample.doctor}
                 </p>
               </div>
               <button
                 onClick={() => setShowReportModal(false)}
-                className="p-1 rounded-lg hover:bg-purple-800 text-purple-200 hover:text-white"
+                className="p-1 rounded-lg hover:bg-blue-700 text-blue-200 hover:text-white transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <div className="p-5 flex-1 overflow-y-auto space-y-4 text-xs">
-              <div className="p-3 bg-purple-50 border border-purple-200 rounded-xl flex items-center justify-between">
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl flex items-center justify-between">
                 <div>
-                  <p className="font-bold text-[#5B21B6]">Amostra Biológica: {selectedSample.tube}</p>
-                  <p className="text-[11px] text-purple-700">Coletado: {selectedSample.collectedAt || 'Hoje às 08:30'}</p>
+                  <p className="font-bold text-[#1A56DB]">Amostra Biológica: {selectedSample.tube}</p>
+                  <p className="text-[11px] text-slate-600">Coletado: {selectedSample.collectedAt || 'Hoje às 08:30'}</p>
                 </div>
-                <span className="font-mono text-xs font-bold text-purple-800 bg-white px-2 py-0.5 rounded border border-purple-200">
+                <span className="font-mono text-xs font-bold text-[#1A56DB] bg-white px-2 py-0.5 rounded border border-blue-200">
                   LOINC {selectedSample.loinc}
                 </span>
               </div>
 
               {/* Tabela de Parâmetros com Comparação aos Valores de Referência */}
-              <div className="border border-[#E5E7EB] rounded-xl overflow-hidden">
+              <div className="border border-slate-200 rounded-xl overflow-hidden">
                 <table className="w-full text-left">
-                  <thead className="bg-[#F9FAFB] text-[#6B7280] text-[11px] border-b border-[#E5E7EB]">
+                  <thead className="bg-slate-50 text-slate-500 text-[11px] border-b border-slate-200">
                     <tr>
                       <th className="p-3">Parâmetro Bioquímico</th>
                       <th className="p-3">Resultado</th>
@@ -412,17 +378,17 @@ export default function LaboratoryPage() {
                       <th className="p-3 text-center">Conclusão</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#F3F4F6]">
+                  <tbody className="divide-y divide-slate-100">
                     {(selectedSample.results || [
                       { param: 'Troponina I Ultrassensível', value: '0.012', ref: '< 0.014', unit: 'ng/mL', abnormal: false },
                       { param: 'CPK-MB Massa', value: '2.4', ref: '< 5.0', unit: 'ng/mL', abnormal: false },
                     ]).map((r, i) => (
                       <tr key={i}>
-                        <td className="p-3 font-semibold text-[#111928]">{r.param}</td>
-                        <td className="p-3 font-mono font-bold text-[#111928]">
+                        <td className="p-3 font-semibold text-slate-900">{r.param}</td>
+                        <td className="p-3 font-mono font-bold text-slate-900">
                           {r.value} {r.unit}
                         </td>
-                        <td className="p-3 font-mono text-[#6B7280]">{r.ref} {r.unit}</td>
+                        <td className="p-3 font-mono text-slate-500">{r.ref} {r.unit}</td>
                         <td className="p-3 text-center">
                           <span
                             className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
@@ -439,13 +405,13 @@ export default function LaboratoryPage() {
               </div>
 
               <div className="pt-2">
-                <label className="font-bold text-[#374151] block mb-1">
+                <label className="font-bold text-slate-800 block mb-1">
                   Parecer do Bioquímico / Patologista Clínico:
                 </label>
                 <textarea
                   rows={2}
                   defaultValue="Exame processado por quimioluminescência automatizada com controles normais validados."
-                  className="w-full p-2.5 border border-slate-300 rounded-xl outline-none"
+                  className="w-full p-2.5 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-[#1A56DB]"
                 />
               </div>
 
@@ -454,24 +420,24 @@ export default function LaboratoryPage() {
                   <ShieldCheck className="w-4 h-4 text-emerald-600" />
                   <span className="text-[11px] text-slate-600">Responsável Técnico: Dra. Fernanda Vasconcelos (CRBM 14920/SP)</span>
                 </div>
-                <span className="text-[10px] font-mono text-slate-500">Hash: 8a9f...c4e1</span>
+                <span className="text-[10px] font-mono text-slate-400">Hash: 8a9f...c4e1</span>
               </div>
             </div>
 
-            <div className="p-4 border-t border-[#E5E7EB] bg-[#F9FAFB] flex items-center justify-between">
+            <div className="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
               <span className="text-xs text-slate-500">
                 A liberação dispara o evento FHIR DiagnosticReport automaticamente
               </span>
               <div className="flex gap-2">
                 <button
                   onClick={() => setShowReportModal(false)}
-                  className="px-4 py-2 border border-slate-300 rounded-xl text-xs font-semibold text-slate-700"
+                  className="px-4 py-2 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 hover:bg-white"
                 >
                   Voltar
                 </button>
                 <button
                   onClick={handleReleaseReport}
-                  className="px-5 py-2 bg-[#7C3AED] hover:bg-purple-800 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm"
+                  className="px-5 py-2 bg-[#1A56DB] hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition-colors"
                 >
                   <Send className="w-3.5 h-3.5" />
                   Liberar &amp; Transmitir Laudo
@@ -482,15 +448,13 @@ export default function LaboratoryPage() {
         </div>
       )}
 
-      {/* =========================================================================
-          MODAL: PAYLOAD FHIR R4 DIAGNOSTICREPORT
-         ========================================================================= */}
+      {/* MODAL: PAYLOAD FHIR R4 */}
       {showFhirJsonModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl max-w-2xl w-full border border-[#E5E7EB] shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
-            <div className="bg-[#111928] text-white p-5 flex items-center justify-between">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl max-w-2xl w-full border border-slate-200 shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+            <div className="bg-slate-900 text-white p-5 flex items-center justify-between">
               <div>
-                <h3 className="text-base font-mono font-bold text-emerald-400">
+                <h3 className="text-base font-mono font-bold text-blue-400">
                   FHIR R4 — DiagnosticReport Resource
                 </h3>
                 <p className="text-xs text-slate-400 mt-0.5">
@@ -505,7 +469,7 @@ export default function LaboratoryPage() {
               </button>
             </div>
 
-            <div className="p-5 bg-[#0C111D] text-emerald-400 font-mono text-[11px] overflow-y-auto max-h-[450px]">
+            <div className="p-5 bg-slate-950 text-emerald-400 font-mono text-[11px] overflow-y-auto max-h-[450px]">
               <pre>
 {JSON.stringify(
   {
@@ -557,7 +521,7 @@ export default function LaboratoryPage() {
               </pre>
             </div>
 
-            <div className="p-4 border-t border-slate-800 bg-[#111928] flex justify-end">
+            <div className="p-4 border-t border-slate-800 bg-slate-900 flex justify-end">
               <button
                 onClick={() => setShowFhirJsonModal(false)}
                 className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold"
@@ -568,7 +532,6 @@ export default function LaboratoryPage() {
           </div>
         </div>
       )}
-
-    </div>
+    </VigiaSidebarLayout>
   );
 }

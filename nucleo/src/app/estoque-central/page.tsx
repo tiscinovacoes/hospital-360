@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { VigiaSidebarLayout } from '../../components/VigiaSidebarLayout';
+import { KpiCard } from '../../components/KpiCard';
 import {
   Boxes,
   Package,
@@ -90,55 +91,43 @@ export default function VigiaEstoqueCDPage() {
         </div>
       }
     >
-      {/* 1. OS 4 CARDS DE MÉTRICAS EXECUTIVAS DO VIGIA ESTOQUE (Conforme Imagem 5 do Figma) */}
+      {/* 1. OS 4 CARDS DE MÉTRICAS MINIMALISTAS DO VIGIA ESTOQUE (Máximo 3 linhas + Tooltip) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        {/* Card 1: Total de Medicamentos */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
-          <div>
-            <p className="text-xs font-bold text-slate-400">Total de Medicamentos</p>
-            <p className="text-3xl font-black text-slate-900 mt-1">1.248</p>
-            <p className="text-[11px] font-bold text-emerald-600 mt-1">+52 novos este mês</p>
-          </div>
-          <div className="w-12 h-12 rounded-2xl bg-blue-50 text-[#1A56DB] flex items-center justify-center flex-shrink-0">
-            <Package className="w-6 h-6" />
-          </div>
-        </div>
+        <KpiCard
+          title="Total Medicamentos"
+          value="1.248"
+          subtitle="Itens Cadastrados"
+          icon={Package}
+          tooltipInfo="Quantidade total de códigos farmacêuticos ativos no catálogo do Centro de Distribuição e rede de farmácias satélites com rastreabilidade por lote."
+          trend={{ text: "+52 novos este mês", isPositive: true }}
+        />
 
-        {/* Card 2: Valor em Estoque */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
-          <div>
-            <p className="text-xs font-bold text-slate-400">Valor em Estoque</p>
-            <p className="text-3xl font-black text-slate-900 mt-1">R$ 2.8M</p>
-            <p className="text-[11px] font-bold text-emerald-600 mt-1">+12% vs mês anterior</p>
-          </div>
-          <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0">
-            <DollarSign className="w-6 h-6" />
-          </div>
-        </div>
+        <KpiCard
+          title="Valor em Estoque"
+          value="R$ 2.8M"
+          subtitle="Custo Médio CD"
+          icon={DollarSign}
+          tooltipInfo="Avaliação patrimonial consolidada das posições de estoque calculada pelo custo médio ponderado de aquisição conforme normativas contábeis hospitalares."
+          trend={{ text: "+12% vs mês anterior", isPositive: true }}
+        />
 
-        {/* Card 3: Entradas Hoje */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
-          <div>
-            <p className="text-xs font-bold text-slate-400">Entradas Hoje</p>
-            <p className="text-3xl font-black text-slate-900 mt-1">12</p>
-            <p className="text-[11px] font-bold text-purple-600 mt-1">Conferência NF automatizada</p>
-          </div>
-          <div className="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center flex-shrink-0">
-            <TrendingUp className="w-6 h-6" />
-          </div>
-        </div>
+        <KpiCard
+          title="Entradas Hoje"
+          value="12"
+          subtitle="Remessas Recebidas"
+          icon={TrendingUp}
+          tooltipInfo="Notas Fiscais eletrônicas de distribuidores recepcionadas hoje no CD com conferência cega de lote, validade, integridade de lacre e temperatura."
+          trend={{ text: "Conferência NF automatizada", isPositive: false }}
+        />
 
-        {/* Card 4: Taxa de Ruptura */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
-          <div>
-            <p className="text-xs font-bold text-slate-400">Taxa de Ruptura</p>
-            <p className="text-3xl font-black text-rose-600 mt-1">2.3%</p>
-            <p className="text-[11px] font-bold text-emerald-600 mt-1">-0.5% vs semana passada</p>
-          </div>
-          <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center flex-shrink-0">
-            <AlertOctagon className="w-6 h-6" />
-          </div>
-        </div>
+        <KpiCard
+          title="Taxa de Ruptura"
+          value="2.3%"
+          subtitle="Itens com Falta"
+          icon={AlertOctagon}
+          tooltipInfo="Percentual de itens da curva ABC com estoque inferior ao ponto de ressuprimento crítico nas farmácias satélites de UTI e Pronto-Socorro."
+          trend={{ text: "-0.5% vs semana passada", isPositive: true }}
+        />
       </div>
 
       {/* 2. SEÇÃO DUAL: ALERTAS CRÍTICOS & GRÁFICO FEFO DE VENCIMENTOS PRÓXIMOS */}

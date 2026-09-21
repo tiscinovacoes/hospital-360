@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { HospitalNav } from '../components/HospitalNav';
+import { VigiaSidebarLayout } from '../../components/VigiaSidebarLayout';
+import { KpiCard } from '../../components/KpiCard';
 import {
   TrendingUp,
   DollarSign,
@@ -340,193 +341,98 @@ export default function ClinicManagementPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F9FAFB] text-[#111928]">
-      <HospitalNav />
-
+    <VigiaSidebarLayout
+      activeTitle="Consultório & Clínica Médica (OpenEMR)"
+      activeSubtitle="Prontuário Eletrônico do Paciente (PEP) • Especialidade: Cardiologia (Sala 204)"
+      actions={
+        <div className="flex items-center gap-2">
+          <span className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-blue-50 border border-blue-200 text-[#1A56DB] flex items-center gap-1.5 shadow-sm">
+            <Lock className="w-3.5 h-3.5 text-[#1A56DB]" />
+            RN-IND: Isolamento Multi-Tenant
+          </span>
+        </div>
+      }
+    >
       {/* Toast Flutuante */}
       {toastMessage && (
-        <div className="fixed top-20 right-6 z-50 bg-[#1E3A5F] text-white px-5 py-3 rounded-xl shadow-2xl border border-[#3B82F6] flex items-center gap-3 animate-in slide-in-from-top-4 duration-300">
-          <CheckCircle2 className="w-5 h-5 text-[#0E9F6E]" />
+        <div className="fixed top-20 right-6 z-50 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl border border-blue-500 flex items-center gap-3 animate-in slide-in-from-top-4 duration-300">
+          <CheckCircle2 className="w-5 h-5 text-emerald-400" />
           <span className="text-xs font-semibold">{toastMessage}</span>
-          <button onClick={() => setToastMessage(null)} className="text-slate-300 hover:text-white ml-2">
+          <button onClick={() => setToastMessage(null)} className="text-slate-400 hover:text-white ml-2">
             <X className="w-4 h-4" />
           </button>
         </div>
       )}
 
-      {/* Header Gestão Clínica */}
-      <div className="bg-[#0891B2] text-white py-6 px-4 sm:px-6 lg:px-8 border-b border-cyan-800 shadow-sm">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <Link
-              href="/"
-              className="inline-flex items-center gap-1.5 text-xs text-cyan-100 hover:text-white mb-2 transition-colors"
+      {/* Abas Superiores Padronizadas */}
+      <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-1 custom-scrollbar">
+        {[
+          { id: 'painel', label: 'Visão Geral & DRE', icon: DollarSign },
+          { id: 'agenda', label: 'Agenda Preditiva & No-Show (IA)', icon: Calendar },
+          { id: 'financeiro', label: 'Fintech 360 & Antecipação D+0', icon: CreditCard },
+          { id: 'fila-openemr', label: 'Fila da Clínica & OpenEMR (n8n)', icon: Users },
+        ].map((tab) => {
+          const Icon = tab.icon;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap ${
+                activeTab === tab.id
+                  ? 'bg-[#1A56DB] text-white shadow-sm'
+                  : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+              }`}
             >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Voltar para Seleção de Módulos</span>
-            </Link>
-            <div className="flex items-center gap-2.5">
-              <div className="p-2 bg-cyan-900/80 rounded-xl border border-cyan-700">
-                <TrendingUp className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-                  Gestão de Clínica Autônoma — CardioVida (Sala 204)
-                </h1>
-                <p className="text-xs text-cyan-100 mt-0.5">
-                  Sistema Operacional do Médico Cooperado • Dr. Ricardo Mendes • Especialidade: Cardiologia
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2.5">
-            <span className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-cyan-950/80 border border-cyan-700 text-cyan-200 flex items-center gap-1.5 shadow-sm">
-              <Lock className="w-3.5 h-3.5 text-amber-300" />
-              RN-IND: Banco Privado Criptografado (AES-256)
-            </span>
-          </div>
-        </div>
-
-        {/* Abas Superiores */}
-        <div className="max-w-7xl mx-auto flex items-center gap-2 mt-6 border-b border-cyan-800 pb-px">
-          <button
-            onClick={() => setActiveTab('painel')}
-            className={`px-4 py-2.5 text-xs font-bold rounded-t-lg transition-all flex items-center gap-2 ${
-              activeTab === 'painel'
-                ? 'bg-white text-[#0891B2] shadow-sm'
-                : 'text-cyan-100 hover:text-white hover:bg-white/10'
-            }`}
-          >
-            <DollarSign className="w-4 h-4" />
-            Visão Geral &amp; DRE
-          </button>
-          <button
-            onClick={() => setActiveTab('agenda')}
-            className={`px-4 py-2.5 text-xs font-bold rounded-t-lg transition-all flex items-center gap-2 ${
-              activeTab === 'agenda'
-                ? 'bg-white text-[#0891B2] shadow-sm'
-                : 'text-cyan-100 hover:text-white hover:bg-white/10'
-            }`}
-          >
-            <Calendar className="w-4 h-4" />
-            Agenda Preditiva &amp; No-Show (IA)
-          </button>
-          <button
-            onClick={() => setActiveTab('financeiro')}
-            className={`px-4 py-2.5 text-xs font-bold rounded-t-lg transition-all flex items-center gap-2 ${
-              activeTab === 'financeiro'
-                ? 'bg-white text-[#0891B2] shadow-sm'
-                : 'text-cyan-100 hover:text-white hover:bg-white/10'
-            }`}
-          >
-            <CreditCard className="w-4 h-4" />
-            Fintech 360 &amp; Antecipação D+0
-          </button>
-          <button
-            onClick={() => setActiveTab('fila-openemr')}
-            className={`px-4 py-2.5 text-xs font-bold rounded-t-lg transition-all flex items-center gap-2 ${
-              activeTab === 'fila-openemr'
-                ? 'bg-white text-[#0891B2] shadow-sm'
-                : 'text-cyan-100 hover:text-white hover:bg-white/10'
-            }`}
-          >
-            <Users className="w-4 h-4" />
-            Fila da Clínica &amp; OpenEMR (n8n)
-          </button>
-        </div>
-      </div>
-
-      {/* Alerta de Privacidade Regulatória RN-IND */}
-      <div className="bg-[#EBF0FB] border-b border-[#BFDBFE] px-4 py-2 text-xs text-[#1E3A5F]">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-          <span className="flex items-center gap-1.5">
-            <Lock className="w-3.5 h-3.5 text-[#1A56DB]" />
-            <strong>Privacidade Médica Absoluta (RN-IND):</strong> A administração do condomínio hospitalar possui isolamento estrito e zero acesso aos dados contábeis individuais da sua clínica.
-          </span>
-          <span className="font-mono text-[11px] text-[#1A56DB] font-bold">
-            PostgreSQL Multi-Tenant • Schemas Isolados
-          </span>
-        </div>
+              <Icon className="w-4 h-4" />
+              {tab.label}
+            </button>
+          );
+        })}
       </div>
 
       {/* Conteúdo Principal */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      <div className="space-y-6">
         
-        {/* =========================================================================
-            TAB 1: PAINEL EXECUTIVO & DRE DA CLÍNICA
-           ========================================================================= */}
+        {/* TAB 1: PAINEL EXECUTIVO & DRE DA CLÍNICA */}
         {activeTab === 'painel' && (
           <div className="space-y-6 animate-in fade-in duration-200">
-            {/* 4 Cards de Métricas Chave */}
+            {/* 4 Cards de Métricas Padronizados */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-white p-5 rounded-2xl border border-[#E5E7EB] shadow-sm hover:shadow-md transition-shadow">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-bold text-[#6B7280] uppercase tracking-wider">
-                    Honorários Líquidos
-                  </span>
-                  <div className="p-2 rounded-xl bg-[#D1FAE5] text-[#057A55]">
-                    <DollarSign className="w-5 h-5" />
-                  </div>
-                </div>
-                <div className="text-2xl font-mono font-extrabold text-[#0E9F6E]">
-                  R$ 49.620,00
-                </div>
-                <div className="flex items-center gap-1 text-[11px] text-[#0E9F6E] font-semibold mt-1">
-                  <span>+14,2% vs. mês anterior</span>
-                </div>
-              </div>
+              <KpiCard
+                title="Honorários Líquidos"
+                value="R$ 49.620"
+                subtitle="Competência Atual"
+                icon={DollarSign}
+                tooltipInfo="Receita líquida auferida pelo médico cooperado após dedução das taxas operacionais do condomínio hospitalar e impostos retidos."
+                trend={{ text: "+14,2% vs. mês anterior", isPositive: true }}
+              />
 
-              <div className="bg-white p-5 rounded-2xl border border-[#E5E7EB] shadow-sm hover:shadow-md transition-shadow">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-bold text-[#6B7280] uppercase tracking-wider">
-                    Fintech Disponível D+0
-                  </span>
-                  <div className="p-2 rounded-xl bg-[#FEF9C3] text-[#92400E]">
-                    <CreditCard className="w-5 h-5" />
-                  </div>
-                </div>
-                <div className="text-2xl font-mono font-extrabold text-[#B45309]">
-                  R$ 21.750,00
-                </div>
-                <div className="flex items-center gap-1 text-[11px] text-[#1A56DB] font-semibold mt-1">
-                  <span>Taxa 1,19% a.m. (Liberação Pix)</span>
-                </div>
-              </div>
+              <KpiCard
+                title="Fintech Disponível D+0"
+                value="R$ 21.750"
+                subtitle="Liberação Instantânea Pix"
+                icon={CreditCard}
+                tooltipInfo="Saldo de procedimentos faturados e auditados disponível para antecipação instantânea via gateway Hyperswitch à taxa de 1,19% a.m."
+                trend={{ text: "Taxa 1,19% a.m.", isPositive: true }}
+              />
 
-              <div className="bg-white p-5 rounded-2xl border border-[#E5E7EB] shadow-sm hover:shadow-md transition-shadow">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-bold text-[#6B7280] uppercase tracking-wider">
-                    Volume de Pacientes
-                  </span>
-                  <div className="p-2 rounded-xl bg-[#EBF0FB] text-[#1A56DB]">
-                    <Users className="w-5 h-5" />
-                  </div>
-                </div>
-                <div className="text-2xl font-mono font-extrabold text-[#111928]">
-                  130 Pacientes
-                </div>
-                <div className="flex items-center gap-1 text-[11px] text-[#0E9F6E] font-semibold mt-1">
-                  <span>Ticket Médio: R$ 446,15</span>
-                </div>
-              </div>
+              <KpiCard
+                title="Volume de Pacientes"
+                value="130"
+                subtitle="Atendimentos no Mês"
+                icon={Users}
+                tooltipInfo="Total de consultas e procedimentos ambulatoriais realizados com registro de prontuário e prontidão de alta no OpenEMR."
+                trend={{ text: "Ticket Médio: R$ 446,15", isPositive: true }}
+              />
 
-              <div className="bg-white p-5 rounded-2xl border border-[#E5E7EB] shadow-sm hover:shadow-md transition-shadow">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-bold text-[#6B7280] uppercase tracking-wider">
-                    Glosas em Recurso
-                  </span>
-                  <div className="p-2 rounded-xl bg-[#FDE8E8] text-[#C81E1E]">
-                    <AlertCircle className="w-5 h-5" />
-                  </div>
-                </div>
-                <div className="text-2xl font-mono font-extrabold text-[#C81E1E]">
-                  R$ 1.850,00
-                </div>
-                <div className="flex items-center gap-1 text-[11px] text-[#0E9F6E] font-semibold mt-1">
-                  <span>96,8% taxa de reversão IA</span>
-                </div>
-              </div>
+              <KpiCard
+                title="Glosas em Recurso"
+                value="R$ 1.850"
+                subtitle="96,8% Reversão IA"
+                icon={AlertCircle}
+                tooltipInfo="Valor de faturamento glosado por operadoras de saúde em processo ativo de recurso automático com justificativa gerada por inteligência artificial."
+                trend={{ text: "96,8% taxa de reversão IA", isPositive: true }}
+              />
             </div>
 
             {/* DRE Mensal Detalhado da Sala 204 */}
@@ -1182,8 +1088,6 @@ export default function ClinicManagementPage() {
           </div>
         )}
 
-      </main>
-
       {/* =========================================================================
           MODAL 1: MARKETPLACE DE INSUMOS COLETIVO (35% OFF)
          ========================================================================= */}
@@ -1669,6 +1573,7 @@ export default function ClinicManagementPage() {
         </div>
       )}
 
-    </div>
+      </div>
+    </VigiaSidebarLayout>
   );
 }

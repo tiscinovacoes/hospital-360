@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { HospitalNav } from '../components/HospitalNav';
+import { VigiaSidebarLayout } from '../../components/VigiaSidebarLayout';
 import {
   Layers,
   UploadCloud,
@@ -327,60 +327,44 @@ export default function IngestaoModulosPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
-      <HospitalNav />
-
-      {/* Header com Contexto Arquitetural */}
-      <section className="bg-white border-b border-[#E2E8F0] py-8 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-[#EBF0FB] text-[#1A56DB] mb-3">
-              <Layers className="w-3.5 h-3.5" /> Arquitetura Modular &amp; Ingestion Façade
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-[#0F172A] tracking-tight">
-              Gestão de Módulos &amp; Apuração do Custo Real 360°
-            </h1>
-            <p className="text-sm sm:text-base text-[#64748B] mt-1.5 max-w-3xl">
-              Configure o pacote contratado pelo hospital ou secretaria. Mesmo quando módulos não forem contratados,
-              a camada de ingestão recebe planilhas, notas fiscais e relatórios externos garantindo o cálculo do custo do paciente.
-            </p>
-          </div>
-
-          {/* Preset Buttons */}
-          <div className="flex flex-wrap gap-2 bg-[#F1F5F9] p-1.5 rounded-xl border border-[#CBD5E1]">
-            <button
-              onClick={() => handleApplyPreset('FARMACIA_ONLY')}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-                activePlan === 'FARMACIA_ONLY'
-                  ? 'bg-white text-[#1A56DB] shadow-sm'
-                  : 'text-[#64748B] hover:text-[#0F172A]'
-              }`}
-            >
-              Módulo Único (Só Farmácia)
-            </button>
-            <button
-              onClick={() => handleApplyPreset('ASSISTENCIAL')}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-                activePlan === 'ASSISTENCIAL'
-                  ? 'bg-white text-[#1A56DB] shadow-sm'
-                  : 'text-[#64748B] hover:text-[#0F172A]'
-              }`}
-            >
-              Plano Assistencial
-            </button>
-            <button
-              onClick={() => handleApplyPreset('SUITE_360')}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-                activePlan === 'SUITE_360'
-                  ? 'bg-[#1A56DB] text-white shadow-sm'
-                  : 'text-[#64748B] hover:text-[#0F172A]'
-              }`}
-            >
-              Suite Completa 360
-            </button>
-          </div>
+    <VigiaSidebarLayout
+      activeTitle="Gestão de Módulos & Ingestão de Dados Legados"
+      activeSubtitle="Configure os módulos ativos ou conecte dados via planilhas CSV e webhooks sem retrabalho manual"
+      actions={
+        <div className="flex flex-wrap gap-2 bg-slate-100 p-1 rounded-xl border border-slate-200">
+          <button
+            onClick={() => handleApplyPreset('FARMACIA_ONLY')}
+            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+              activePlan === 'FARMACIA_ONLY'
+                ? 'bg-white text-[#1A56DB] shadow-sm'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            Só Farmácia
+          </button>
+          <button
+            onClick={() => handleApplyPreset('ASSISTENCIAL')}
+            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+              activePlan === 'ASSISTENCIAL'
+                ? 'bg-white text-[#1A56DB] shadow-sm'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            Assistencial
+          </button>
+          <button
+            onClick={() => handleApplyPreset('SUITE_360')}
+            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+              activePlan === 'SUITE_360'
+                ? 'bg-[#1A56DB] text-white shadow-sm'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            Suite Completa 360
+          </button>
         </div>
-      </section>
+      }
+    >
 
       {/* Banner de Feedback de Upload */}
       {uploadStatus && (
@@ -647,31 +631,31 @@ export default function IngestaoModulosPage() {
 
                   <div className="relative pl-5 border-l-2 border-blue-200 space-y-3 text-xs">
                     <div className="relative">
-                      <span className="absolute -left-[25px] top-0.5 w-3 h-3 rounded-full bg-blue-600 ring-4 ring-white" />
+                      <span className="absolute -left-[25px] top-0.5 w-3 h-3 rounded-full bg-[#1A56DB] ring-4 ring-blue-100" />
                       <p className="font-bold text-slate-800">1. Porta de Entrada (Check-in &amp; Triagem)</p>
                       <p className="text-[11px] text-slate-500">Recepção 360 • Manchester • Pulseira QR Code • <strong className="text-slate-700">R$ 38,50</strong></p>
                     </div>
 
                     <div className="relative">
-                      <span className="absolute -left-[25px] top-0.5 w-3 h-3 rounded-full bg-indigo-600 ring-4 ring-white" />
+                      <span className="absolute -left-[25px] top-0.5 w-3 h-3 rounded-full bg-[#1A56DB] ring-4 ring-blue-100" />
                       <p className="font-bold text-slate-800">2. Consulta Clínica Especializada (OpenEMR)</p>
                       <p className="text-[11px] text-slate-500">Clínica CardioVida • Dr. Ricardo Mendes • <strong className="text-slate-700">R$ 60,00</strong> (0,5h)</p>
                     </div>
 
                     <div className="relative">
-                      <span className="absolute -left-[25px] top-0.5 w-3 h-3 rounded-full bg-emerald-600 ring-4 ring-white" />
+                      <span className="absolute -left-[25px] top-0.5 w-3 h-3 rounded-full bg-[#1A56DB] ring-4 ring-blue-100" />
                       <p className="font-bold text-slate-800">3. Baixa Imediata Estoque FEFO (OpenBoxes via n8n)</p>
                       <p className="text-[11px] text-slate-500">Ceftriaxona Lote L-9941 + Insumos • <strong className="text-slate-700">R$ 125,50</strong></p>
                     </div>
 
                     <div className="relative">
-                      <span className="absolute -left-[25px] top-0.5 w-3 h-3 rounded-full bg-purple-600 ring-4 ring-white" />
+                      <span className="absolute -left-[25px] top-0.5 w-3 h-3 rounded-full bg-[#1A56DB] ring-4 ring-blue-100" />
                       <p className="font-bold text-slate-800">4. Laboratório Central LIMS (SENAITE.core)</p>
                       <p className="text-[11px] text-slate-500">Hemograma + Troponina • Laudo FHIR • <strong className="text-slate-700">R$ 145,00</strong></p>
                     </div>
 
                     <div className="relative">
-                      <span className="absolute -left-[25px] top-0.5 w-3 h-3 rounded-full bg-amber-600 ring-4 ring-white" />
+                      <span className="absolute -left-[25px] top-0.5 w-3 h-3 rounded-full bg-[#1A56DB] ring-4 ring-blue-100" />
                       <p className="font-bold text-slate-800">5. Porta de Saída: Cobrança &amp; Split (Hyperswitch)</p>
                       <p className="text-[11px] text-slate-500">Split condomínio vs clínica médica • NF no Contábil • <strong className="text-slate-700">R$ 42,00</strong></p>
                     </div>
@@ -682,6 +666,6 @@ export default function IngestaoModulosPage() {
           </div>
         </div>
       </main>
-    </div>
+    </VigiaSidebarLayout>
   );
 }

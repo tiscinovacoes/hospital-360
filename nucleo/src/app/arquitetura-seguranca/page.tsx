@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { HospitalNav } from '../components/HospitalNav';
+import { VigiaSidebarLayout } from '../../components/VigiaSidebarLayout';
 import {
   Shield,
   Lock,
@@ -22,79 +22,41 @@ export default function ArchitectureSecurityPage() {
   const [activeTab, setActiveTab] = useState<'dados' | 'seguranca' | 'interop'>('dados');
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F9FAFB]">
-      <HospitalNav />
-
-      {/* Header */}
-      <div className="bg-[#1E3A5F] text-white py-8 px-4 sm:px-6 lg:px-8 border-b border-blue-900">
-        <div className="max-w-7xl mx-auto">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#BFDBFE] hover:text-white transition-colors mb-3"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Voltar para Seleção de Perfis</span>
-          </Link>
-
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2">
-                <Shield className="w-6 h-6 text-[#0E9F6E]" />
-                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
-                  Arquitetura &amp; Segurança — Hospital 360
-                </h1>
-              </div>
-              <p className="text-sm text-[#BFDBFE] mt-1">
-                Especificação de engenharia para isolamento financeiro, segurança multicamadas e interoperabilidade FHIR/HL7.
-              </p>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <span className="px-3 py-1 rounded-full text-xs font-mono font-medium bg-white/10 border border-white/20 text-[#6EE7B7]">
-                TLS 1.3 • AES-256-GCM
-              </span>
-            </div>
-          </div>
-
-          {/* Abas */}
-          <div className="flex items-center gap-2 mt-8 border-b border-blue-900/60 pb-px">
-            <button
-              onClick={() => setActiveTab('dados')}
-              className={`px-4 py-2.5 text-xs font-bold rounded-t-lg transition-all flex items-center gap-2 ${
-                activeTab === 'dados'
-                  ? 'bg-white text-[#1E3A5F] shadow-sm'
-                  : 'text-[#BFDBFE] hover:text-white hover:bg-white/5'
-              }`}
-            >
-              <Database className="w-4 h-4" />
-              <span>1. Autonomia de Faturamento (RN-IND)</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('seguranca')}
-              className={`px-4 py-2.5 text-xs font-bold rounded-t-lg transition-all flex items-center gap-2 ${
-                activeTab === 'seguranca'
-                  ? 'bg-white text-[#1E3A5F] shadow-sm'
-                  : 'text-[#BFDBFE] hover:text-white hover:bg-white/5'
-              }`}
-            >
-              <Lock className="w-4 h-4" />
-              <span>2. Segurança 360° &amp; MFA</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('interop')}
-              className={`px-4 py-2.5 text-xs font-bold rounded-t-lg transition-all flex items-center gap-2 ${
-                activeTab === 'interop'
-                  ? 'bg-white text-[#1E3A5F] shadow-sm'
-                  : 'text-[#BFDBFE] hover:text-white hover:bg-white/5'
-              }`}
-            >
-              <Layers className="w-4 h-4" />
-              <span>3. Interoperabilidade (FHIR &amp; HL7)</span>
-            </button>
-          </div>
+    <VigiaSidebarLayout
+      activeTitle="Blindagem RN-IND & Auditoria CRED-OMEGA"
+      activeSubtitle="Especificação de engenharia para isolamento financeiro, segurança multicamadas e auditoria"
+      actions={
+        <div className="flex items-center gap-2">
+          <span className="px-3 py-1.5 rounded-xl text-xs font-mono font-medium bg-emerald-50 border border-emerald-200 text-emerald-700 flex items-center gap-1.5 shadow-sm">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+            TLS 1.3 • AES-256-GCM
+          </span>
         </div>
+      }
+    >
+      {/* Abas Padronizadas */}
+      <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-1 custom-scrollbar">
+        {[
+          { id: 'dados', label: '1. Autonomia de Faturamento (RN-IND)', icon: Database },
+          { id: 'seguranca', label: '2. Segurança 360° & MFA', icon: Lock },
+          { id: 'interop', label: '3. Interoperabilidade (FHIR & HL7)', icon: Layers },
+        ].map((tab) => {
+          const Icon = tab.icon;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap ${
+                activeTab === tab.id
+                  ? 'bg-[#1A56DB] text-white shadow-sm'
+                  : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+              }`}
+            >
+              <Icon className="w-4 h-4" />
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
       </div>
 
       {/* Conteúdo das Abas */}
@@ -363,6 +325,6 @@ PV1|1|O|SALA204^01^01^HOSP360||||DR.RICARDO MENDES^RICARDO^MENDES^^^DR.`}
           </div>
         )}
       </main>
-    </div>
+    </VigiaSidebarLayout>
   );
 }

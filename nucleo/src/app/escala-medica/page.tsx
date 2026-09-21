@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { VigiaSidebarLayout } from '../../components/VigiaSidebarLayout';
+import { KpiCard } from '../../components/KpiCard';
 import {
   UserCheck,
   Calendar,
@@ -234,60 +235,52 @@ export default function EscalaMedicaPage() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => { setModalAcao('COFRE_DOCS'); setResultadoAcao(null); }}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-800 border border-indigo-200 hover:bg-indigo-100 transition-colors"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all shadow-sm"
             >
-              <FileBadge className="w-4 h-4 text-indigo-600" />
+              <FileBadge className="w-4 h-4 text-[#1A56DB]" />
               Cofre de Documentos Médicos (CFM)
             </button>
           </div>
         </div>
 
-        {/* Métricas Executivas */}
+        {/* Métricas Executivas Minimalistas (Máximo 3 linhas + Tooltip informativo) */}
         {metricas && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-              <div className="flex items-center justify-between text-slate-500 text-xs font-bold uppercase tracking-wider">
-                <span>Plantoes Hoje</span>
-                <Calendar className="w-4 h-4 text-blue-600" />
-              </div>
-              <p className="text-2xl font-black text-slate-900 mt-2">
-                {metricas.total_plantoes_hoje} Ativos
-              </p>
-              <p className="text-xs text-emerald-600 font-semibold mt-1">100% Cobertos (Sem Furos)</p>
-            </div>
+            <KpiCard
+              title="Plantões Hoje"
+              value={`${metricas.total_plantoes_hoje} Ativos`}
+              subtitle="Escala Diurna/Noturna"
+              icon={Calendar}
+              tooltipInfo="Total de postos de plantão programados para as últimas 24 horas nas unidades de UTI Geral, Pronto-Socorro e Centro Cirúrgico, sem furos."
+              trend={{ text: "100% Cobertos", isPositive: true }}
+            />
 
-            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-              <div className="flex items-center justify-between text-slate-500 text-xs font-bold uppercase tracking-wider">
-                <span>Presença GPS / Geofence</span>
-                <MapPin className="w-4 h-4 text-emerald-600" />
-              </div>
-              <p className="text-2xl font-black text-slate-900 mt-2">
-                {metricas.taxa_presenca_geofence_pct}%
-              </p>
-              <p className="text-xs text-slate-500 mt-1">Validado no Raio &lt; 100m</p>
-            </div>
+            <KpiCard
+              title="Presença GPS"
+              value={`${metricas.taxa_presenca_geofence_pct}%`}
+              subtitle="Ponto por Geofencing"
+              icon={MapPin}
+              tooltipInfo="Percentual de médicos que registraram entrada presencial no raio regulamentar de menos de 100 metros do hospital via satélite e biometria facial."
+              trend={{ text: "Raio < 100m validado", isPositive: true }}
+            />
 
-            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-              <div className="flex items-center justify-between text-slate-500 text-xs font-bold uppercase tracking-wider">
-                <span>Alertas de Certificados</span>
-                <AlertTriangle className="w-4 h-4 text-amber-600" />
-              </div>
-              <p className="text-2xl font-black text-amber-600 mt-2">
-                {metricas.medicos_com_certificados_a_vencer_30d} Médicos
-              </p>
-              <p className="text-xs text-amber-600 font-semibold mt-1">Vencendo nos Próximos 30d</p>
-            </div>
+            <KpiCard
+              title="Certificados CFM"
+              value={`${metricas.medicos_com_certificados_a_vencer_30d} Médicos`}
+              subtitle="Alerta de Vencimento"
+              icon={AlertTriangle}
+              tooltipInfo="Profissionais com certificações críticas de emergência (ATLS, ACLS ou PALS) com vencimento previsto para os próximos 30 dias. Notificação emitida."
+              trend={{ text: "Vencendo em 30d", isAlert: true }}
+            />
 
-            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-              <div className="flex items-center justify-between text-slate-500 text-xs font-bold uppercase tracking-wider">
-                <span>Remuneração do Dia</span>
-                <DollarSign className="w-4 h-4 text-indigo-600" />
-              </div>
-              <p className="text-2xl font-black text-indigo-700 mt-2">
-                R$ {metricas.valor_total_escala_dia.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-              </p>
-              <p className="text-xs text-slate-500 mt-1">Compatível com PIX e CNAB 240</p>
-            </div>
+            <KpiCard
+              title="Remuneração do Dia"
+              value={`R$ ${metricas.valor_total_escala_dia.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
+              subtitle="Elegível para PIX D+0"
+              icon={DollarSign}
+              tooltipInfo="Volume financeiro total de honorários de plantão do dia, integrado com a esteira bancária para antecipação instantânea PIX e remessa CNAB 240."
+              trend={{ text: "CNAB 240 Pronto", isPositive: false }}
+            />
           </div>
         )}
 

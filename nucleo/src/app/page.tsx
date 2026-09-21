@@ -53,9 +53,9 @@ const MODULOS_CATALOGO: ModuloCard[] = [
     icone: LayoutDashboard,
     categoria: 'FINANCEIRO',
     tag: 'JUNÇÃO DE TODOS OS MÓDULOS',
-    tagColor: 'bg-blue-600 text-white',
+    tagColor: 'bg-blue-50 text-[#1A56DB] border border-blue-200',
     destaque: true,
-    metricas: '5 Estações de Custo Integradas'
+    metricas: '5 Estações Integradas'
   },
   {
     id: 'compras-atas',
@@ -65,8 +65,8 @@ const MODULOS_CATALOGO: ModuloCard[] = [
     href: '/compras-publicas',
     icone: ShoppingCart,
     categoria: 'SUPRIMENTOS',
-    tag: 'NOVA LEI LICITAÇÕES',
-    tagColor: 'bg-emerald-600 text-white',
+    tag: 'LEI 14.133/21',
+    tagColor: 'bg-slate-100 text-slate-700 border border-slate-200',
     metricas: 'Trava CMED & BPS Ativa'
   },
   {
@@ -77,8 +77,8 @@ const MODULOS_CATALOGO: ModuloCard[] = [
     href: '/estoque-central',
     icone: Boxes,
     categoria: 'SUPRIMENTOS',
-    tag: 'FEFO E CADEIA DO FRIO',
-    tagColor: 'bg-cyan-600 text-white',
+    tag: 'FEFO • RDC 430',
+    tagColor: 'bg-slate-100 text-slate-700 border border-slate-200',
     metricas: '4 Locais Monitorados'
   },
   {
@@ -89,8 +89,8 @@ const MODULOS_CATALOGO: ModuloCard[] = [
     href: '/escala-medica',
     icone: UserCheck,
     categoria: 'OPERACAO',
-    tag: 'GEOFENCE & CFM',
-    tagColor: 'bg-indigo-600 text-white',
+    tag: 'GEOFENCE <100M',
+    tagColor: 'bg-slate-100 text-slate-700 border border-slate-200',
     metricas: '100% Cobertura de Postos'
   },
   {
@@ -102,7 +102,7 @@ const MODULOS_CATALOGO: ModuloCard[] = [
     icone: Pill,
     categoria: 'SUPRIMENTOS',
     tag: 'BEIRA-LEITO',
-    tagColor: 'bg-teal-600 text-white',
+    tagColor: 'bg-slate-100 text-slate-700 border border-slate-200',
     metricas: 'Alerta de Lotes Vencendo'
   },
   {
@@ -113,8 +113,8 @@ const MODULOS_CATALOGO: ModuloCard[] = [
     href: '/gestao-clinica',
     icone: Stethoscope,
     categoria: 'ASSISTENCIAL',
-    tag: 'PEP MULTIPERFIL',
-    tagColor: 'bg-blue-700 text-white',
+    tag: 'PEP AMBULATORIAL',
+    tagColor: 'bg-slate-100 text-slate-700 border border-slate-200',
     metricas: 'Fila e Prontuário Rápido'
   },
   {
@@ -126,7 +126,7 @@ const MODULOS_CATALOGO: ModuloCard[] = [
     icone: FlaskConical,
     categoria: 'ASSISTENCIAL',
     tag: 'LIMS SENAITE',
-    tagColor: 'bg-purple-600 text-white',
+    tagColor: 'bg-slate-100 text-slate-700 border border-slate-200',
     metricas: 'Tempo Porta-Resultado'
   },
   {
@@ -137,8 +137,8 @@ const MODULOS_CATALOGO: ModuloCard[] = [
     href: '/leitos-censo',
     icone: BedDouble,
     categoria: 'ASSISTENCIAL',
-    tag: 'MAPA DE LEITOS',
-    tagColor: 'bg-sky-600 text-white',
+    tag: 'CENSO DE LEITOS',
+    tagColor: 'bg-slate-100 text-slate-700 border border-slate-200',
     metricas: 'Taxa de Ocupação Ativa'
   },
   {
@@ -149,8 +149,8 @@ const MODULOS_CATALOGO: ModuloCard[] = [
     href: '/financeiro-split',
     icone: CreditCard,
     categoria: 'FINANCEIRO',
-    tag: 'SPLIT AUTOMÁTICO',
-    tagColor: 'bg-amber-600 text-white',
+    tag: 'SPLIT DE REPASSE',
+    tagColor: 'bg-slate-100 text-slate-700 border border-slate-200',
     metricas: 'Roteamento Multi-Adquirente'
   },
   {
@@ -161,8 +161,8 @@ const MODULOS_CATALOGO: ModuloCard[] = [
     href: '/automacao-mensageria',
     icone: MessageSquare,
     categoria: 'OPERACAO',
-    tag: 'N8N WORKFLOWS',
-    tagColor: 'bg-rose-600 text-white',
+    tag: 'N8N & WHATSAPP',
+    tagColor: 'bg-slate-100 text-slate-700 border border-slate-200',
     metricas: 'Atendimento Omnichannel'
   },
   {
@@ -173,8 +173,8 @@ const MODULOS_CATALOGO: ModuloCard[] = [
     href: '/ingestao-modulos',
     icone: FileSpreadsheet,
     categoria: 'OPERACAO',
-    tag: 'IMPORTAÇÃO RÁPIDA',
-    tagColor: 'bg-slate-700 text-white',
+    tag: 'IMPORTADOR CSV',
+    tagColor: 'bg-slate-100 text-slate-700 border border-slate-200',
     metricas: 'Validação de Schemas'
   },
   {
@@ -185,8 +185,8 @@ const MODULOS_CATALOGO: ModuloCard[] = [
     href: '/arquitetura-seguranca',
     icone: ShieldCheck,
     categoria: 'FINANCEIRO',
-    tag: 'ZERO TRUST',
-    tagColor: 'bg-emerald-700 text-white',
+    tag: 'SEGURANÇA & RLS',
+    tagColor: 'bg-slate-100 text-slate-700 border border-slate-200',
     metricas: 'Segurança Militar'
   }
 ];
@@ -212,42 +212,32 @@ export default function HubModulosPage() {
       activeTitle="Hub de Módulos & Catálogo de Soluções"
       activeSubtitle="Acesso centralizado a todas as capacidades do ecossistema hospitalar"
     >
-      {/* BANNER CENTRAL EXECUTIVO: O CUSTO DO PACIENTE (A JUNÇÃO DE TUDO) */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-[#1E3A8A] via-[#1A56DB] to-[#2563EB] rounded-3xl p-6 sm:p-8 text-white shadow-xl shadow-blue-900/10 border border-blue-500/30 mb-8">
-        {/* Padrão decorativo sutil */}
-        <div
-          className="absolute inset-0 opacity-10 pointer-events-none"
-          style={{
-            backgroundImage:
-              'linear-gradient(rgba(255,255,255,.3) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.3) 1px, transparent 1px)',
-            backgroundSize: '24px 24px',
-          }}
-        />
-
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+      {/* BANNER CENTRAL EXECUTIVO: O CUSTO DO PACIENTE (A JUNÇÃO DE TUDO) - DESIGN MINIMALISTA CLEAN */}
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-blue-200/80 shadow-sm mb-8">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-white/15 border border-white/25 text-white mb-3 backdrop-blur-md">
-              <Sparkles className="w-3.5 h-3.5 text-yellow-300" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-blue-50 border border-blue-200 text-[#1A56DB] mb-3">
+              <Sparkles className="w-3.5 h-3.5 text-[#1A56DB]" />
               <span>MÓDULO CENTRAL UNIFICADOR</span>
             </div>
 
-            <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white leading-tight">
+            <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 leading-tight">
               Custo do Paciente (Core 360)
             </h2>
 
-            <p className="mt-2 text-sm sm:text-base text-blue-100 leading-relaxed">
-              O coração analítico da nossa plataforma. Ele é a <strong>junção de tudo o que oferecemos</strong>: absorve automaticamente os dados de prontuários (OpenEMR), dispensação de farmácia (FEFO), laudos de laboratório (LIMS), compras e contratos de atas, escalas médicas e faturamento, confrontando o custo real apurado com as tabelas <strong>SIGTAP (SUS)</strong> e <strong>TUSS</strong>.
+            <p className="mt-2 text-sm text-slate-600 leading-relaxed">
+              O coração analítico da nossa plataforma. Ele é a <strong className="text-slate-900 font-bold">junção de tudo o que oferecemos</strong>: absorve automaticamente os dados de prontuários (OpenEMR), dispensação de farmácia (FEFO), laudos de laboratório (LIMS), compras e contratos de atas, escalas médicas e faturamento, confrontando o custo real apurado com as tabelas <strong className="text-slate-900 font-bold">SIGTAP (SUS)</strong> e <strong className="text-slate-900 font-bold">TUSS</strong>.
             </p>
 
-            <div className="flex flex-wrap items-center gap-3 mt-4 text-xs font-semibold text-blue-100">
-              <span className="flex items-center gap-1 bg-white/10 px-2.5 py-1 rounded-lg">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> 5 Estações de Custo
+            <div className="flex flex-wrap items-center gap-3 mt-4 text-xs font-semibold text-slate-700">
+              <span className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-3 py-1 rounded-xl">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> 5 Estações de Custo
               </span>
-              <span className="flex items-center gap-1 bg-white/10 px-2.5 py-1 rounded-lg">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> Confronto SIGTAP Automático
+              <span className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-3 py-1 rounded-xl">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Confronto SIGTAP Automático
               </span>
-              <span className="flex items-center gap-1 bg-white/10 px-2.5 py-1 rounded-lg">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> Importação de Sistemas Legados
+              <span className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-3 py-1 rounded-xl">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Importação de Sistemas Legados
               </span>
             </div>
           </div>
@@ -255,7 +245,7 @@ export default function HubModulosPage() {
           <div className="flex flex-col sm:flex-row lg:flex-col gap-3 flex-shrink-0">
             <Link
               href="/dashboard-executivo"
-              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-white text-[#1A56DB] hover:bg-blue-50 font-black text-sm shadow-lg shadow-black/10 transition-all hover:scale-[1.02] active:scale-[0.98]"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-[#1A56DB] hover:bg-blue-700 text-white font-black text-sm shadow-md shadow-blue-600/20 transition-all hover:scale-[1.01]"
             >
               <span>Abrir Custo do Paciente</span>
               <ArrowRight className="w-4 h-4" />
@@ -263,9 +253,9 @@ export default function HubModulosPage() {
 
             <Link
               href="/ingestao-modulos"
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-blue-700/50 hover:bg-blue-700 text-white font-bold text-xs border border-white/20 backdrop-blur-md transition-all"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-xs border border-slate-200 transition-all"
             >
-              <FileSpreadsheet className="w-4 h-4" />
+              <FileSpreadsheet className="w-4 h-4 text-slate-500" />
               <span>Importar Dados Externos (CSV)</span>
             </Link>
           </div>

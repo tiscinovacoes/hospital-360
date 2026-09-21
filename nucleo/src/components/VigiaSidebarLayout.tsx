@@ -51,7 +51,7 @@ export const MODULOS_SISTEMA: NavItem[] = [
     href: '/dashboard-executivo',
     icon: LayoutDashboard,
     badge: 'Unificador',
-    badgeColor: 'bg-blue-600 text-white',
+    badgeColor: 'bg-blue-50 text-[#1A56DB] border border-blue-200',
     category: 'Inteligência de Custos'
   },
   {
@@ -59,7 +59,7 @@ export const MODULOS_SISTEMA: NavItem[] = [
     href: '/compras-publicas',
     icon: ShoppingCart,
     badge: 'Lei 14.133',
-    badgeColor: 'bg-emerald-600 text-white',
+    badgeColor: 'bg-blue-50 text-[#1A56DB] border border-blue-200',
     category: 'Suprimentos & Contratos'
   },
   {
@@ -67,7 +67,7 @@ export const MODULOS_SISTEMA: NavItem[] = [
     href: '/estoque-central',
     icon: Boxes,
     badge: 'FEFO',
-    badgeColor: 'bg-cyan-600 text-white',
+    badgeColor: 'bg-blue-50 text-[#1A56DB] border border-blue-200',
     category: 'Suprimentos & Contratos'
   },
   {
@@ -81,7 +81,7 @@ export const MODULOS_SISTEMA: NavItem[] = [
     href: '/escala-medica',
     icon: UserCheck,
     badge: '<100m',
-    badgeColor: 'bg-indigo-600 text-white',
+    badgeColor: 'bg-blue-50 text-[#1A56DB] border border-blue-200',
     category: 'Gestão de Pessoas'
   },
   {
@@ -107,7 +107,7 @@ export const MODULOS_SISTEMA: NavItem[] = [
     href: '/financeiro-split',
     icon: CreditCard,
     badge: 'NFSe',
-    badgeColor: 'bg-purple-600 text-white',
+    badgeColor: 'bg-blue-50 text-[#1A56DB] border border-blue-200',
     category: 'Financeiro'
   },
   {

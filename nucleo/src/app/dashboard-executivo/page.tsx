@@ -2,8 +2,8 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { HospitalNav } from '../components/HospitalNav';
 import { VigiaSidebarLayout } from '../../components/VigiaSidebarLayout';
+import { KpiCard } from '../../components/KpiCard';
 import {
   BarChart3,
   TrendingUp,
@@ -28,6 +28,9 @@ import {
   Activity,
   ChevronRight,
   Eye,
+  FileSpreadsheet,
+  AlertTriangle,
+  FileText
 } from 'lucide-react';
 
 export default function ExecutiveDashboardPage() {
@@ -68,35 +71,23 @@ export default function ExecutiveDashboardPage() {
 
   return (
     <VigiaSidebarLayout
-      activeTitle="Custo do Paciente (Core 360)"
-      activeSubtitle="Junção e consolidação de todos os módulos assistenciais, suprimentos e escalas"
-    >
-      {/* Banner de Integração: O Custo do Paciente como Módulo Unificador */}
-      <div className="bg-gradient-to-r from-blue-900 to-indigo-900 border border-blue-700/60 rounded-2xl p-5 mb-6 text-white shadow-md">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="max-w-3xl">
-            <span className="text-[10px] font-black uppercase tracking-wider bg-blue-500/30 border border-blue-400/40 px-2 py-0.5 rounded text-blue-200">
-              MÓDULO INTEGRADOR UNIVERSAL
-            </span>
-            <h2 className="text-lg font-black mt-1">Custo Door-to-Door • Apuração Real vs SIGTAP & TUSS</h2>
-            <p className="text-xs text-blue-200 mt-1 leading-relaxed">
-              Este módulo consolida automaticamente os dados gerados em todo o ecossistema: prescrições do <strong>OpenEMR</strong>, medicamentos do <strong>Estoque FEFO</strong>, exames do <strong>LIMS Senaite</strong>, diárias de <strong>Leitos</strong>, compras nas <strong>Atas ARP</strong> e plantões da <strong>Escala Médica</strong>. Também recebe importações diretas de sistemas externos via CSV.
-            </p>
-          </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <Link
-              href="/ingestao-modulos"
-              className="px-4 py-2 bg-white text-blue-900 hover:bg-blue-50 font-black text-xs rounded-xl shadow transition-all"
-            >
-              Importar Dados (CSV)
-            </Link>
-          </div>
+      activeTitle="Custo do Paciente (Core Door-to-Door)"
+      activeSubtitle="Junção e consolidação unificada de todos os módulos assistenciais, suprimentos e escalas"
+      actions={
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowSimModal(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#1A56DB] hover:bg-blue-700 text-white text-xs font-bold shadow-sm transition-all"
+          >
+            <Sliders className="w-3.5 h-3.5" />
+            <span>Simulador de Leitos</span>
+          </button>
         </div>
-      </div>
-
-      {/* Toast Flutuante Dark */}
+      }
+    >
+      {/* Toast Flutuante */}
       {toastMessage && (
-        <div className="fixed top-20 right-6 z-50 bg-[#1E293B] text-white px-5 py-3 rounded-xl shadow-2xl border border-teal-400 flex items-center gap-3 animate-in slide-in-from-top-4 duration-300">
+        <div className="fixed top-20 right-6 z-50 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl border border-blue-400 flex items-center gap-3 animate-fadeIn">
           <CheckCircle2 className="w-5 h-5 text-emerald-400" />
           <span className="text-xs font-semibold">{toastMessage}</span>
           <button onClick={() => setToastMessage(null)} className="text-slate-400 hover:text-white ml-2">
@@ -105,353 +96,254 @@ export default function ExecutiveDashboardPage() {
         </div>
       )}
 
-      {/* Header Executivo C-Level */}
-      <div className="bg-[#0F766E] text-white py-6 px-4 sm:px-6 lg:px-8 border-b border-teal-800 shadow-md">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <Link
-              href="/"
-              className="inline-flex items-center gap-1.5 text-xs text-teal-100 hover:text-white mb-2 transition-colors font-semibold"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Voltar para Seleção de Módulos</span>
-            </Link>
-            <div className="flex items-center gap-2.5">
-              <div className="p-2 bg-teal-900/80 rounded-xl border border-teal-600">
-                <BarChart3 className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-extrabold tracking-tight text-white flex items-center gap-2">
-                  Cockpit Executivo &amp; Inteligência Estratégica 360°
-                </h1>
-                <p className="text-xs text-teal-100 mt-0.5">
-                  Centro Integrado de Decisões C-Level • Governança, Financeiro &amp; Operações
-                </p>
-              </div>
-            </div>
+      {/* 1. BANNER MINIMALISTA: O CUSTO DO PACIENTE COMO O GRANDE CONSOLIDADOR */}
+      <div className="bg-white rounded-2xl border border-blue-200/80 p-5 mb-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="max-w-3xl">
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-extrabold uppercase tracking-wider bg-blue-50 text-[#1A56DB] border border-blue-200 px-2 py-0.5 rounded-md">
+              MÓDULO UNIFICADOR CENTRAL
+            </span>
+            <span className="text-xs font-bold text-slate-400">Apuração Real vs SIGTAP (SUS) & TUSS</span>
           </div>
+          <h2 className="text-base font-extrabold text-slate-900 mt-1.5">
+            Consolidação Automática da Jornada Hospitalar Ponta a Ponta
+          </h2>
+          <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+            Este módulo integra e consolida os custos de todas as frentes: prescrições do <strong>OpenEMR</strong>, dispensações do <strong>Estoque FEFO</strong>, exames do <strong>LIMS Senaite</strong>, diárias de <strong>Leitos</strong>, compras nas <strong>Atas ARP</strong> e plantões da <strong>Escala Médica</strong>. Também recebe importações via CSV de outros sistemas hospitalares legados.
+          </p>
+        </div>
 
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setShowSimModal(true)}
-              className="px-4 py-2 rounded-xl bg-teal-900/90 hover:bg-teal-950 border border-teal-600 text-teal-100 hover:text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-colors"
-            >
-              <Sliders className="w-4 h-4 text-emerald-400" />
-              Simular Expansão de Leitos
-            </button>
-          </div>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <Link
+            href="/ingestao-modulos"
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold rounded-xl border border-slate-200 transition-all"
+          >
+            <FileSpreadsheet className="w-4 h-4 text-slate-500" />
+            <span>Importar CSV Legado</span>
+          </Link>
         </div>
       </div>
 
-      {/* Main Content Grid */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 grid grid-cols-1 lg:grid-cols-12 gap-6">
-        
-        {/* Coluna Esquerda: Métricas C-Level & Gráficos (8 colunas) */}
+      {/* 2. OS 4 CARDS DE KPIS MINIMALISTAS (Máximo 3 linhas + Tooltip informativo) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <KpiCard
+          title="Faturamento Bruto Hub"
+          value="R$ 384.200"
+          subtitle="Receita Consolidada"
+          icon={DollarSign}
+          tooltipInfo="Volume total faturado no mês corrente agregando consultas ambulatoriais, internações cirúrgicas, SADT e repasses com o desconto de split da fintech."
+          trend={{ text: "+16,8% vs mês anterior", isPositive: true }}
+        />
+
+        <KpiCard
+          title="Taxa de Ocupação Geral"
+          value="83,3%"
+          subtitle="10 de 12 Leitos Ocupados"
+          icon={Building2}
+          tooltipInfo="Índice de aproveitamento dos leitos operacionais das enfermarias e UTI. Calculado diariamente às 00h pelo censo hospitalar automatizado."
+          trend={{ text: "Giro Médio: 38 min", isPositive: true }}
+        />
+
+        <KpiCard
+          title="Confronto SIGTAP (SUS)"
+          value="R$ 1.840,50"
+          subtitle="Custo Médio Paciente"
+          icon={Activity}
+          tooltipInfo="Custo real médio apurado por episódio clínico pelo método de absorção e ABC, confrontado com a tabela oficial de ressarcimento do SUS (SIGTAP)."
+          trend={{ text: "-8,2% abaixo do teto SUS", isPositive: true }}
+        />
+
+        <KpiCard
+          title="Economia Atas & FEFO"
+          value="R$ 48.950"
+          subtitle="Prevenção de Perdas"
+          icon={TrendingUp}
+          tooltipInfo="Economia gerada pela trava de sobrepreço nas Atas de Registro de Preços (ARP Lei 14.133) somada à eliminação de descartes por validade com o FEFO estrito."
+          trend={{ text: "Zero Perdas por Vencimento", isPositive: true }}
+        />
+      </div>
+
+      {/* 3. GRID PRINCIPAL: JORNADA 5 ESTAÇÕES DOOR-TO-DOOR & FEED DE AUDITORIA */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+        {/* Coluna Esquerda: As 5 Estações de Custo Door-to-Door (8 colunas) */}
         <div className="lg:col-span-8 space-y-6">
-          
-          {/* 4 Cards de KPIs Globais */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="p-5 rounded-2xl bg-[#1E293B] border border-slate-800 shadow-md">
-              <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">
-                Faturamento Bruto Hub
-              </span>
-              <p className="text-2xl font-mono font-extrabold text-emerald-400 mt-1">
-                R$ 384.200
-              </p>
-              <p className="text-[11px] text-emerald-400 mt-1 flex items-center gap-1 font-semibold">
-                <TrendingUp className="w-3.5 h-3.5" /> +16,8% vs. mês anterior
-              </p>
-            </div>
-
-            <div className="p-5 rounded-2xl bg-[#1E293B] border border-slate-800 shadow-md">
-              <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">
-                Taxa de Ocupação Geral
-              </span>
-              <p className="text-2xl font-mono font-extrabold text-sky-400 mt-1">
-                83,3%
-              </p>
-              <p className="text-[11px] text-sky-400 mt-1">
-                10 de 12 leitos ocupados
-              </p>
-            </div>
-
-            <div className="p-5 rounded-2xl bg-[#1E293B] border border-slate-800 shadow-md">
-              <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">
-                Tempo Médio Giro (Leito)
-              </span>
-              <p className="text-2xl font-mono font-extrabold text-purple-400 mt-1">
-                2,4 dias
-              </p>
-              <p className="text-[11px] text-purple-400 mt-1">
-                Alta eficiência clínica
-              </p>
-            </div>
-
-            <div className="p-5 rounded-2xl bg-[#1E293B] border border-slate-800 shadow-md">
-              <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">
-                NPS dos Pacientes
-              </span>
-              <p className="text-2xl font-mono font-extrabold text-amber-400 mt-1">
-                94 / 100
-              </p>
-              <p className="text-[11px] text-amber-400 mt-1">
-                Zona de Excelência
-              </p>
-            </div>
-          </div>
-
-          {/* Gráfico Visual de Distribuição de Receitas do Hub */}
-          <div className="p-6 rounded-2xl bg-[#1E293B] border border-slate-800 shadow-md space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5">
+            <div className="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
               <div>
-                <h3 className="text-base font-extrabold text-white">
-                  Distribuição de Faturamento por Unidade de Negócio
+                <h3 className="font-extrabold text-base text-slate-900">
+                  As 5 Estações de Custeio Door-to-Door
                 </h3>
                 <p className="text-xs text-slate-400">
-                  Consolidação de receitas de sublocação, exames, cirurgias e facilities
+                  Rastreabilidade integral da admissão à alta com confronto SIGTAP / TUSS
                 </p>
               </div>
-              <span className="text-xs font-mono font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-800 px-2.5 py-1 rounded-full">
-                Split D+1 100% Automatizado
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
+                Modelo Absorção + ABC
               </span>
             </div>
 
-            {/* Barra Visual Proporcional */}
-            <div className="w-full h-4 rounded-full overflow-hidden flex shadow-inner">
-              <div style={{ width: '48%' }} className="bg-[#1A56DB] hover:opacity-90" title="Consultórios: 48%"></div>
-              <div style={{ width: '26%' }} className="bg-[#7C3AED] hover:opacity-90" title="Centro Cirúrgico: 26%"></div>
-              <div style={{ width: '16%' }} className="bg-[#0E9F6E] hover:opacity-90" title="Laboratório Hub: 16%"></div>
-              <div style={{ width: '10%' }} className="bg-[#EA580C] hover:opacity-90" title="Facilities & Hotelaria: 10%"></div>
-            </div>
+            {/* As 5 Estações em Cards Minimalistas */}
+            <div className="space-y-3">
+              {[
+                {
+                  num: '01',
+                  nome: 'Recepção & Triagem Manchester',
+                  modulo: 'Acolhimento & Cadastro CNS',
+                  custo: 'R$ 42,80',
+                  sigtapRef: 'R$ 50,00 (Tabela SUS)',
+                  status: 'Dentro do Teto',
+                  statusColor: 'text-emerald-700 bg-emerald-50 border-emerald-200'
+                },
+                {
+                  num: '02',
+                  nome: 'Consultório & Clínica Médica',
+                  modulo: 'OpenEMR • Anamnese & Prescrição',
+                  custo: 'R$ 180,00',
+                  sigtapRef: 'R$ 210,00 (TUSS Especialidade)',
+                  status: 'Margem Positiva',
+                  statusColor: 'text-emerald-700 bg-emerald-50 border-emerald-200'
+                },
+                {
+                  num: '03',
+                  nome: 'Laboratório & Diagnóstico',
+                  modulo: 'LIMS Senaite • Troponina I & Hemograma',
+                  custo: 'R$ 94,50',
+                  sigtapRef: 'R$ 125,00 (Exame Automatizado)',
+                  status: 'Otimizado',
+                  statusColor: 'text-emerald-700 bg-emerald-50 border-emerald-200'
+                },
+                {
+                  num: '04',
+                  nome: 'Farmácia Satélite & Insumos',
+                  modulo: 'OpenBoxes • Dispensação FEFO Lote',
+                  custo: 'R$ 310,20',
+                  sigtapRef: 'R$ 420,00 (Teto CMED Oficial)',
+                  status: 'Economia FEFO 26%',
+                  statusColor: 'text-emerald-700 bg-emerald-50 border-emerald-200'
+                },
+                {
+                  num: '05',
+                  nome: 'Diária de Internação & Leito',
+                  modulo: 'Censo • Quarto 204 com Facilities',
+                  custo: 'R$ 1.213,00',
+                  sigtapRef: 'R$ 1.200,00 (Diária SUS c/ AIH)',
+                  status: 'Alerta Leve (+1%)',
+                  statusColor: 'text-amber-700 bg-amber-50 border-amber-200'
+                }
+              ].map(estacao => (
+                <div
+                  key={estacao.num}
+                  className="p-3.5 rounded-xl border border-slate-200/90 hover:border-blue-300 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/50"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="w-7 h-7 rounded-lg bg-blue-100/80 text-[#1A56DB] font-black text-xs flex items-center justify-center flex-shrink-0">
+                      {estacao.num}
+                    </span>
+                    <div>
+                      <strong className="text-xs font-bold text-slate-900 block">{estacao.nome}</strong>
+                      <span className="text-[11px] text-slate-500">{estacao.modulo}</span>
+                    </div>
+                  </div>
 
-            {/* Legenda do Gráfico */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 text-xs">
-              <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-[#1A56DB]"></span>
-                <div>
-                  <span className="text-slate-400 block text-[10px]">Consultórios (48%)</span>
-                  <strong className="text-white font-mono">R$ 184.416</strong>
+                  <div className="flex items-center gap-4 text-xs">
+                    <div className="text-right">
+                      <span className="font-bold text-slate-900 block">{estacao.custo}</span>
+                      <span className="text-[10px] text-slate-400 block">{estacao.sigtapRef}</span>
+                    </div>
+                    <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${estacao.statusColor}`}>
+                      {estacao.status}
+                    </span>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-[#7C3AED]"></span>
-                <div>
-                  <span className="text-slate-400 block text-[10px]">Centro Cirúrgico (26%)</span>
-                  <strong className="text-white font-mono">R$ 99.892</strong>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-[#0E9F6E]"></span>
-                <div>
-                  <span className="text-slate-400 block text-[10px]">Laboratório Central (16%)</span>
-                  <strong className="text-white font-mono">R$ 61.472</strong>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-[#EA580C]"></span>
-                <div>
-                  <span className="text-slate-400 block text-[10px]">Facilities &amp; Hotelaria (10%)</span>
-                  <strong className="text-white font-mono">R$ 38.420</strong>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
 
-          {/* SPRINT 4: Custeio do Paciente Door-to-Door & Confronto SIGTAP/SUS vs TUSS */}
-          <section
-            aria-label="Custeio do Paciente Door-to-Door e Confronto de Tabelas Oficiais"
-            className="p-6 rounded-2xl bg-gradient-to-b from-slate-900 via-[#131E32] to-slate-900 border border-slate-700 shadow-xl space-y-6"
-          >
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-800">
+          {/* Tabela de Episódios Clínicos em Apuração */}
+          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5">
+            <div className="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
               <div>
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 mb-2">
-                  <Activity className="w-3.5 h-3.5" /> Motor de Custeio Contínuo • Sprint 4 Go-Live
-                </div>
-                <h2 className="text-lg font-bold text-white tracking-tight">
-                  Jornada Door-to-Door do Paciente &amp; Confronto de Margem
-                </h2>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Paciente: <strong>Mariana Oliveira dos Santos</strong> (CPF: 789.***.***-00) • Episódio Integrado: <strong>EPIS-2026-8812</strong>
-                </p>
-              </div>
-
-              <div className="p-3 bg-slate-950/80 rounded-xl border border-slate-700 text-right">
-                <span className="text-[10px] text-slate-400 uppercase font-semibold block">Custo Real Acumulado</span>
-                <span className="text-xl font-mono font-extrabold text-cyan-400">R$ 265,73</span>
-                <span className="text-[9px] text-slate-500 block">5 estações apuradas</span>
-              </div>
-            </div>
-
-            {/* Linha do Tempo Visual das 5 Estações */}
-            <div className="space-y-2">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
-                Composição do Custo Real por Estação Assistencial:
-              </span>
-              <div className="grid grid-cols-1 sm:grid-cols-5 gap-2.5">
-                {/* Estação 1 */}
-                <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700 text-center">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase block">1. Portaria &amp; Triagem</span>
-                  <p className="text-xs font-semibold text-white mt-1">Manchester</p>
-                  <p className="text-sm font-mono font-bold text-cyan-300 mt-0.5">R$ 35,00</p>
-                </div>
-
-                {/* Estação 2 */}
-                <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700 text-center">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase block">2. Consulta OpenEMR</span>
-                  <p className="text-xs font-semibold text-white mt-1">Cardiologia Sala 204</p>
-                  <p className="text-sm font-mono font-bold text-cyan-300 mt-0.5">R$ 110,00</p>
-                </div>
-
-                {/* Estação 3 */}
-                <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700 text-center">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase block">3. Farmácia FEFO</span>
-                  <p className="text-xs font-semibold text-white mt-1">Dipirona + Soro</p>
-                  <p className="text-sm font-mono font-bold text-cyan-300 mt-0.5">R$ 14,90</p>
-                </div>
-
-                {/* Estação 4 */}
-                <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700 text-center">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase block">4. SENAITE LIMS</span>
-                  <p className="text-xs font-semibold text-white mt-1">Troponina + Hemog.</p>
-                  <p className="text-sm font-mono font-bold text-cyan-300 mt-0.5">R$ 92,50</p>
-                </div>
-
-                {/* Estação 5 */}
-                <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700 text-center">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase block">5. Facilities &amp; Leito</span>
-                  <p className="text-xs font-semibold text-white mt-1">Higienização Leito 108</p>
-                  <p className="text-sm font-mono font-bold text-cyan-300 mt-0.5">R$ 13,33</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Comparativo de Confronto com Tabelas Oficiais */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-              {/* Card 1: Tabela SUS (SIGTAP) - Revelando o Déficit */}
-              <div className="p-4 rounded-xl bg-rose-950/40 border border-rose-800/60 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-rose-300 uppercase tracking-wide">
-                    SUS • Tabela Oficial SIGTAP (BPA/AIH)
-                  </span>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30">
-                    Déficit do SUS
-                  </span>
-                </div>
-                <div className="flex items-baseline justify-between pt-1">
-                  <div>
-                    <span className="text-[11px] text-slate-400 block">Repasse Tabela SUS</span>
-                    <span className="text-lg font-mono font-extrabold text-white">R$ 85,00</span>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-[11px] text-rose-300 font-bold block">Subfinanciamento / Déficit</span>
-                    <span className="text-xl font-mono font-extrabold text-rose-400">- R$ 180,73</span>
-                  </div>
-                </div>
-                <p className="text-[11px] text-slate-400 leading-relaxed border-t border-rose-900/40 pt-2">
-                  O custo real apurado pela Suíte 360 comprova que o procedimento gera deficit de <strong>68,0%</strong> sobre o repasse público federal.
-                </p>
-              </div>
-
-              {/* Card 2: Saúde Suplementar (TUSS) - Margem Ebitda */}
-              <div className="p-4 rounded-xl bg-emerald-950/40 border border-emerald-800/60 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-emerald-300 uppercase tracking-wide">
-                    Saúde Suplementar • Tabela TUSS
-                  </span>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                    Margem Positiva
-                  </span>
-                </div>
-                <div className="flex items-baseline justify-between pt-1">
-                  <div>
-                    <span className="text-[11px] text-slate-400 block">Faturamento Convênio TUSS</span>
-                    <span className="text-lg font-mono font-extrabold text-white">R$ 380,00</span>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-[11px] text-emerald-300 font-bold block">Margem de Contribuição</span>
-                    <span className="text-xl font-mono font-extrabold text-emerald-400">+ R$ 114,27 (+30,1%)</span>
-                  </div>
-                </div>
-                <p className="text-[11px] text-slate-400 leading-relaxed border-t border-emerald-900/40 pt-2">
-                  Retenção com Split Hyperswitch (85% cooperado / 15% condomínio) garante solvência e conciliação bancária automática.
+                <h3 className="font-extrabold text-base text-slate-900">
+                  Pacientes em Jornada Ativa (Amostragem C-Level)
+                </h3>
+                <p className="text-xs text-slate-400">
+                  Episódios alimentados automaticamente pelos módulos do hospital
                 </p>
               </div>
             </div>
-          </section>
 
-          {/* Atalhos Estratégicos C-Level */}
-          <div className="p-6 rounded-2xl bg-[#1E293B] border border-slate-800 shadow-md">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-300 mb-4">
-              Acesso Rápido às Operações Hospitalares
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <Link
-                href="/admin"
-                className="p-4 rounded-xl bg-slate-900/60 border border-slate-700 hover:border-teal-500 text-left transition-all group"
-              >
-                <Building2 className="w-5 h-5 text-teal-400 mb-2 group-hover:scale-110 transition-transform" />
-                <h4 className="text-xs font-bold text-white">Mapa de Salas &amp; Split</h4>
-                <p className="text-[11px] text-slate-400 mt-0.5">Painel do Administrador Condominial</p>
-              </Link>
-
-              <button
-                onClick={() => setShowTelemedModal(true)}
-                className="p-4 rounded-xl bg-slate-900/60 border border-slate-700 hover:border-sky-500 text-left transition-all group"
-              >
-                <Video className="w-5 h-5 text-sky-400 mb-2 group-hover:scale-110 transition-transform" />
-                <h4 className="text-xs font-bold text-white">Telemedicina Integrada</h4>
-                <p className="text-[11px] text-slate-400 mt-0.5">Consultas remotas com prontuário</p>
-              </button>
-
-              <Link
-                href="/internacao"
-                className="p-4 rounded-xl bg-slate-900/60 border border-slate-700 hover:border-purple-500 text-left transition-all group"
-              >
-                <Activity className="w-5 h-5 text-purple-400 mb-2 group-hover:scale-110 transition-transform" />
-                <h4 className="text-xs font-bold text-white">Censo de Leitos &amp; Altas</h4>
-                <p className="text-[11px] text-slate-400 mt-0.5">Posto Central de Enfermagem</p>
-              </Link>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="text-slate-400 text-[10px] font-bold uppercase tracking-wider border-b border-slate-100">
+                    <th className="pb-3">Paciente / CPF</th>
+                    <th className="pb-3">Clínica / Procedimento</th>
+                    <th className="pb-3">Status</th>
+                    <th className="pb-3 text-right">Custo Apurado</th>
+                    <th className="pb-3 text-right">Teto SUS</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {[
+                    { nome: 'Ana Carolina Souza', cpf: '044.***.***-27', clinica: 'Cardiologia • Angioplastia', status: 'Em Leito UTI', custo: 'R$ 2.450,00', teto: 'R$ 2.800,00' },
+                    { nome: 'Benedita Almeida Rocha', cpf: '032.***.***-41', clinica: 'Ortopedia • Artroscopia', status: 'Em Recuperação', custo: 'R$ 1.820,00', teto: 'R$ 1.950,00' },
+                    { nome: 'Sandra Regina Castro', cpf: '087.***.***-90', clinica: 'Trauma • Drenagem de Tórax', status: 'Dispensação FEFO', custo: 'R$ 890,00', teto: 'R$ 1.100,00' }
+                  ].map((p, idx) => (
+                    <tr key={idx} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="py-3">
+                        <strong className="text-slate-900 block">{p.nome}</strong>
+                        <span className="text-slate-400 text-[10px]">{p.cpf}</span>
+                      </td>
+                      <td className="py-3 text-slate-700">{p.clinica}</td>
+                      <td className="py-3">
+                        <span className="bg-blue-50 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-blue-200">
+                          {p.status}
+                        </span>
+                      </td>
+                      <td className="py-3 text-right font-mono font-bold text-slate-900">{p.custo}</td>
+                      <td className="py-3 text-right font-mono text-slate-500">{p.teto}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
 
-        {/* Coluna Direita: Central de Notificações C-Level (4 colunas) */}
+        {/* Coluna Direita: Auditoria & Alertas Operacionais (4 colunas) */}
         <div className="lg:col-span-4 space-y-6">
-          <div className="p-6 rounded-2xl bg-[#1E293B] border border-slate-800 shadow-md">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
+          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5">
+            <div className="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
-                <Bell className="w-5 h-5 text-amber-400" />
-                <h3 className="text-sm font-bold text-white">Notificações Críticas</h3>
+                <Bell className="w-4 h-4 text-[#1A56DB]" />
+                <h3 className="font-extrabold text-sm text-slate-900">Feed de Eventos Integrados</h3>
               </div>
               {unreadCount > 0 && (
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500 text-slate-950">
-                  {unreadCount} não lidas
+                <span className="text-[10px] font-black bg-rose-50 text-rose-700 border border-rose-200 px-2 py-0.5 rounded-full">
+                  {unreadCount} novos
                 </span>
               )}
             </div>
 
             <div className="space-y-3">
-              {notifications.map((notif) => (
+              {notifications.map(n => (
                 <div
-                  key={notif.id}
-                  className={`p-3.5 rounded-xl border text-xs transition-all ${
-                    notif.unread
-                      ? 'bg-[#141E33] border-amber-500/50 shadow-xs'
-                      : 'bg-slate-900/40 border-slate-800 opacity-60'
+                  key={n.id}
+                  className={`p-3 rounded-xl border text-xs transition-all ${
+                    n.unread ? 'bg-blue-50/50 border-blue-200/90' : 'bg-slate-50/50 border-slate-200/70'
                   }`}
                 >
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="font-bold text-white">{notif.title}</span>
-                    <span className="text-[10px] text-slate-400 font-mono">{notif.time}</span>
+                  <div className="flex items-start justify-between gap-2">
+                    <strong className="text-slate-900 font-bold">{n.title}</strong>
+                    <span className="text-[10px] text-slate-400 flex-shrink-0">{n.time}</span>
                   </div>
-                  <p className="text-slate-300 text-[11px] leading-relaxed mb-2">{notif.desc}</p>
-                  
-                  {notif.unread && (
+                  <p className="text-[11px] text-slate-600 mt-1 leading-snug">{n.desc}</p>
+                  {n.unread && (
                     <button
-                      onClick={() => markAsRead(notif.id)}
-                      className="text-[10px] text-teal-400 hover:text-teal-300 font-bold flex items-center gap-1"
+                      onClick={() => markAsRead(n.id)}
+                      className="text-[10px] font-bold text-[#1A56DB] hover:underline mt-2 inline-block"
                     >
-                      <CheckCircle2 className="w-3 h-3" /> Marcar como Resolvido
+                      Marcar como ciente
                     </button>
                   )}
                 </div>
@@ -459,157 +351,78 @@ export default function ExecutiveDashboardPage() {
             </div>
           </div>
 
-          {/* Card de Auditoria e SLA */}
-          <div className="p-5 rounded-2xl bg-gradient-to-br from-teal-950/60 to-slate-900 border border-teal-800/60 text-xs space-y-2">
-            <div className="flex items-center gap-2 text-teal-300 font-bold">
-              <ShieldCheck className="w-4 h-4" />
-              <span>Conformidade Regulatória 360°</span>
+          {/* Card de Resumo de Governança */}
+          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 space-y-3 text-xs">
+            <div className="flex items-center gap-2 text-slate-900 font-bold">
+              <ShieldCheck className="w-4 h-4 text-emerald-600" />
+              <span>Conformidade &amp; Governança</span>
             </div>
-            <p className="text-slate-300 leading-relaxed text-[11px]">
-              Todos os registros cirúrgicos, laudos de exames e desinfecções de leito possuem logs criptográficos imutáveis para atendimento às normas CFM, COFEN e ANVISA.
+            <p className="text-[11px] text-slate-500 leading-relaxed">
+              O banco de dados oficial <strong>oogpcdaosexarxmvupiw</strong> opera com Row Level Security (RLS) e isolamento estrito de inquilinos em todos os módulos.
             </p>
+            <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
+              <span className="text-slate-400">Auditoria LGPD/CFM:</span>
+              <strong className="text-emerald-700 font-bold">100% Regular</strong>
+            </div>
           </div>
         </div>
+      </div>
 
-      </main>
-
-      {/* =========================================================================
-          MODAL: SIMULADOR ESTRATÉGICO DE EXPANSÃO DE LEITOS (C-LEVEL)
-         ========================================================================= */}
+      {/* Modal Simulador de Leitos */}
       {showSimModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-[#1E293B] border border-slate-700 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-6 text-xs">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <div>
-                <h3 className="text-base font-extrabold text-white flex items-center gap-2">
-                  <Sliders className="w-5 h-5 text-emerald-400" />
-                  Simulador de Expansão de Leitos &amp; ROI
-                </h3>
-                <p className="text-[11px] text-slate-400 mt-0.5">
-                  Projeção de receita marginal para novas alas de internação
-                </p>
-              </div>
-              <button
-                onClick={() => setShowSimModal(false)}
-                className="text-slate-400 hover:text-white"
-              >
-                <X className="w-5 h-5" />
-              </button>
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white max-w-md w-full rounded-3xl shadow-2xl border border-slate-200 overflow-hidden animate-fadeIn">
+            <div className="px-6 py-4 bg-[#1A56DB] text-white flex items-center justify-between">
+              <h3 className="font-extrabold text-base">Simulador de Expansão de Leitos</h3>
+              <button onClick={() => setShowSimModal(false)} className="font-bold text-white/80 hover:text-white">✕</button>
             </div>
 
-            <div className="space-y-4">
+            <div className="p-6 space-y-4 text-xs">
               <div>
-                <div className="flex justify-between items-center mb-1.5">
-                  <span className="font-bold text-slate-300">Novos Leitos a Adicionar:</span>
-                  <span className="font-mono text-base font-bold text-teal-400">{extraBeds} leitos</span>
-                </div>
+                <label className="block font-bold text-slate-700 uppercase mb-1">Leitos Adicionais</label>
                 <input
                   type="range"
-                  min={1}
-                  max={8}
+                  min="1"
+                  max="10"
                   value={extraBeds}
-                  onChange={(e) => setExtraBeds(Number(e.target.value))}
-                  className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-teal-500"
+                  onChange={e => setExtraBeds(Number(e.target.value))}
+                  className="w-full accent-blue-600"
                 />
+                <span className="text-right block font-mono font-bold text-sm text-slate-900">{extraBeds} leitos</span>
               </div>
 
               <div>
-                <div className="flex justify-between items-center mb-1.5">
-                  <span className="font-bold text-slate-300">Taxa Média de Ocupação Prevista:</span>
-                  <span className="font-mono text-base font-bold text-emerald-400">{occupancyAssumption}%</span>
-                </div>
+                <label className="block font-bold text-slate-700 uppercase mb-1">Taxa de Ocupação Estimada</label>
                 <input
                   type="range"
-                  min={50}
-                  max={100}
-                  step={5}
+                  min="50"
+                  max="100"
                   value={occupancyAssumption}
-                  onChange={(e) => setOccupancyAssumption(Number(e.target.value))}
-                  className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                  onChange={e => setOccupancyAssumption(Number(e.target.value))}
+                  className="w-full accent-blue-600"
                 />
+                <span className="text-right block font-mono font-bold text-sm text-slate-900">{occupancyAssumption}%</span>
               </div>
 
-              {/* Resultado Financeiro da Simulação */}
-              <div className="p-4 bg-slate-900 border border-slate-800 rounded-2xl space-y-2">
+              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Receita Bruta Adicional Estimada / mês:</span>
-                  <span className="font-mono font-bold text-white">
-                    R$ {totalExtraRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                  </span>
+                  <span>Receita Adicional Estimada:</span>
+                  <strong className="text-slate-900 font-bold">R$ {totalExtraRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}/mês</strong>
                 </div>
-                <div className="flex justify-between text-emerald-400 font-bold text-sm pt-2 border-t border-slate-800">
-                  <span>Margem de Contribuição Líquida (22%):</span>
-                  <span className="font-mono">
-                    R$ {hubMargin.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                  </span>
+                <div className="flex justify-between text-emerald-700 font-bold">
+                  <span>Margem de Contribuição (22%):</span>
+                  <span>R$ {hubMargin.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}/mês</span>
                 </div>
               </div>
-            </div>
 
-            <div className="pt-3 border-t border-slate-800 flex justify-end gap-2">
-              <button
-                onClick={() => setShowSimModal(false)}
-                className="px-4 py-2 border border-slate-700 text-slate-300 rounded-xl text-xs font-semibold hover:text-white"
-              >
-                Fechar
-              </button>
-              <button
-                onClick={() => {
-                  setShowSimModal(false);
-                  showToast('Cenário de expansão gravado no plano de investimento 2027!');
-                }}
-                className="px-5 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold shadow-md"
-              >
-                Salvar Cenário no Plano Anual
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* =========================================================================
-          MODAL: SALA VIRTUAL DE TELEMEDICINA 360
-         ========================================================================= */}
-      {showTelemedModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-[#1E293B] border border-slate-700 rounded-3xl max-w-2xl w-full p-6 shadow-2xl space-y-4 text-xs">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <div className="flex items-center gap-2">
-                <Video className="w-5 h-5 text-sky-400" />
-                <h3 className="text-base font-extrabold text-white">
-                  Sala de Telemedicina 360° (WebRTC Criptografado)
-                </h3>
+              <div className="flex justify-end pt-2">
+                <button
+                  onClick={() => setShowSimModal(false)}
+                  className="px-5 py-2.5 bg-[#1A56DB] hover:bg-blue-700 text-white rounded-xl font-bold shadow-sm"
+                >
+                  Concluir Simulação
+                </button>
               </div>
-              <button
-                onClick={() => setShowTelemedModal(false)}
-                className="text-slate-400 hover:text-white"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Simulação de Janela de Vídeo */}
-            <div className="relative aspect-video bg-slate-950 rounded-2xl border border-slate-800 overflow-hidden flex items-center justify-center">
-              <div className="text-center space-y-2">
-                <div className="w-16 h-16 rounded-full bg-sky-500/20 text-sky-400 flex items-center justify-center mx-auto animate-pulse">
-                  <Video className="w-8 h-8" />
-                </div>
-                <p className="text-sm font-bold text-white">Conexão Segura Estabelecida</p>
-                <p className="text-[11px] text-slate-400">Paciente: Ana Carolina Souza • Fila Virtual</p>
-              </div>
-              <div className="absolute top-3 left-3 px-2 py-1 bg-emerald-950/80 border border-emerald-800 rounded text-[10px] text-emerald-400 font-mono flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                HIPAA / LGPD Compliant
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-2 pt-2">
-              <button
-                onClick={() => setShowTelemedModal(false)}
-                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold"
-              >
-                Encerrar Chamada
-              </button>
             </div>
           </div>
         </div>

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { VigiaSidebarLayout } from '../../components/VigiaSidebarLayout';
+import { KpiCard } from '../../components/KpiCard';
 import {
   FileText,
   ShoppingCart,
@@ -163,59 +164,43 @@ export default function VigiaComprasPage() {
         </div>
       </div>
 
-      {/* 2. OS 4 CARDS DE MÉTRICAS EM LINHA DO VIGIA SAÚDE */}
+      {/* 2. OS 4 CARDS DE MÉTRICAS MINIMALISTAS (Máximo 3 linhas + Tooltip informativo) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        {/* Card 1: ATAs Ativas */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between">
-            <span className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-              <FileText className="w-5 h-5" />
-            </span>
-          </div>
-          <div className="mt-4">
-            <p className="text-3xl font-black text-slate-900">8</p>
-            <p className="text-xs font-bold text-slate-400 mt-0.5">ATAs Ativas</p>
-          </div>
-        </div>
+        <KpiCard
+          title="ATAs Ativas"
+          value="8"
+          subtitle="Homologadas SRP"
+          icon={FileText}
+          tooltipInfo="Total de Atas de Registro de Preços em vigência plena pelo Sistema de Registro de Preços (Lei 14.133/21), garantindo fornecimento contínuo sem desabastecimento."
+          trend={{ text: "100% Regulares", isPositive: true }}
+        />
 
-        {/* Card 2: PdCs Pendentes */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between">
-            <span className="w-9 h-9 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center">
-              <ShoppingCart className="w-5 h-5" />
-            </span>
-          </div>
-          <div className="mt-4">
-            <p className="text-3xl font-black text-slate-900">8</p>
-            <p className="text-xs font-bold text-slate-400 mt-0.5">PdCs Pendentes</p>
-          </div>
-        </div>
+        <KpiCard
+          title="PdCs Pendentes"
+          value="8"
+          subtitle="Ordens de Compra"
+          icon={ShoppingCart}
+          tooltipInfo="Pedidos de Compra emitidos que aguardam confirmação do fornecedor ou emissão da nota de empenho orçamentário para liberação da carga."
+          trend={{ text: "Aguardando Empenho", isAlert: false }}
+        />
 
-        {/* Card 3: ATAs Próximas do Vencimento */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between">
-            <span className="w-9 h-9 rounded-xl bg-orange-50 text-orange-500 flex items-center justify-center">
-              <AlertTriangle className="w-5 h-5" />
-            </span>
-          </div>
-          <div className="mt-4">
-            <p className="text-3xl font-black text-slate-900">3</p>
-            <p className="text-xs font-bold text-slate-400 mt-0.5">ATAs Próximas do Vencimento</p>
-          </div>
-        </div>
+        <KpiCard
+          title="ATAs a Vencer"
+          value="3"
+          subtitle="Vencimento <45d"
+          icon={AlertTriangle}
+          tooltipInfo="Contratos com término de vigência nos próximos 45 dias. Recomenda-se abrir processo licitatório de prorrogação ou nova ARP para evitar desabastecimento."
+          trend={{ text: "Ação Preventiva", isAlert: true }}
+        />
 
-        {/* Card 4: Reequilíbrios Pendentes */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between">
-            <span className="w-9 h-9 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center">
-              <TrendingUp className="w-5 h-5" />
-            </span>
-          </div>
-          <div className="mt-4">
-            <p className="text-3xl font-black text-slate-900">5</p>
-            <p className="text-xs font-bold text-slate-400 mt-0.5">Reequilíbrios Pendentes</p>
-          </div>
-        </div>
+        <KpiCard
+          title="Reequilíbrios"
+          value="5"
+          subtitle="Pleitos em Análise"
+          icon={TrendingUp}
+          tooltipInfo="Pedidos de reequilíbrio econômico-financeiro protocolados por fornecedores com confronto automático de variação cambial e tabela CMED."
+          trend={{ text: "Em Auditoria", isAlert: false }}
+        />
       </div>
 
       {/* 3. SEÇÃO INFERIOR DUAL: PEDIDOS DE COMPRA RECENTES & SALDO DE ATAS (DONUT) */}
