@@ -89,6 +89,15 @@ export function HospitalNav() {
               <Link href="/ingestao-modulos" className="flex items-center gap-2 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-blue-600">
                 <span>📥</span> Hub Ingestão &amp; Templates CSV
               </Link>
+              <Link href="/compras-publicas" className="flex items-center gap-2 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-emerald-700 border-t border-slate-100">
+                <span>🏛️</span> Compras Públicas &amp; Atas ARP
+              </Link>
+              <Link href="/estoque-central" className="flex items-center gap-2 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-blue-700">
+                <span>🏢</span> Estoque Central &amp; CD Vigia
+              </Link>
+              <Link href="/escala-medica" className="flex items-center gap-2 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-indigo-700">
+                <span>👨‍⚕️</span> Escala Médica &amp; Plantonistas
+              </Link>
               <Link href="/arquitetura-seguranca" className="flex items-center gap-2 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 border-t border-slate-100">
                 <span>🛡️</span> Arquitetura &amp; Blindagem RN-IND
               </Link>
