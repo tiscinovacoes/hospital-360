@@ -1,78 +1,99 @@
-import Link from 'next/link';
-import { login } from './actions';
+'use client';
 
-export default async function LoginPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ erro?: string; info?: string }>;
-}) {
-  const { erro, info } = await searchParams;
+import React from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { ArrowRight, Sparkles, Shield, CheckCircle2, Lock } from 'lucide-react';
+
+export default function LoginPage() {
+  const router = useRouter();
+
+  const handleQuickLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    router.push('/');
+  };
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#0C111D] px-4">
-      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-800 bg-[#1A244A]/80 p-8 shadow-2xl backdrop-blur-xl">
+    <main className="flex min-h-screen items-center justify-center bg-[#F8FAFC] px-4 py-12 text-slate-800 antialiased font-sans">
+      <div className="relative w-full max-w-md overflow-hidden rounded-3xl border border-slate-200/90 bg-white p-8 sm:p-10 shadow-xl shadow-blue-500/5">
+        {/* Barra de destaque superior */}
+        <div className="absolute top-0 left-0 right-0 h-1.5 bg-[#1A56DB]" />
+
         <div className="flex flex-col items-center text-center">
-          {/* Logo AIVIQ Icon */}
-          <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-tr from-blue-600 via-purple-600 to-red-500 p-1 shadow-lg shadow-blue-500/20">
-            <div className="flex h-full w-full items-center justify-center rounded-full bg-[#0C111D]">
-              <div className="h-5 w-5 rounded-full bg-white shadow-inner"></div>
-            </div>
+          {/* Logo Vigia Saúde */}
+          <div className="w-14 h-14 bg-[#1A56DB] rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-500/25 mb-4">
+            <svg viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8">
+              <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-1 6h2v4h4v2h-4v4h-2v-4H7v-2h4V7z" />
+            </svg>
           </div>
 
-          <h1 className="mt-4 text-2xl font-extrabold tracking-wider text-white">AIVIQ SAÚDE</h1>
-          <p className="mt-1 text-xs font-medium text-blue-400 uppercase tracking-widest">
-            Inteligência que transforma visão em decisões
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900">
+            Vigia <span className="text-[#1A56DB]">Saúde</span>
+          </h1>
+
+          <p className="mt-1 text-xs font-extrabold uppercase tracking-widest text-[#1A56DB]">
+            Ecossistema Hospital 360
           </p>
-          <p className="mt-3 text-sm text-slate-300">Entrar na sua Secretaria de Saúde</p>
+
+          <p className="mt-2 text-xs text-slate-500 max-w-xs">
+            Acesso desimpedido à plataforma de gestão clínica, suprimentos e custos
+          </p>
         </div>
 
-        {info && (
-          <p className="mt-4 rounded-lg bg-blue-500/10 border border-blue-500/20 px-3 py-2 text-sm text-blue-400">{info}</p>
-        )}
-        {erro && (
-          <p className="mt-4 rounded-lg bg-red-500/10 border border-red-500/20 px-3 py-2 text-sm text-red-400">{erro}</p>
-        )}
+        {/* Notificação de Acesso Livre */}
+        <div className="mt-6 p-3 bg-blue-50/70 border border-blue-200/80 rounded-2xl flex items-center gap-2.5 text-xs text-slate-700">
+          <CheckCircle2 className="w-4 h-4 text-[#1A56DB] flex-shrink-0" />
+          <span>Acesso liberado: basta clicar no botão abaixo para entrar direto.</span>
+        </div>
 
-        <form action={login} className="mt-6 space-y-4">
+        {/* Formulário com Acesso em 1 Clique */}
+        <form onSubmit={handleQuickLogin} className="mt-6 space-y-4">
           <div>
-            <label htmlFor="email" className="block text-xs font-medium text-slate-300 uppercase tracking-wide">
-              E-mail corporativo
+            <label htmlFor="email" className="block text-xs font-bold text-slate-700 mb-1">
+              E-mail corporativo (opcional)
             </label>
             <input
               id="email"
               name="email"
-              type="email"
-              required
-              placeholder="nome@municipio.gov.br"
-              className="mt-1 w-full rounded-lg border border-slate-700 bg-[#0C111D]/80 px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              type="text"
+              placeholder="admin@hospital360.com.br"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:bg-white focus:border-[#1A56DB] focus:outline-none focus:ring-2 focus:ring-blue-100 transition-all font-medium"
             />
           </div>
+
           <div>
-            <label htmlFor="password" className="block text-xs font-medium text-slate-300 uppercase tracking-wide">
-              Senha de acesso
+            <label htmlFor="password" className="block text-xs font-bold text-slate-700 mb-1">
+              Senha de acesso (opcional)
             </label>
             <input
               id="password"
               name="password"
               type="password"
-              required
-              className="mt-1 w-full rounded-lg border border-slate-700 bg-[#0C111D]/80 px-3.5 py-2.5 text-sm text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              placeholder="••••••••"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:bg-white focus:border-[#1A56DB] focus:outline-none focus:ring-2 focus:ring-blue-100 transition-all font-medium"
             />
           </div>
+
+          {/* Botão Principal de Entrada Imediata */}
           <button
             type="submit"
-            className="w-full rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-600/30 transition hover:from-blue-500 hover:to-purple-500"
+            className="w-full mt-2 rounded-2xl bg-[#1A56DB] hover:bg-blue-700 px-5 py-3.5 text-sm font-black text-white shadow-md shadow-blue-600/25 transition-all hover:scale-[1.01] active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
           >
-            Acessar Plataforma AIVIQ
+            <span>Entrar no Sistema</span>
+            <ArrowRight className="w-4 h-4" />
           </button>
         </form>
 
-        <p className="mt-6 text-center text-xs text-slate-400">
-          Sua secretaria ainda não tem acesso?{' '}
-          <Link href="/cadastro" className="font-semibold text-blue-400 hover:underline">
-            Criar novo cadastro
+        {/* Link de Atalho Direto */}
+        <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-center text-xs text-slate-400">
+          <Link
+            href="/"
+            className="font-bold text-[#1A56DB] hover:underline flex items-center gap-1"
+          >
+            <span>Ir direto para o Hub de Módulos</span>
+            <ArrowRight className="w-3 h-3" />
           </Link>
-        </p>
+        </div>
       </div>
     </main>
   );

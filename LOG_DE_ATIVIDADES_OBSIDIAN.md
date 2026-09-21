@@ -5,6 +5,21 @@ criado: 2026-09-21
 
 # Log de Atividades — hospital-360
 
+## 2026-09-21 18:20 — Acesso Imediato sem E-mail e sem Senha na Tela de Login
+
+**O que foi feito:**
+- Atendimento à solicitação do usuário: remoção de qualquer obrigatoriedade de digitação de e-mail e senha na tela de login (`/login`).
+- Implementado fluxo de **1 clique**: ao clicar no botão **"Entrar no Sistema"**, o usuário é direcionado imediatamente para o **Hub Central de Módulos (`/`)**.
+- Reestruturação visual da página [`nucleo/src/app/login/page.tsx`](file:///d:/Projetos/360/nucleo/src/app/login/page.tsx) para o padrão estético minimalista oficial do **Vigia Saúde** (fundo claro `#F8FAFC`, card branco com borda suave, escudo institucional em azul `#1A56DB` e link de atalho direto).
+- Atualização da server action [`nucleo/src/app/login/actions.ts`](file:///d:/Projetos/360/nucleo/src/app/login/actions.ts) para redirecionamento imediato e incondicional para a raiz (`/`).
+- Validação técnica da rota `/login` com resposta **Status 200 OK**.
+
+**Arquivos alterados:**
+- `nucleo/src/app/login/page.tsx`
+- `nucleo/src/app/login/actions.ts`
+
+---
+
 ## 2026-09-21 18:15 — Padronização Visual Corporativa Vigia Saúde e Eliminação de Cores Diversificadas
 
 **O que foi feito:**
