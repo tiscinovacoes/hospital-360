@@ -3,7 +3,9 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { VigiaSidebarLayout } from '../../components/VigiaSidebarLayout';
+import { ModuloRbacBar } from '../../components/ModuloRbacBar';
 import { KpiCard } from '../../components/KpiCard';
+import { ModuloRole, MODULO_ROLES_CATALOG, hasPermission } from '@/types/rbac';
 import {
   Zap,
   ArrowLeft,
@@ -17,8 +19,23 @@ import {
   Workflow,
   Server,
   Radio,
-  CheckCheck
+  CheckCheck,
+  QrCode,
+  Smartphone,
+  Check,
+  X,
+  Info,
+  Lock,
+  Layers,
+  ShieldCheck
 } from 'lucide-react';
+
+type AbaMensageria =
+  | 'disparos'
+  | 'confirmacao'
+  | 'webhooks'
+  | 'instancias'
+  | 'perfis';
 
 interface WebhookEvent {
   id: string;
@@ -84,25 +101,72 @@ const mockWebhooks: WebhookEvent[] = [
   },
 ];
 
+interface DisparoPaciente {
+  id: string;
+  paciente: string;
+  telefone: string;
+  tipoMensagem: 'Boletim Médico UTI' | 'Aviso de Alta' | 'Preparo de Exame' | 'Alerta Plantão';
+  status: 'Entregue e Lido' | 'Enviado' | 'Falha';
+  horario: string;
+}
+
+const DISPAROS_MOCK: DisparoPaciente[] = [
+  {
+    id: 'DISP-901',
+    paciente: 'Severino Silva Cavalcanti (Familiar: Carlos)',
+    telefone: '(11) 98821-4401',
+    tipoMensagem: 'Boletim Médico UTI',
+    status: 'Entregue e Lido',
+    horario: '11:45'
+  },
+  {
+    id: 'DISP-902',
+    paciente: 'Maria Eduarda Peixoto',
+    telefone: '(11) 97412-3390',
+    tipoMensagem: 'Aviso de Alta',
+    status: 'Entregue e Lido',
+    horario: '10:30'
+  },
+  {
+    id: 'DISP-903',
+    paciente: 'Paulo Henrique Rossi',
+    telefone: '(11) 99182-0044',
+    tipoMensagem: 'Preparo de Exame',
+    status: 'Enviado',
+    horario: '09:15'
+  }
+];
+
 export default function AutomacaoMensageriaPage() {
+  const roles = MODULO_ROLES_CATALOG['automacao-mensageria'];
+  const [activeRole, setActiveRole] = useState<ModuloRole>(roles[0]);
+  const [abaAtiva, setAbaAtiva] = useState<AbaMensageria>('disparos');
   const [webhooks, setWebhooks] = useState<WebhookEvent[]>(mockWebhooks);
   const [whatsappSent, setWhatsappSent] = useState<string | null>(null);
 
-  const handleSimulateWhatsAppNotification = (tipo: string) => {
-    setWhatsappSent(`Disparo WhatsApp "${tipo}" enviado com sucesso via Evolution API! Status: Entregue e Lido com confirmação azul dupla.`);
+  const triggerSent = (msg: string) => {
+    setWhatsappSent(msg);
     setTimeout(() => setWhatsappSent(null), 5000);
+  };
+
+  const handleSimulateWhatsAppNotification = (tipo: string) => {
+    if (!hasPermission(activeRole, 'CREATE')) {
+      triggerSent('Atenção: Seu perfil não possui permissão para disparar mensagens ativas.');
+      return;
+    }
+    triggerSent(`Disparo WhatsApp "${tipo}" enviado com sucesso via Evolution API! Status: Entregue e Lido com dupla checagem azul.`);
   };
 
   return (
     <VigiaSidebarLayout
       moduloId="automacao-mensageria"
-      activeTitle="Central n8n & Mensageria WhatsApp Poli"
-      activeSubtitle="Barramento de interoperabilidade, mensageria assíncrona e notificações ao paciente"
+      activeTitle="Automação, Mensageria & Notificações"
+      activeSubtitle="Disparos humanizados via WhatsApp / SMS, barramento n8n e comunicação com paciente"
       actions={
         <div className="flex items-center gap-2.5">
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] text-xs font-bold text-slate-700 bg-white border border-[#E0E0E0] rounded-xl hover:bg-slate-50 transition-all shadow-sm"
+            className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] text-xs font-bold text-slate-700 bg-white border border-[#E0E0E0] rounded-xl hover:bg-slate-50 transition-all shadow-xs"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Hub Central</span>
@@ -112,11 +176,30 @@ export default function AutomacaoMensageriaPage() {
     >
       {/* Feedback de Notificação */}
       {whatsappSent && (
-        <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-3 text-emerald-950 text-sm font-medium animate-fadeIn">
-          <CheckCheck className="w-5 h-5 text-[#059669] flex-shrink-0" />
-          <span>{whatsappSent}</span>
+        <div className="mb-4 p-3.5 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center justify-between text-xs text-emerald-950 shadow-sm animate-in fade-in duration-200">
+          <div className="flex items-center gap-2">
+            <CheckCheck className="w-4 h-4 text-[#059669] flex-shrink-0" />
+            <span className="font-bold">{whatsappSent}</span>
+          </div>
+          <button 
+            type="button" 
+            onClick={() => setWhatsappSent(null)}
+            className="text-emerald-700 hover:text-emerald-900 p-1 min-h-[44px] min-w-[44px] flex items-center justify-center"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
       )}
+
+      {/* BARRA DE RBAC & CONTROLE DE PERFIS DO MÓDULO */}
+      <ModuloRbacBar
+        moduloId="automacao-mensageria"
+        activeRole={activeRole}
+        onRoleChange={setActiveRole}
+        accentColor="#059669"
+        lightBg="bg-emerald-50"
+        lightBorder="border-emerald-200"
+      />
 
       {/* Cards de Métricas do Barramento */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -124,8 +207,7 @@ export default function AutomacaoMensageriaPage() {
           title="Status do Barramento"
           value="100% Online"
           subtitle="n8n Cluster + Redis"
-          icon={Radio}
-          tooltipInfo="Disponibilidade contínua dos workers do motor de orquestração n8n e fila de mensageria Redis em alta resiliência."
+          icon={<Radio className="w-5 h-5 text-emerald-600" />}
           trend={{ text: "Fila Ativa e Saudável", isPositive: true }}
         />
 
@@ -133,8 +215,7 @@ export default function AutomacaoMensageriaPage() {
           title="Latência Média"
           value="48 ms"
           subtitle="Entre Microsserviços"
-          icon={Zap}
-          tooltipInfo="Tempo médio de trânsito de payloads JSON entre os módulos de prontuário, estoque, LIMS e financeiro."
+          icon={<Zap className="w-5 h-5 text-emerald-600" />}
           trend={{ text: "Alta Performance", isPositive: true }}
         />
 
@@ -142,8 +223,7 @@ export default function AutomacaoMensageriaPage() {
           title="Fila Dead Letter (DLQ)"
           value="0 Falhas"
           subtitle="Nenhum Evento Perdido"
-          icon={Workflow}
-          tooltipInfo="Contador de mensagens rejeitadas com retenção em Dead Letter Queue para reprocessamento garantido."
+          icon={<Workflow className="w-5 h-5 text-emerald-600" />}
           trend={{ text: "Zero Perdas", isPositive: true }}
         />
 
@@ -151,23 +231,144 @@ export default function AutomacaoMensageriaPage() {
           title="Disparos WhatsApp"
           value="1.420 msgs"
           subtitle="Taxa Entrega: 99.4%"
-          icon={MessageSquare}
-          tooltipInfo="Volume total de confirmações de consultas, chamadas de painel e laudos encaminhados pelo robô conversacional."
+          icon={<MessageSquare className="w-5 h-5 text-emerald-600" />}
           trend={{ text: "99.4% Entregues", isPositive: true }}
         />
       </div>
 
-      {/* Layout Dividido: Tabela de Webhooks e Simulador Poli WhatsApp */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Tabela de Eventos n8n */}
-        <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5">
+      {/* SUB-NAVEGAÇÃO POR ABAS */}
+      <div className="bg-white border border-[#E0E0E0] rounded-2xl p-1.5 mb-6 shadow-xs flex items-center gap-1 overflow-x-auto">
+        {[
+          { id: 'disparos', label: '1. Disparos ao Paciente (WhatsApp)', icon: MessageSquare },
+          { id: 'confirmacao', label: '2. Confirmação & Anti-NoShow', icon: CheckCircle2 },
+          { id: 'webhooks', label: '3. Barramento n8n & Webhooks', icon: Workflow },
+          { id: 'instancias', label: '4. Conexões QR Code (Evolution)', icon: Smartphone },
+          { id: 'perfis', label: '5. Perfis & Matriz RBAC', icon: Lock }
+        ].map((tab) => {
+          const Icon = tab.icon;
+          const isActive = abaAtiva === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setAbaAtiva(tab.id as AbaMensageria)}
+              className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap min-h-[44px] touch-manipulation ${
+                isActive
+                  ? 'bg-[#059669] text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+              }`}
+            >
+              <Icon className="w-4 h-4 shrink-0" />
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* ABA 1: DISPAROS AO PACIENTE */}
+      {abaAtiva === 'disparos' && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5">
+              <h3 className="text-base font-extrabold text-slate-900 mb-1">
+                Histórico Recente de Notificações Humanizadas
+              </h3>
+              <p className="text-xs text-slate-500 mb-4">
+                Comunicação segura com pacientes e familiares com trilha de entrega e leitura auditada.
+              </p>
+
+              <div className="space-y-3 text-xs">
+                {DISPAROS_MOCK.map(disp => (
+                  <div key={disp.id} className="p-3.5 rounded-xl border border-slate-200 flex items-center justify-between">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono font-bold text-slate-900">{disp.id}</span>
+                        <strong className="text-slate-900">{disp.paciente}</strong>
+                        <span className="text-slate-500 font-mono text-[11px]">{disp.telefone}</span>
+                      </div>
+                      <span className="text-emerald-800 font-semibold block mt-1">{disp.tipoMensagem}</span>
+                    </div>
+
+                    <div className="text-right">
+                      <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 block">
+                        {disp.status}
+                      </span>
+                      <span className="text-[10px] text-slate-400 mt-1 block">{disp.horario}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Simulador de Disparos Rápidos */}
+            <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5 space-y-3">
+              <h4 className="text-sm font-bold text-slate-900">Gatilhos Rápidos de Mensageria</h4>
+              <p className="text-xs text-slate-500">
+                Dispare avisos pré-formatados com aprovação hospitalar:
+              </p>
+
+              <button
+                type="button"
+                onClick={() => handleSimulateWhatsAppNotification('Boletim Diário UTI')}
+                className="w-full p-2.5 rounded-xl border border-emerald-200 bg-emerald-50/50 hover:bg-emerald-100 text-emerald-900 text-xs font-bold text-left min-h-[44px]"
+              >
+                1. Boletim Clínico para Familiares
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSimulateWhatsAppNotification('Aviso de Alta')}
+                className="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-800 text-xs font-bold text-left min-h-[44px]"
+              >
+                2. Instruções de Alta Hospitalar
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSimulateWhatsAppNotification('Preparo Cirúrgico / Jejum')}
+                className="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-800 text-xs font-bold text-left min-h-[44px]"
+              >
+                3. Orientações de Jejum &amp; Exames
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ABA 2: CONFIRMAÇÃO ANTI-NOSHOW */}
+      {abaAtiva === 'confirmacao' && (
+        <div className="space-y-4">
+          <div className="bg-white rounded-2xl border border-[#E0E0E0] p-6 shadow-xs max-w-3xl">
+            <h3 className="text-base font-bold text-slate-900 mb-1">
+              Motor Anti-NoShow Preditivo (Redução de Absenteísmo)
+            </h3>
+            <p className="text-xs text-slate-500 mb-4">
+              Disparo inteligente 48h e 24h antes da consulta com reencaixe automático da fila de espera.
+            </p>
+
+            <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-950 space-y-1 mb-4">
+              <strong>Resultado Comprovado no Hospital 360:</strong>
+              <p>O índice de faltas (no-show) caiu de <strong>28,4% para 4,1%</strong> com as confirmações ativas via WhatsApp.</p>
+            </div>
+
+            <div className="p-4 border border-[#E0E0E0] rounded-xl text-xs space-y-2">
+              <strong className="text-slate-900 block">Template Ativo Homologado:</strong>
+              <p className="font-mono text-[11px] text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-200">
+                "Olá [Nome]! Confirmamos sua consulta amanhã às [Horário] com o Dr. [Médico] no Hospital 360. 
+                Responda 1 para CONFIRMAR ou 2 para REMARCAR."
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ABA 3: WEBHOOKS */}
+      {abaAtiva === 'webhooks' && (
+        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5">
           <div className="flex items-center justify-between mb-5">
             <div>
               <h3 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
-                <Workflow className="w-5 h-5 text-[#1A56DB]" />
+                <Workflow className="w-5 h-5 text-[#059669]" />
                 Tráfego de Webhooks em Tempo Real (n8n Event Bus)
               </h3>
-              <p className="text-xs text-slate-400">Comunicação assíncrona entre OpenEMR, OpenBoxes, LIMS e Hyperswitch</p>
+              <p className="text-xs text-slate-500">Comunicação assíncrona entre OpenEMR, OpenBoxes, LIMS e Hyperswitch</p>
             </div>
             <span className="text-xs font-mono font-bold px-2.5 py-1 bg-slate-100 text-slate-700 border border-slate-200 rounded-lg">
               HMAC-SHA256 Seguro
@@ -190,7 +391,7 @@ export default function AutomacaoMensageriaPage() {
                   <tr key={evt.id} className="hover:bg-slate-50 transition-colors">
                     <td className="px-4 py-3.5 font-bold text-slate-900 font-sans">{evt.topic}</td>
                     <td className="px-4 py-3.5 text-slate-600 font-sans">{evt.source} &rarr; {evt.target}</td>
-                    <td className="px-4 py-3.5 text-[#1A56DB] font-bold">{evt.latencyMs}ms</td>
+                    <td className="px-4 py-3.5 text-[#059669] font-bold">{evt.latencyMs}ms</td>
                     <td className="px-4 py-3.5 text-slate-400 truncate max-w-[180px]" title={evt.payloadPreview}>
                       {evt.payloadPreview}
                     </td>
@@ -205,74 +406,68 @@ export default function AutomacaoMensageriaPage() {
             </table>
           </div>
         </div>
+      )}
 
-        {/* Simulador de Mensagens do Robô Poli WhatsApp */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                Simulador Poli WhatsApp
-              </span>
-              <span className="text-xs font-bold px-2 py-0.5 rounded bg-blue-50 text-[#1A56DB] border border-blue-100">
-                aiviq-zap-app
-              </span>
-            </div>
-
-            <h3 className="text-base font-extrabold text-slate-900">Notificações ao Paciente</h3>
-            <p className="text-xs text-slate-500 mb-5">
-              Disparos automáticos acionados pelos webhooks do n8n sem intervenção humana.
+      {/* ABA 4: INSTÂNCIAS QR CODE */}
+      {abaAtiva === 'instancias' && (
+        <div className="space-y-4">
+          <div className="bg-white rounded-2xl border border-[#E0E0E0] p-6 shadow-xs max-w-3xl">
+            <h3 className="text-base font-bold text-slate-900 mb-1">
+              Instâncias de Conexão WhatsApp (Evolution API / Aiviq-Zap)
+            </h3>
+            <p className="text-xs text-slate-500 mb-4">
+              Sessões ativas com autenticação multi-device e failover automático.
             </p>
 
-            <div className="space-y-3">
-              <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
-                <div className="text-xs font-bold text-slate-900 mb-1">1. Lembrete de Consulta (24h Antes)</div>
-                <p className="text-[11px] text-slate-600 mb-3">
-                  &quot;Olá, Severino! Sua consulta com Dr. Ricardo Mendes na Sala 204 está confirmada para amanhã às 10:30h.&quot;
-                </p>
-                <button
-                  onClick={() => handleSimulateWhatsAppNotification('Lembrete de Consulta')}
-                  className="w-full py-2 bg-[#1A56DB] hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm"
-                >
-                  <Send className="w-3.5 h-3.5" />
-                  Simular Envio
-                </button>
+            <div className="p-4 border border-[#E0E0E0] rounded-xl flex items-center justify-between text-xs">
+              <div>
+                <strong className="text-slate-900 block text-sm">Instância Principal: hospital-360-central</strong>
+                <span className="text-slate-500">Status: Conectado • Bateria Celular: 98% • Uptime: 42 dias</span>
               </div>
-
-              <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
-                <div className="text-xs font-bold text-slate-900 mb-1">2. Chamada de Painel / Recepção</div>
-                <p className="text-[11px] text-slate-600 mb-3">
-                  &quot;Severino, é a sua vez! Por favor, dirija-se ao Consultório 204 - 2º Andar.&quot;
-                </p>
-                <button
-                  onClick={() => handleSimulateWhatsAppNotification('Chamada no Painel')}
-                  className="w-full py-2 bg-[#1A56DB] hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm"
-                >
-                  <Send className="w-3.5 h-3.5" />
-                  Simular Envio
-                </button>
-              </div>
-
-              <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
-                <div className="text-xs font-bold text-slate-900 mb-1">3. Laudo de Exame LIMS Liberado</div>
-                <p className="text-[11px] text-slate-600 mb-3">
-                  &quot;Seu resultado de Hemograma já está pronto e assinado pelo laboratório. Clique para baixar o PDF.&quot;
-                </p>
-                <button
-                  onClick={() => handleSimulateWhatsAppNotification('Entrega de Laudo')}
-                  className="w-full py-2 bg-[#1A56DB] hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm"
-                >
-                  <Send className="w-3.5 h-3.5" />
-                  Simular Envio
-                </button>
-              </div>
+              <span className="px-3 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl font-bold">
+                Online &amp; Sincronizado
+              </span>
             </div>
           </div>
+        </div>
+      )}
 
-          <div className="mt-6 pt-4 border-t border-slate-100 text-center">
-            <span className="text-[11px] text-slate-400">Proteção anti-ban com intervalo inteligente ativo</span>
+      {/* ABA 5: PERFIS & MATRIZ RBAC */}
+      {abaAtiva === 'perfis' && (
+        <div className="space-y-4">
+          <div className="bg-white border border-[#E0E0E0] rounded-2xl p-6 shadow-xs">
+            <h3 className="text-base font-bold text-slate-900 mb-1">
+              Perfis de Acesso do Módulo Automação &amp; Mensageria
+            </h3>
+            <p className="text-xs text-slate-500 mb-6">
+              Permissões para envio de mensagens ativas, alteração de bots e gerenciamento de webhooks.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {roles.map((role) => (
+                <div key={role.id} className="p-4 rounded-2xl border border-[#E0E0E0] bg-white">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200">
+                      {role.level}
+                    </span>
+                    {role.id === activeRole.id && (
+                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                        Perfil Ativo
+                      </span>
+                    )}
+                  </div>
+                  <h4 className="text-sm font-bold text-slate-900 mb-1">{role.name}</h4>
+                  <p className="text-xs text-slate-600 mb-3">{role.description}</p>
+                  
+                  <div className="text-[11px] text-slate-500 pt-2 border-t border-slate-100">
+                    Responsável: <strong>{role.responsavelPadrao}</strong>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </VigiaSidebarLayout>
   );
 }

@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { VigiaSidebarLayout } from '../../components/VigiaSidebarLayout';
+import { ModuloRbacBar } from '../../components/ModuloRbacBar';
+import { ModuloRole, MODULO_ROLES_CATALOG, hasPermission } from '@/types/rbac';
 import {
   Layers,
   UploadCloud,
@@ -190,6 +192,9 @@ const INITIAL_MODULES: ModuleConfig[] = [
 ];
 
 export default function IngestaoModulosPage() {
+  const roles = MODULO_ROLES_CATALOG['ingestao-modulos'];
+  const [activeRole, setActiveRole] = useState<ModuloRole>(roles[0]);
+  const [abaAtiva, setAbaAtiva] = useState<'conectores' | 'tabelas-sus' | 'dlq' | 'perfis'>('conectores');
   const [modules, setModules] = useState<ModuleConfig[]>(INITIAL_MODULES);
   const [activePlan, setActivePlan] = useState<'CUSTOM' | 'FARMACIA_ONLY' | 'ASSISTENCIAL' | 'SUITE_360'>('CUSTOM');
   const [viewMode, setViewMode] = useState<'PRIVADO' | 'PUBLICO_SUS'>('PRIVADO');
@@ -366,6 +371,124 @@ export default function IngestaoModulosPage() {
         </div>
       }
     >
+
+      {/* BARRA DE RBAC & CONTROLE DE PERFIS DO MÓDULO */}
+      <ModuloRbacBar
+        moduloId="ingestao-modulos"
+        activeRole={activeRole}
+        onRoleChange={setActiveRole}
+        accentColor="#EA580C"
+        lightBg="bg-orange-50"
+        lightBorder="border-orange-200"
+      />
+
+      {/* SUB-NAVEGAÇÃO POR ABAS */}
+      <div className="bg-white border border-[#E0E0E0] rounded-2xl p-1.5 mb-6 shadow-xs flex items-center gap-1 overflow-x-auto">
+        {[
+          { id: 'conectores', label: '1. Conectores & Módulos Legados', icon: Layers },
+          { id: 'tabelas-sus', label: '2. Bases Nacionais (SIGTAP/CMED)', icon: FileSpreadsheet },
+          { id: 'dlq', label: '3. Fila Dead Letter (DLQ)', icon: RefreshCw },
+          { id: 'perfis', label: '4. Perfis & Matriz RBAC', icon: ShieldCheck }
+        ].map((tab) => {
+          const Icon = tab.icon;
+          const isActive = abaAtiva === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setAbaAtiva(tab.id as any)}
+              className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap min-h-[44px] touch-manipulation ${
+                isActive
+                  ? 'bg-[#EA580C] text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+              }`}
+            >
+              <Icon className="w-4 h-4 shrink-0" />
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* ABA PERFIS */}
+      {abaAtiva === 'perfis' && (
+        <div className="bg-white border border-[#E0E0E0] rounded-2xl p-6 shadow-xs mb-6">
+          <h3 className="text-base font-bold text-slate-900 mb-1">
+            Perfis de Acesso do Módulo Ingestão &amp; ETL Hospitalar
+          </h3>
+          <p className="text-xs text-slate-500 mb-6">
+            Responsáveis pela engenharia de dados, sincronização de schemas e administração de banco de dados.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {roles.map((role) => (
+              <div key={role.id} className="p-4 rounded-2xl border border-[#E0E0E0] bg-white">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-orange-50 text-orange-800 border border-orange-200">
+                    {role.level}
+                  </span>
+                  {role.id === activeRole.id && (
+                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                      Perfil Ativo
+                    </span>
+                  )}
+                </div>
+                <h4 className="text-sm font-bold text-slate-900 mb-1">{role.name}</h4>
+                <p className="text-xs text-slate-600 mb-3">{role.description}</p>
+                
+                <div className="text-[11px] text-slate-500 pt-2 border-t border-slate-100">
+                  Responsável: <strong>{role.responsavelPadrao}</strong>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ABA BASES NACIONAIS */}
+      {abaAtiva === 'tabelas-sus' && (
+        <div className="bg-white border border-[#E0E0E0] rounded-2xl p-6 shadow-xs mb-6 max-w-4xl">
+          <h3 className="text-base font-bold text-slate-900 mb-1">
+            Ingestão de Tabelas Nacionais SUS &amp; ANVISA
+          </h3>
+          <p className="text-xs text-slate-500 mb-4">
+            Bases oficiais atualizadas mensalmente para controle de conformidade, teto CMED e tabela SIGTAP.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            <div className="p-4 rounded-xl border border-[#E0E0E0] bg-slate-50/50">
+              <strong className="text-slate-900 block text-sm">Tabela SIGTAP (Competência 09/2026)</strong>
+              <span className="text-slate-500 mt-1 block">4.890 procedimentos ambulatoriais e hospitalares mapeados.</span>
+              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded inline-block mt-2">
+                Sincronizado via DATASUS API
+              </span>
+            </div>
+            <div className="p-4 rounded-xl border border-[#E0E0E0] bg-slate-50/50">
+              <strong className="text-slate-900 block text-sm">Tabela CMED / ANVISA (Preços Tetos)</strong>
+              <span className="text-slate-500 mt-1 block">26.400 medicamentos monitorados com PMC e PF.</span>
+              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded inline-block mt-2">
+                Conectado ao Banco CMED
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ABA DLQ */}
+      {abaAtiva === 'dlq' && (
+        <div className="bg-white border border-[#E0E0E0] rounded-2xl p-6 shadow-xs mb-6 max-w-3xl">
+          <h3 className="text-base font-bold text-slate-900 mb-1">
+            Dead Letter Queue (DLQ) &amp; Fila de Exceções
+          </h3>
+          <p className="text-xs text-slate-500 mb-4">
+            Mensagens com falha de schema ou inconsistência de rede retidas para reprocessamento garantido.
+          </p>
+
+          <div className="p-4 bg-orange-50 border border-orange-200 rounded-xl text-xs text-orange-950 space-y-1">
+            <strong>Fila Limpa:</strong>
+            <p>Nenhum payload retido na Dead Letter Queue. 100% dos eventos integrados com sucesso.</p>
+          </div>
+        </div>
+      )}
 
       {/* Banner de Feedback de Upload */}
       {uploadStatus && (

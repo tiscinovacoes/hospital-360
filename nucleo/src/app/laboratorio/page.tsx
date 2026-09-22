@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { VigiaSidebarLayout } from '../../components/VigiaSidebarLayout';
+import { ModuloRbacBar } from '../../components/ModuloRbacBar';
+import { ModuloRole, MODULO_ROLES_CATALOG, hasPermission } from '@/types/rbac';
 import {
   FlaskConical,
   ArrowLeft,
@@ -118,7 +120,10 @@ const initialSamples: LabSample[] = [
   },
 ];
 
-export default function LaboratorioPage() {
+export default function LabHubPage() {
+  const roles = MODULO_ROLES_CATALOG['laboratorio'];
+  const [activeRole, setActiveRole] = useState<ModuloRole>(roles[0]);
+  const [abaAtiva, setAbaAtiva] = useState<'bancada' | 'panico' | 'fhir' | 'perfis'>('bancada');
   const [samples, setSamples] = useState<LabSample[]>(initialSamples);
   const [selectedSample, setSelectedSample] = useState<LabSample | null>(null);
   const [statusFilter, setStatusFilter] = useState<'Todos' | 'Pendente' | 'Em Análise' | 'Liberado'>('Todos');
@@ -151,6 +156,11 @@ export default function LaboratorioPage() {
 
   const handleReleaseReport = () => {
     if (!selectedSample) return;
+    if (!hasPermission(activeRole, 'APPROVE')) {
+      setActionSuccess('Atenção: Seu perfil não possui permissão para assinar e liberar laudos laboratoriais.');
+      setTimeout(() => setActionSuccess(null), 4000);
+      return;
+    }
     setSamples((prev) =>
       prev.map((item) => (item.id === selectedSample.id ? { ...item, status: 'Liberado' } : item))
     );
@@ -176,6 +186,42 @@ export default function LaboratorioPage() {
         </div>
       }
     >
+      {/* BARRA DE RBAC & CONTROLE DE PERFIS DO MÓDULO */}
+      <ModuloRbacBar
+        moduloId="laboratorio"
+        activeRole={activeRole}
+        onRoleChange={setActiveRole}
+        accentColor="#0D9488"
+        lightBg="bg-teal-50"
+        lightBorder="border-teal-200"
+      />
+
+      {/* SUB-NAVEGAÇÃO POR ABAS */}
+      <div className="bg-white border border-[#E0E0E0] rounded-2xl p-1.5 mb-6 shadow-xs flex items-center gap-1 overflow-x-auto">
+        {[
+          { id: 'bancada', label: '1. Bancada Técnica & Amostras', icon: FlaskConical },
+          { id: 'panico', label: '2. Valores de Pânico (Critical Values)', icon: AlertCircle },
+          { id: 'perfis', label: '3. Perfis & Matriz RBAC', icon: ShieldCheck }
+        ].map((tab) => {
+          const Icon = tab.icon;
+          const isActive = abaAtiva === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setAbaAtiva(tab.id as any)}
+              className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap min-h-[44px] touch-manipulation ${
+                isActive
+                  ? 'bg-[#0D9488] text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+              }`}
+            >
+              <Icon className="w-4 h-4 shrink-0" />
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
       {actionSuccess && (
         <div className="mb-6 p-4 bg-teal-50 border border-teal-200 rounded-2xl flex items-center justify-between text-xs text-teal-950 animate-in fade-in">
           <div className="flex items-center gap-2">
@@ -185,6 +231,81 @@ export default function LaboratorioPage() {
           <button onClick={() => setActionSuccess(null)} className="text-teal-600 hover:text-teal-800 min-w-[36px] min-h-[36px] flex items-center justify-center">
             <X className="w-4 h-4" />
           </button>
+        </div>
+      )}
+
+      {/* ABA PERFIS */}
+      {abaAtiva === 'perfis' && (
+        <div className="bg-white border border-[#E0E0E0] rounded-2xl p-6 shadow-xs mb-6">
+          <h3 className="text-base font-bold text-slate-900 mb-1">
+            Perfis de Acesso do Módulo Laboratório Clínico (LIS)
+          </h3>
+          <p className="text-xs text-slate-500 mb-6">
+            Atribuições de coleta, liberação de laudos com assinatura digital e controle de qualidade SBPC/ML.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {roles.map((role) => (
+              <div key={role.id} className="p-4 rounded-2xl border border-[#E0E0E0] bg-white">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-teal-50 text-teal-800 border border-teal-200">
+                    {role.level}
+                  </span>
+                  {role.id === activeRole.id && (
+                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                      Perfil Ativo
+                    </span>
+                  )}
+                </div>
+                <h4 className="text-sm font-bold text-slate-900 mb-1">{role.name}</h4>
+                <p className="text-xs text-slate-600 mb-3">{role.description}</p>
+                
+                <div className="text-[11px] text-slate-500 pt-2 border-t border-slate-100">
+                  Responsável: <strong>{role.responsavelPadrao}</strong>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ABA VALORES DE PÂNICO */}
+      {abaAtiva === 'panico' && (
+        <div className="bg-white border border-[#E0E0E0] rounded-2xl p-6 shadow-xs mb-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-xl bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600">
+              <AlertCircle className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-base font-bold text-slate-900">
+                Protocolo Institucional de Valores de Pânico (Critical Panic Values)
+              </h3>
+              <p className="text-xs text-slate-500">
+                Comunicação imediata à equipe assistencial em menos de 15 minutos com registro de recebimento.
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-3 text-xs">
+            <div className="p-4 bg-rose-50/60 border border-rose-200 rounded-xl flex items-start justify-between">
+              <div>
+                <strong className="text-rose-900 block text-sm">Troponina I Ultrassensível: 4.820 ng/L (Ref &lt; 14 ng/L)</strong>
+                <span className="text-slate-600 mt-1 block">Paciente: João Batista Ferreira (Leito 08 - UTI) • Médico: Dr. Ricardo Mendes</span>
+              </div>
+              <span className="px-2.5 py-1 bg-rose-600 text-white font-bold rounded-lg text-[10px]">
+                Notificado UTI às 08:22
+              </span>
+            </div>
+            <div className="p-4 bg-amber-50/60 border border-amber-200 rounded-xl flex items-start justify-between">
+              <div>
+                <strong className="text-amber-900 block text-sm">Potássio Sérico: 6.8 mEq/L (Ref 3.5 - 5.0 mEq/L)</strong>
+                <span className="text-slate-600 mt-1 block">Paciente: Mariana Duarte Prado • Médica: Dra. Camila Ribeiro</span>
+              </div>
+              <span className="px-2.5 py-1 bg-amber-500 text-white font-bold rounded-lg text-[10px]">
+                Notificado às 08:35
+              </span>
+            </div>
+          </div>
         </div>
       )}
 

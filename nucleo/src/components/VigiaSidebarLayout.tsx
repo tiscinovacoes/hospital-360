@@ -28,12 +28,13 @@ import {
   ArrowRight,
   CheckCircle2,
   Building2,
-  DollarSign
+  DollarSign,
+  UserCog
 } from 'lucide-react';
 import { ModuloId, MODULO_THEMES, ModuloThemeConfig } from './ModuloLayoutShell';
 
 interface NavItem {
-  id: ModuloId | 'home';
+  id: ModuloId | 'home' | 'admin-perfis';
   name: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
@@ -143,6 +144,14 @@ export const MODULOS_SISTEMA: NavItem[] = [
     href: '/arquitetura-seguranca',
     icon: ShieldCheck,
     badge: 'CISO',
+    category: 'Governança'
+  },
+  {
+    id: 'admin-perfis',
+    name: 'Perfis & Acessos (RBAC)',
+    href: '/admin/perfis-acessos',
+    icon: UserCog,
+    badge: 'LGPD/RBAC',
     category: 'Governança'
   }
 ];
@@ -261,7 +270,10 @@ export function VigiaSidebarLayout({
                 ? pathname === '/'
                 : pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
             const Icon = item.icon;
-            const itemTheme = item.id !== 'home' ? MODULO_THEMES[item.id] : null;
+            const itemTheme =
+              item.id !== 'home' && item.id in MODULO_THEMES
+                ? MODULO_THEMES[item.id as ModuloId]
+                : null;
 
             return (
               <Link

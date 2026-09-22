@@ -3,7 +3,9 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { VigiaSidebarLayout } from '../../components/VigiaSidebarLayout';
+import { ModuloRbacBar } from '../../components/ModuloRbacBar';
 import { KpiCard } from '../../components/KpiCard';
+import { ModuloRole, MODULO_ROLES_CATALOG, hasPermission } from '@/types/rbac';
 import {
   CreditCard,
   ArrowLeft,
@@ -19,8 +21,23 @@ import {
   Receipt,
   Download,
   Building2,
-  UserCheck
+  UserCheck,
+  ShieldAlert,
+  FileText,
+  AlertCircle,
+  Lock,
+  X,
+  Info,
+  Check
 } from 'lucide-react';
+
+type AbaFinanceiro = 
+  | 'split'
+  | 'faturamento-sus'
+  | 'glosas'
+  | 'centro-custos'
+  | 'conciliacao'
+  | 'perfis';
 
 interface TransactionSplit {
   id: string;
@@ -96,11 +113,80 @@ const mockTransactions: TransactionSplit[] = [
   },
 ];
 
+interface RemessaSUS {
+  id: string;
+  tipo: 'BPA (Ambulatorial)' | 'AIH (Internação)';
+  competencia: string;
+  totalProcedimentos: number;
+  valorTotalApurado: number;
+  status: 'VALIDADO_SIGTAP' | 'REMESSA_GERADA' | 'PAGO_FUNDO_MUNICIPAL';
+}
+
+const REMESSAS_SUS_MOCK: RemessaSUS[] = [
+  {
+    id: 'BPA-2026-09',
+    tipo: 'BPA (Ambulatorial)',
+    competencia: '09/2026',
+    totalProcedimentos: 1420,
+    valorTotalApurado: 68450.00,
+    status: 'VALIDADO_SIGTAP'
+  },
+  {
+    id: 'AIH-2026-09',
+    tipo: 'AIH (Internação)',
+    competencia: '09/2026',
+    totalProcedimentos: 184,
+    valorTotalApurado: 312890.00,
+    status: 'REMESSA_GERADA'
+  }
+];
+
+interface GlosaRecurso {
+  id: string;
+  operadoraOuSus: string;
+  procedimento: string;
+  valorGlosado: number;
+  motivo: string;
+  status: 'DEFESA_GERADA_IA' | 'RECURSO_ENVIADO' | 'REVERTIDO_DEFERIDO';
+}
+
+const GLOSAS_MOCK: GlosaRecurso[] = [
+  {
+    id: 'GLO-2026-112',
+    operadoraOuSus: 'Bradesco Saúde',
+    procedimento: 'Diária UTI Adulto + Monitorização Invasiva',
+    valorGlosado: 2450.00,
+    motivo: 'Ausência de relatório de evolução médica detalhada no D+2',
+    status: 'DEFESA_GERADA_IA'
+  },
+  {
+    id: 'GLO-2026-113',
+    operadoraOuSus: 'SUS / SMS São Paulo',
+    procedimento: 'Tomografia Computadorizada de Crânio',
+    valorGlosado: 136.00,
+    motivo: 'CID-10 incompatível com a tabela SIGTAP',
+    status: 'REVERTIDO_DEFERIDO'
+  }
+];
+
 export default function FinanceiroSplitPage() {
+  const roles = MODULO_ROLES_CATALOG['financeiro-split'];
+  const [activeRole, setActiveRole] = useState<ModuloRole>(roles[0]);
+  const [abaAtiva, setAbaAtiva] = useState<AbaFinanceiro>('split');
   const [transactions, setTransactions] = useState<TransactionSplit[]>(mockTransactions);
   const [successNotice, setSuccessNotice] = useState<string | null>(null);
 
+  const triggerNotice = (msg: string) => {
+    setSuccessNotice(msg);
+    setTimeout(() => setSuccessNotice(null), 5000);
+  };
+
   const handleSimulateSplitPayment = () => {
+    if (!hasPermission(activeRole, 'CREATE')) {
+      triggerNotice('Atenção: Seu perfil não possui permissão para gerar faturamentos e liquidações.');
+      return;
+    }
+
     const newTx: TransactionSplit = {
       id: `TX-${Math.floor(9025 + Math.random() * 100)}`,
       patientName: 'Novo Paciente Particular',
@@ -116,8 +202,7 @@ export default function FinanceiroSplitPage() {
       createdAt: 'Agora mesmo',
     };
     setTransactions([newTx, ...transactions]);
-    setSuccessNotice(`Pagamento de R$ 350,00 liquidado via Hyperswitch! R$ 297,50 (85%) creditado ao médico e R$ 52,50 (15%) ao condomínio hospitalar com NFS-e emitida.`);
-    setTimeout(() => setSuccessNotice(null), 6000);
+    triggerNotice(`Pagamento de R$ 350,00 liquidado via Hyperswitch! R$ 297,50 (85%) creditado ao médico e R$ 52,50 (15%) ao condomínio hospitalar com NFS-e emitida.`);
   };
 
   const totalProcessed = transactions.reduce((acc, curr) => acc + curr.totalAmount, 0);
@@ -127,20 +212,20 @@ export default function FinanceiroSplitPage() {
   return (
     <VigiaSidebarLayout
       moduloId="financeiro-split"
-      activeTitle="Fintech Split de Pagamentos & NFS-e"
-      activeSubtitle="Divisão instantânea de recebíveis entre cooperados (85%) e condomínio hospitalar (15%)"
+      activeTitle="Financeiro, Faturamento SUS & Split de Custos"
+      activeSubtitle="Split instantâneo Hyperswitch (85/15%), faturamento BPA/AIH SIGTAP e gestão de glosas"
       actions={
         <div className="flex items-center gap-2.5">
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] text-xs font-bold text-slate-700 bg-white border border-[#E0E0E0] rounded-xl hover:bg-slate-50 transition-all shadow-sm"
+            className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] text-xs font-bold text-slate-700 bg-white border border-[#E0E0E0] rounded-xl hover:bg-slate-50 transition-all shadow-xs"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Hub Central</span>
           </Link>
           <button
             onClick={handleSimulateSplitPayment}
-            className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] text-xs font-bold text-white bg-[#16A34A] hover:bg-green-700 rounded-xl transition-all shadow-sm"
+            className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] text-xs font-bold text-white bg-[#16A34A] hover:bg-green-700 rounded-xl transition-all shadow-xs touch-manipulation"
           >
             <Split className="w-4 h-4" />
             <span>Simular Consulta c/ Split</span>
@@ -150,11 +235,30 @@ export default function FinanceiroSplitPage() {
     >
       {/* Feedback de Notificação */}
       {successNotice && (
-        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl flex items-center gap-3 text-green-950 text-sm font-medium animate-fadeIn">
-          <CheckCircle2 className="w-5 h-5 text-[#16A34A] flex-shrink-0" />
-          <span>{successNotice}</span>
+        <div className="mb-4 p-3.5 bg-green-50 border border-green-300 rounded-2xl flex items-center justify-between text-xs text-green-950 shadow-sm animate-in fade-in duration-200">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-[#16A34A] shrink-0" />
+            <span className="font-bold">{successNotice}</span>
+          </div>
+          <button 
+            type="button" 
+            onClick={() => setSuccessNotice(null)}
+            className="text-green-700 hover:text-green-900 p-1 min-h-[44px] min-w-[44px] flex items-center justify-center"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
       )}
+
+      {/* BARRA DE RBAC & CONTROLE DE PERFIS DO MÓDULO */}
+      <ModuloRbacBar
+        moduloId="financeiro-split"
+        activeRole={activeRole}
+        onRoleChange={setActiveRole}
+        accentColor="#16A34A"
+        lightBg="bg-green-50"
+        lightBorder="border-green-200"
+      />
 
       {/* Cards de Métricas Padronizados */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -162,8 +266,7 @@ export default function FinanceiroSplitPage() {
           title="Volume Total Liquidado"
           value={`R$ ${totalProcessed.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
           subtitle="100% Conciliado"
-          icon={DollarSign}
-          tooltipInfo="Volume financeiro total processado pela esteira Hyperswitch (Rust) com separação atômica entre recebedores."
+          icon={<DollarSign className="w-5 h-5 text-green-600" />}
           trend={{ text: "Hyperswitch Operante", isPositive: true }}
         />
 
@@ -171,17 +274,15 @@ export default function FinanceiroSplitPage() {
           title="Repasse Médicos (85%)"
           value={`R$ ${totalDoctorShare.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
           subtitle="Crédito Imediato D+0"
-          icon={UserCheck}
-          tooltipInfo="Honorários médicos creditados instantaneamente na conta bancária do profissional via PIX sem carência de repasse."
+          icon={<UserCheck className="w-5 h-5 text-green-600" />}
           trend={{ text: "PIX D+0 Instantâneo", isPositive: true }}
         />
 
         <KpiCard
-          title="Taxa Condomínio (15%)"
+          title="Taxa Hospitalar (15%)"
           value={`R$ ${totalHospitalShare.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
-          subtitle="Taxa de Administração"
-          icon={Building2}
-          tooltipInfo="Percentual retido automaticamente para custeio predial, hotelaria, enfermagem e infraestrutura de tecnologia."
+          subtitle="Custeio & Facilities"
+          icon={<Building2 className="w-5 h-5 text-green-600" />}
           trend={{ text: "Cobre Custos Fixos", isPositive: true }}
         />
 
@@ -189,75 +290,295 @@ export default function FinanceiroSplitPage() {
           title="Notas Fiscais (NFS-e)"
           value={`${transactions.length} NFS-e`}
           subtitle="Emissão Municipal"
-          icon={Receipt}
-          tooltipInfo="Documentos fiscais eletrônicos emitidos de forma automatizada pela esteira .NET C# integrada à prefeitura."
+          icon={<Receipt className="w-5 h-5 text-green-600" />}
           trend={{ text: "100% Escrituradas", isPositive: true }}
         />
       </div>
 
-      {/* Tabela de Transações e Split em Tempo Real */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5">
-        <div className="flex items-center justify-between mb-5">
-          <div>
-            <h3 className="text-base font-extrabold text-slate-900">Extrato de Liquidações com Split Bancário</h3>
-            <p className="text-xs text-slate-400">Cada consulta realizada no OpenEMR passa pelo motor de split sem retenção indevida</p>
-          </div>
-          <span className="text-xs font-mono font-bold px-2.5 py-1 bg-slate-100 text-slate-700 border border-slate-200 rounded-lg">
-            Regra Ativa: 85% / 15%
-          </span>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-slate-700">
-            <thead className="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider text-[10px] border-b border-slate-200">
-              <tr>
-                <th className="px-4 py-3">Transação</th>
-                <th className="px-4 py-3">Paciente / Serviço</th>
-                <th className="px-4 py-3">Médico Cooperado</th>
-                <th className="px-4 py-3">Valor Total</th>
-                <th className="px-4 py-3">Repasse Médico (85%)</th>
-                <th className="px-4 py-3">Condomínio (15%)</th>
-                <th className="px-4 py-3">NFS-e</th>
-                <th className="px-4 py-3 text-right">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {transactions.map((tx) => (
-                <tr key={tx.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="px-4 py-3.5 font-mono text-slate-600 font-semibold">{tx.id}</td>
-                  <td className="px-4 py-3.5">
-                    <div className="font-bold text-slate-900">{tx.patientName}</div>
-                    <div className="text-[11px] text-slate-400">{tx.service}</div>
-                  </td>
-                  <td className="px-4 py-3.5">
-                    <div className="font-semibold text-slate-800">{tx.doctorName}</div>
-                    <div className="text-[11px] text-slate-400">{tx.clinicRoom}</div>
-                  </td>
-                  <td className="px-4 py-3.5 font-bold text-slate-900">
-                    R$ {tx.totalAmount.toFixed(2)}
-                  </td>
-                  <td className="px-4 py-3.5 font-bold text-slate-900">
-                    R$ {tx.doctorShare.toFixed(2)}
-                  </td>
-                  <td className="px-4 py-3.5 font-bold text-slate-600">
-                    R$ {tx.hospitalCondoShare.toFixed(2)}
-                  </td>
-                  <td className="px-4 py-3.5">
-                    <span className="font-mono text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded text-[11px]">
-                      {tx.nfseNumber}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3.5 text-right">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                      {tx.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      {/* SUB-NAVEGAÇÃO POR ABAS */}
+      <div className="bg-white border border-[#E0E0E0] rounded-2xl p-1.5 mb-6 shadow-xs flex items-center gap-1 overflow-x-auto">
+        {[
+          { id: 'split', label: '1. Split de Honorários (PIX D+0)', icon: Split },
+          { id: 'faturamento-sus', label: '2. Faturamento SUS (BPA / AIH)', icon: FileText },
+          { id: 'glosas', label: '3. Auditoria & Recursos de Glosas', icon: ShieldAlert },
+          { id: 'centro-custos', label: '4. Centro de Custos & Rateio', icon: DollarSign },
+          { id: 'conciliacao', label: '5. Conciliação Bancária (CNAB 240)', icon: CheckCircle2 },
+          { id: 'perfis', label: '6. Perfis & Matriz RBAC', icon: Lock }
+        ].map((tab) => {
+          const Icon = tab.icon;
+          const isActive = abaAtiva === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setAbaAtiva(tab.id as AbaFinanceiro)}
+              className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap min-h-[44px] touch-manipulation ${
+                isActive
+                  ? 'bg-[#16A34A] text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+              }`}
+            >
+              <Icon className="w-4 h-4 shrink-0" />
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
       </div>
+
+      {/* ABA 1: SPLIT DE HONORÁRIOS */}
+      {abaAtiva === 'split' && (
+        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5">
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h3 className="text-base font-extrabold text-slate-900">
+                Lançamentos Auditados &amp; Split em Tempo Real
+              </h3>
+              <p className="text-xs text-slate-500">
+                Divisão atômica com repasse imediato via chave PIX e emissão da NFS-e.
+              </p>
+            </div>
+            <button
+              disabled={!hasPermission(activeRole, 'EXPORT')}
+              onClick={() => triggerNotice('Relatório analítico de split exportado para conferência contábil.')}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 border rounded-xl text-xs font-semibold min-h-[44px] sm:min-h-0 ${
+                hasPermission(activeRole, 'EXPORT')
+                  ? 'border-[#E0E0E0] text-slate-700 hover:bg-slate-50'
+                  : 'border-slate-200 text-slate-400 opacity-50 cursor-not-allowed'
+              }`}
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>Exportar Planilha</span>
+            </button>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="border-b border-slate-200 text-slate-500 font-bold bg-slate-50/50">
+                  <th className="p-3">ID / Data</th>
+                  <th className="p-3">Paciente / Atendimento</th>
+                  <th className="p-3">Médico Cooperado</th>
+                  <th className="p-3 text-right">Valor Total</th>
+                  <th className="p-3 text-right text-green-700">Médico (85%)</th>
+                  <th className="p-3 text-right text-blue-700">Hospital (15%)</th>
+                  <th className="p-3 text-center">Status Split</th>
+                  <th className="p-3 text-center">NFS-e</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {transactions.map((tx) => (
+                  <tr key={tx.id} className="hover:bg-green-50/20 transition-colors">
+                    <td className="p-3">
+                      <strong className="text-slate-900 block font-mono">{tx.id}</strong>
+                      <span className="text-[11px] text-slate-500">{tx.createdAt}</span>
+                    </td>
+                    <td className="p-3">
+                      <span className="font-bold text-slate-900 block">{tx.patientName}</span>
+                      <span className="text-[11px] text-slate-500">{tx.service}</span>
+                    </td>
+                    <td className="p-3">
+                      <span className="font-semibold text-slate-800 block">{tx.doctorName}</span>
+                      <span className="text-[11px] text-slate-500">{tx.clinicRoom}</span>
+                    </td>
+                    <td className="p-3 text-right font-black text-slate-900">
+                      R$ {tx.totalAmount.toFixed(2)}
+                    </td>
+                    <td className="p-3 text-right font-bold text-green-700 font-mono">
+                      R$ {tx.doctorShare.toFixed(2)}
+                    </td>
+                    <td className="p-3 text-right font-bold text-blue-700 font-mono">
+                      R$ {tx.hospitalCondoShare.toFixed(2)}
+                    </td>
+                    <td className="p-3 text-center">
+                      <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                        {tx.status}
+                      </span>
+                    </td>
+                    <td className="p-3 text-center font-mono text-[11px] text-slate-600">
+                      {tx.nfseNumber}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* ABA 2: FATURAMENTO SUS */}
+      {abaAtiva === 'faturamento-sus' && (
+        <div className="space-y-4">
+          <div className="bg-white rounded-2xl border border-[#E0E0E0] p-6 shadow-xs max-w-4xl">
+            <h3 className="text-base font-bold text-slate-900 mb-1">
+              Faturamento SUS (BPA Ambulatorial &amp; AIH Internação)
+            </h3>
+            <p className="text-xs text-slate-500 mb-4">
+              Validação automática das regras de compatibilidade da tabela SIGTAP e geração de remessas ao DATASUS.
+            </p>
+
+            <div className="space-y-3">
+              {REMESSAS_SUS_MOCK.map(rem => (
+                <div key={rem.id} className="p-4 rounded-xl border border-[#E0E0E0] flex items-center justify-between text-xs">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <strong className="text-sm text-slate-900">{rem.id}</strong>
+                      <span className="px-2 py-0.5 rounded-md font-bold bg-green-50 text-green-800 border border-green-200">
+                        {rem.tipo}
+                      </span>
+                    </div>
+                    <span className="text-slate-500 block mt-1">
+                      Competência: {rem.competencia} • {rem.totalProcedimentos} procedimentos faturados
+                    </span>
+                  </div>
+
+                  <div className="text-right">
+                    <span className="text-slate-500 block">Total SUS Apurado:</span>
+                    <strong className="text-base font-black text-slate-900">
+                      R$ {rem.valorTotalApurado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </strong>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex justify-end pt-4 border-t border-slate-100 mt-4">
+              <button
+                type="button"
+                disabled={!hasPermission(activeRole, 'APPROVE')}
+                onClick={() => triggerNotice('Arquivo Magnético BPA/AIH assinado digitalmente e transmitido ao Ministério da Saúde.')}
+                className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all min-h-[44px] ${
+                  hasPermission(activeRole, 'APPROVE')
+                    ? 'bg-[#16A34A] hover:bg-green-700 text-white shadow-xs'
+                    : 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
+                }`}
+              >
+                Transmitir Remessa SUS Oficial
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ABA 3: GLOSAS */}
+      {abaAtiva === 'glosas' && (
+        <div className="space-y-4">
+          <div className="bg-white rounded-2xl border border-[#E0E0E0] p-6 shadow-xs max-w-4xl">
+            <h3 className="text-base font-bold text-slate-900 mb-1">
+              Auditoria de Contas &amp; Recursos de Glosas Hospitalares
+            </h3>
+            <p className="text-xs text-slate-500 mb-4">
+              Motor de inteligência que detecta justificativas clínicas para reverter glosas com base no prontuário do paciente.
+            </p>
+
+            <div className="space-y-3 text-xs">
+              {GLOSAS_MOCK.map(g => (
+                <div key={g.id} className="p-4 rounded-xl border border-[#E0E0E0] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono font-bold text-slate-900">{g.id}</span>
+                      <strong className="text-slate-900">{g.operadoraOuSus}</strong>
+                      <span className="px-2 py-0.5 rounded-md font-bold bg-amber-50 text-amber-800 border border-amber-200 text-[10px]">
+                        {g.status}
+                      </span>
+                    </div>
+                    <span className="text-slate-600 block mt-1">{g.procedimento}</span>
+                    <span className="text-slate-400 text-[11px] block mt-0.5">Motivo: {g.motivo}</span>
+                  </div>
+
+                  <div className="text-right">
+                    <span className="text-slate-500 block">Valor Contestação:</span>
+                    <strong className="text-base font-black text-rose-700">
+                      R$ {g.valorGlosado.toFixed(2)}
+                    </strong>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ABA 4: CENTRO DE CUSTOS */}
+      {abaAtiva === 'centro-custos' && (
+        <div className="space-y-4">
+          <div className="bg-white rounded-2xl border border-[#E0E0E0] p-6 shadow-xs max-w-3xl">
+            <h3 className="text-base font-bold text-slate-900 mb-1">
+              Centro de Custos &amp; Rateio por Paciente/Procedimento
+            </h3>
+            <p className="text-xs text-slate-500 mb-4">
+              Apropriação contábil direta de medicamentos consumidos, horas de leito e honorários.
+            </p>
+
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                <span className="text-slate-500 block">Centro de Custo: UTI Geral</span>
+                <strong className="text-base text-slate-900">R$ 142.800,00</strong>
+                <span className="text-[10px] text-slate-500 block mt-1">42% insumos • 38% honorários • 20% hotelaria</span>
+              </div>
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                <span className="text-slate-500 block">Centro de Custo: Bloco Cirúrgico</span>
+                <strong className="text-base text-slate-900">R$ 98.400,00</strong>
+                <span className="text-[10px] text-slate-500 block mt-1">54% OPME • 30% honorários • 16% taxa de sala</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ABA 5: CONCILIAÇÃO BANCÁRIA */}
+      {abaAtiva === 'conciliacao' && (
+        <div className="space-y-4">
+          <div className="bg-white rounded-2xl border border-[#E0E0E0] p-6 shadow-xs max-w-3xl">
+            <h3 className="text-base font-bold text-slate-900 mb-1">
+              Conciliação Bancária Automatizada (CNAB 240)
+            </h3>
+            <p className="text-xs text-slate-500 mb-4">
+              Batimento do extrato de liquidações bancárias com as baixas do sistema contábil.
+            </p>
+
+            <div className="p-4 bg-green-50 border border-green-200 rounded-xl text-xs text-green-950 space-y-1">
+              <strong className="block text-sm">Status da Conciliação D-0:</strong>
+              <p>100% dos lançamentos do gateway Hyperswitch batidos com a conta corrente hospitalar. Nenhuma divergência pendente.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ABA 6: PERFIS & MATRIZ RBAC */}
+      {abaAtiva === 'perfis' && (
+        <div className="space-y-4">
+          <div className="bg-white border border-[#E0E0E0] rounded-2xl p-6 shadow-xs">
+            <h3 className="text-base font-bold text-slate-900 mb-1">
+              Perfis de Acesso do Módulo Financeiro, Faturamento SUS &amp; Split
+            </h3>
+            <p className="text-xs text-slate-500 mb-6">
+              Controle de liberação de pagamentos, geração de remessas públicas e auditoria de glosas.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {roles.map((role) => (
+                <div key={role.id} className="p-4 rounded-2xl border border-[#E0E0E0] bg-white">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-green-50 text-green-800 border border-green-200">
+                      {role.level}
+                    </span>
+                    {role.id === activeRole.id && (
+                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                        Perfil Ativo
+                      </span>
+                    )}
+                  </div>
+                  <h4 className="text-sm font-bold text-slate-900 mb-1">{role.name}</h4>
+                  <p className="text-xs text-slate-600 mb-3">{role.description}</p>
+                  
+                  <div className="text-[11px] text-slate-500 pt-2 border-t border-slate-100">
+                    Responsável: <strong>{role.responsavelPadrao}</strong>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </VigiaSidebarLayout>
   );
 }

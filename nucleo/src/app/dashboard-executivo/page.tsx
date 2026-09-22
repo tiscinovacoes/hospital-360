@@ -3,7 +3,9 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { VigiaSidebarLayout } from '../../components/VigiaSidebarLayout';
+import { ModuloRbacBar } from '../../components/ModuloRbacBar';
 import { KpiCard } from '../../components/KpiCard';
+import { ModuloRole, MODULO_ROLES_CATALOG, hasPermission } from '@/types/rbac';
 import {
   BarChart3,
   TrendingUp,
@@ -30,10 +32,22 @@ import {
   Eye,
   FileSpreadsheet,
   AlertTriangle,
-  FileText
+  FileText,
+  Lock,
+  Layers
 } from 'lucide-react';
 
+type AbaExecutiva = 
+  | 'jornada'
+  | 'desfechos'
+  | 'compras'
+  | 'simulador'
+  | 'perfis';
+
 export default function ExecutiveDashboardPage() {
+  const roles = MODULO_ROLES_CATALOG['dashboard-executivo'];
+  const [activeRole, setActiveRole] = useState<ModuloRole>(roles[0]);
+  const [abaAtiva, setAbaAtiva] = useState<AbaExecutiva>('jornada');
   const [notifications, setNotifications] = useState([
     { id: '1', title: 'Laudo Crítico no LIS', desc: 'Troponina I da paciente Ana Carolina concluída.', unread: true, time: 'Há 4 min' },
     { id: '2', title: 'Recurso de Glosa Aprovado', desc: 'IA de auditoria reverteu R$ 1.850,00 da Unimed.', unread: true, time: 'Há 18 min' },
@@ -94,6 +108,79 @@ export default function ExecutiveDashboardPage() {
           <button onClick={() => setToastMessage(null)} className="text-slate-400 hover:text-slate-700 ml-2 min-w-[36px] min-h-[36px] flex items-center justify-center">
             <X className="w-4 h-4" />
           </button>
+        </div>
+      )}
+
+      {/* BARRA DE RBAC & CONTROLE DE PERFIS DO MÓDULO */}
+      <ModuloRbacBar
+        moduloId="dashboard-executivo"
+        activeRole={activeRole}
+        onRoleChange={setActiveRole}
+        accentColor="#2563EB"
+        lightBg="bg-blue-50"
+        lightBorder="border-blue-200"
+      />
+
+      {/* SUB-NAVEGAÇÃO POR ABAS */}
+      <div className="bg-white border border-[#E0E0E0] rounded-2xl p-1.5 mb-6 shadow-xs flex items-center gap-1 overflow-x-auto">
+        {[
+          { id: 'jornada', label: '1. Custo Door-to-Door & Jornada 360°', icon: Activity },
+          { id: 'desfechos', label: '2. Desfechos Clínicos & ONA', icon: Stethoscope },
+          { id: 'compras', label: '3. Eficiência em Compras vs CMED', icon: TrendingUp },
+          { id: 'simulador', label: '4. Simulador Estratégico', icon: Sliders },
+          { id: 'perfis', label: '5. Perfis & Matriz RBAC', icon: Lock }
+        ].map((tab) => {
+          const Icon = tab.icon;
+          const isActive = abaAtiva === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setAbaAtiva(tab.id as any)}
+              className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap min-h-[44px] touch-manipulation ${
+                isActive
+                  ? 'bg-[#2563EB] text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+              }`}
+            >
+              <Icon className="w-4 h-4 shrink-0" />
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* ABA PERFIS */}
+      {abaAtiva === 'perfis' && (
+        <div className="bg-white border border-[#E0E0E0] rounded-2xl p-6 shadow-xs mb-6">
+          <h3 className="text-base font-bold text-slate-900 mb-1">
+            Perfis de Acesso do Dashboard Executivo 360°
+          </h3>
+          <p className="text-xs text-slate-500 mb-6">
+            Visão gerencial de alto nível para Superintendentes, Diretores Médicos e Secretários de Saúde.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {roles.map((role) => (
+              <div key={role.id} className="p-4 rounded-2xl border border-[#E0E0E0] bg-white">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-blue-50 text-blue-800 border border-blue-200">
+                    {role.level}
+                  </span>
+                  {role.id === activeRole.id && (
+                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                      Perfil Ativo
+                    </span>
+                  )}
+                </div>
+                <h4 className="text-sm font-bold text-slate-900 mb-1">{role.name}</h4>
+                <p className="text-xs text-slate-600 mb-3">{role.description}</p>
+                
+                <div className="text-[11px] text-slate-500 pt-2 border-t border-slate-100">
+                  Responsável: <strong>{role.responsavelPadrao}</strong>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

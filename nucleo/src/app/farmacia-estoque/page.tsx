@@ -3,7 +3,9 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { VigiaSidebarLayout } from '../../components/VigiaSidebarLayout';
+import { ModuloRbacBar } from '../../components/ModuloRbacBar';
 import { KpiCard } from '../../components/KpiCard';
+import { ModuloRole, MODULO_ROLES_CATALOG, hasPermission } from '@/types/rbac';
 import {
   Pill,
   ArrowLeft,
@@ -22,377 +24,568 @@ import {
   BarChart3,
   RefreshCw,
   QrCode,
-  DollarSign
+  DollarSign,
+  FileText,
+  Lock,
+  UserCheck,
+  Check,
+  X,
+  Info,
+  Download,
+  AlertCircle,
+  Stethoscope,
+  Plus,
+  ShieldCheck
 } from 'lucide-react';
 
-interface MedicineLot {
+type AbaFarmacia =
+  | 'dispensacao'
+  | 'psicotropicos'
+  | 'fracionamento'
+  | 'interacoes'
+  | 'devolucoes'
+  | 'perfis';
+
+interface PrescricaoDispensacao {
   id: string;
-  code: string;
-  name: string;
-  dosage: string;
-  category: 'Antibiótico' | 'Analgésico' | 'Cardiológico' | 'Insumo Cirúrgico' | 'Oncológico';
-  currentStock: number;
-  unit: string;
-  lotNumber: string;
-  expiryDate: string; // YYYY-MM-DD
-  daysToExpiry: number;
-  unitCost: number;
-  cmedCeilingPrice: number;
-  storageLocation: string;
-  status: 'Prioritário FEFO' | 'Estável' | 'Atenção' | 'Crítico';
+  paciente: string;
+  prontuario: string;
+  leito: string;
+  medicoPrescritor: string;
+  medicamentos: {
+    item: string;
+    dose: string;
+    via: string;
+    horario: string;
+    status: 'SEPARADO' | 'PENDENTE' | 'DISPENSADO';
+  }[];
+  alertaAlergia?: string;
+  prioridade: 'NORMAL' | 'URGENTE' | 'STAT';
 }
 
-const mockLots: MedicineLot[] = [
+const PRESCRICOES_MOCK: PrescricaoDispensacao[] = [
   {
-    id: 'lot-001',
-    code: 'MED-AMX-500',
-    name: 'Amoxicilina + Clavulanato',
-    dosage: '500mg/125mg Frasco',
-    category: 'Antibiótico',
-    currentStock: 140,
-    unit: 'Frasco',
-    lotNumber: 'LT-2026-09A',
-    expiryDate: '2026-10-15',
-    daysToExpiry: 24,
-    unitCost: 18.50,
-    cmedCeilingPrice: 32.40,
-    storageLocation: 'Almoxarifado Central - Prateleira A-04',
-    status: 'Prioritário FEFO',
+    id: 'PRESC-2026-891',
+    paciente: 'Maria Silva Santos',
+    prontuario: 'PRONT-44910',
+    leito: 'UTI Geral - Leito 04',
+    medicoPrescritor: 'Dr. Lucas Tavares (CRM 177.892)',
+    alertaAlergia: 'Alergia severa a Penicilinas (Cefalosporinas sob cautela)',
+    prioridade: 'STAT',
+    medicamentos: [
+      { item: 'Meropenem 1g Injetável', dose: '1g EV a cada 8h', via: 'Endovenosa', horario: '22:00', status: 'PENDENTE' },
+      { item: 'Fentanila 50mcg/ml 10ml', dose: '2ml/h BIC', via: 'Endovenosa contínua', horario: 'Contínuo', status: 'PENDENTE' },
+      { item: 'Omeprazol 40mg Injetável', dose: '40mg EV 1x ao dia', via: 'Endovenosa', horario: '22:00', status: 'SEPARADO' }
+    ]
   },
   {
-    id: 'lot-002',
-    code: 'MED-DIP-500',
-    name: 'Dipirona Sódica Injetável',
-    dosage: '500mg/mL Ampola 2mL',
-    category: 'Analgésico',
-    currentStock: 850,
-    unit: 'Ampola',
-    lotNumber: 'LT-2026-11B',
-    expiryDate: '2026-11-30',
-    daysToExpiry: 70,
-    unitCost: 1.80,
-    cmedCeilingPrice: 3.20,
-    storageLocation: 'Farmácia Satélite - Gaveteiro 02',
-    status: 'Estável',
-  },
-  {
-    id: 'lot-003',
-    code: 'MED-ENO-040',
-    name: 'Enoxaparina Sódica',
-    dosage: '40mg/0.4mL Seringa',
-    category: 'Cardiológico',
-    currentStock: 65,
-    unit: 'Seringa Preenchida',
-    lotNumber: 'LT-2026-10X',
-    expiryDate: '2026-10-05',
-    daysToExpiry: 14,
-    unitCost: 28.90,
-    cmedCeilingPrice: 48.00,
-    storageLocation: 'Câmara Fria 02 (2°C a 8°C)',
-    status: 'Crítico',
-  },
-  {
-    id: 'lot-004',
-    code: 'INS-SER-020',
-    name: 'Seringa Descartável Luer Lock',
-    dosage: '20mL Estéril c/ Agulha',
-    category: 'Insumo Cirúrgico',
-    currentStock: 1200,
-    unit: 'Unidade',
-    lotNumber: 'LT-2027-01S',
-    expiryDate: '2027-05-20',
-    daysToExpiry: 241,
-    unitCost: 0.95,
-    cmedCeilingPrice: 1.60,
-    storageLocation: 'Almoxarifado Central - Corredor B',
-    status: 'Estável',
-  },
-  {
-    id: 'lot-005',
-    code: 'MED-TRA-050',
-    name: 'Cloridrato de Tramadol',
-    dosage: '50mg/mL Ampola',
-    category: 'Analgésico',
-    currentStock: 90,
-    unit: 'Ampola',
-    lotNumber: 'LT-2026-10T',
-    expiryDate: '2026-10-22',
-    daysToExpiry: 31,
-    unitCost: 6.20,
-    cmedCeilingPrice: 11.50,
-    storageLocation: 'Armário Seguro Psicotrópicos',
-    status: 'Prioritário FEFO',
-  },
+    id: 'PRESC-2026-892',
+    paciente: 'José Carlos de Almeida',
+    prontuario: 'PRONT-31902',
+    leito: 'Enfermaria Cirúrgica - Leito 12-B',
+    medicoPrescritor: 'Dra. Camila Nogueira (CRM 188.420)',
+    prioridade: 'NORMAL',
+    medicamentos: [
+      { item: 'Dipirona Sódica 500mg/ml', dose: '1 ampola EV se dor', via: 'Endovenosa', horario: 'Se necessário', status: 'SEPARADO' },
+      { item: 'Enoxaparina Sódica 40mg', dose: '40mg SC 1x ao dia', via: 'Subcutânea', horario: '08:00', status: 'DISPENSADO' }
+    ]
+  }
 ];
 
-export default function FarmaciaEstoquePage() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState<string>('Todos');
-  const [selectedLot, setSelectedLot] = useState<MedicineLot | null>(mockLots[0]);
-  const [dispensationSuccess, setDispensationSuccess] = useState<string | null>(null);
+interface ItemPortaria344 {
+  id: string;
+  nome: string;
+  substancia: string;
+  lista: 'A1 (Entorpecentes)' | 'A2 (Entorpecentes Perm.)' | 'B1 (Psicotrópicos)' | 'C1 (Outras Subst.)';
+  saldoEscriturado: number;
+  unidade: string;
+  ultimoMovimento: string;
+  responsavelAssinatura: string;
+}
 
-  const filteredLots = mockLots.filter((lot) => {
-    const matchesSearch =
-      lot.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      lot.lotNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      lot.code.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory =
-      categoryFilter === 'Todos' || lot.category === categoryFilter;
-    return matchesSearch && matchesCategory;
-  });
+const ITENS_PORTARIA_344: ItemPortaria344[] = [
+  {
+    id: 'PSI-001',
+    nome: 'Cloridrato de Fentanila 50mcg/ml 10ml',
+    substancia: 'Fentanila',
+    lista: 'A1 (Entorpecentes)',
+    saldoEscriturado: 142,
+    unidade: 'Ampolas',
+    ultimoMovimento: '21/09/2026 20:15 (-2 amp. UTI Leito 04)',
+    responsavelAssinatura: 'Dr. Thiago Medeiros (CRF 44.910)'
+  },
+  {
+    id: 'PSI-002',
+    nome: 'Morfina Sulfato 10mg/ml 1ml',
+    substancia: 'Morfina',
+    lista: 'A1 (Entorpecentes)',
+    saldoEscriturado: 86,
+    unidade: 'Ampolas',
+    ultimoMovimento: '21/09/2026 17:30 (-1 amp. Centro Cirúrgico)',
+    responsavelAssinatura: 'Dr. Thiago Medeiros (CRF 44.910)'
+  },
+  {
+    id: 'PSI-003',
+    nome: 'Midazolam 15mg/3ml',
+    substancia: 'Midazolam',
+    lista: 'B1 (Psicotrópicos)',
+    saldoEscriturado: 310,
+    unidade: 'Ampolas',
+    ultimoMovimento: '21/09/2026 19:40 (-4 amp. Bloco Operatório)',
+    responsavelAssinatura: 'Dra. Paula Guimarães (CRF 51.204)'
+  }
+];
 
-  const handleSimulateFefoDispensation = (lot: MedicineLot) => {
-    setDispensationSuccess(`Baixa FEFO realizada com sucesso! Lote ${lot.lotNumber} dispensado via n8n. Custo unitário de R$ ${lot.unitCost.toFixed(2)} lançado no prontuário do paciente.`);
-    setTimeout(() => setDispensationSuccess(null), 5000);
+export default function VigiaFarmaciaEstoquePage() {
+  const roles = MODULO_ROLES_CATALOG['farmacia-estoque'];
+  const [activeRole, setActiveRole] = useState<ModuloRole>(roles[0]);
+  const [abaAtiva, setAbaAtiva] = useState<AbaFarmacia>('dispensacao');
+  const [prescricoes, setPrescricoes] = useState<PrescricaoDispensacao[]>(PRESCRICOES_MOCK);
+  const [notificacao, setNotificacao] = useState<string | null>(null);
+
+  const triggerNotificacao = (msg: string) => {
+    setNotificacao(msg);
+    setTimeout(() => setNotificacao(null), 4000);
+  };
+
+  const handleDispensarPrescricao = (prescId: string) => {
+    if (!hasPermission(activeRole, 'APPROVE')) {
+      triggerNotificacao('Atenção: Apenas Farmacêutico RT ou Clínico pode validar e liberar a dispensação.');
+      return;
+    }
+
+    setPrescricoes(prev =>
+      prev.map(p => {
+        if (p.id === prescId) {
+          return {
+            ...p,
+            medicamentos: p.medicamentos.map(m => ({ ...m, status: 'DISPENSADO' as const }))
+          };
+        }
+        return p;
+      })
+    );
+    triggerNotificacao(`Prescrição ${prescId} validada com sucesso! Kit beira-leito liberado com rastreabilidade.`);
   };
 
   return (
     <VigiaSidebarLayout
       moduloId="farmacia-estoque"
-      activeTitle="Farmácia Hospitalar & Estoque Inteligente (FEFO)"
-      activeSubtitle="Dispensação beira-leito com rastreabilidade por lote e integração de custos"
+      activeTitle="Farmácia Hospitalar & Estoque Clínico"
+      activeSubtitle="Dispensação beira-leito, dose unitária com DataMatrix e livro de psicotrópicos (Portaria 344)"
       actions={
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2">
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] text-xs font-bold text-slate-700 bg-white border border-[#E0E0E0] rounded-xl hover:bg-slate-50 transition-all shadow-sm"
+            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 border border-[#E0E0E0] transition-colors"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Hub Central</span>
+            <span>Hub 360</span>
           </Link>
+
           <button
-            onClick={() => handleSimulateFefoDispensation(selectedLot || mockLots[0])}
-            className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] text-xs font-bold text-white bg-[#0E9F6E] hover:bg-emerald-700 rounded-xl transition-all shadow-sm"
+            type="button"
+            onClick={() => triggerNotificacao('Leitor de Código de Barras DataMatrix conectado e pronto para bipagem.')}
+            className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] rounded-xl bg-[#0E9F6E] hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition-colors touch-manipulation"
           >
             <QrCode className="w-4 h-4" />
-            <span>Simular Baixa FEFO</span>
+            <span>Bipar Dose Unitária</span>
           </button>
         </div>
       }
     >
-      {/* Feedback de Notificação */}
-      {dispensationSuccess && (
-        <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-3 text-emerald-950 text-sm font-medium animate-fadeIn">
-          <CheckCircle2 className="w-5 h-5 text-[#0E9F6E] flex-shrink-0" />
-          <span>{dispensationSuccess}</span>
+      {/* Toast Notification */}
+      {notificacao && (
+        <div className="mb-4 p-3.5 bg-emerald-50 border border-emerald-300 rounded-2xl flex items-center justify-between shadow-sm animate-in fade-in duration-200">
+          <div className="flex items-center gap-2 text-xs font-bold text-emerald-900">
+            <Info className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>{notificacao}</span>
+          </div>
+          <button 
+            type="button" 
+            onClick={() => setNotificacao(null)}
+            className="text-emerald-600 hover:text-emerald-800 p-1 min-h-[44px] min-w-[44px] flex items-center justify-center"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
       )}
 
-      {/* Cards de Métricas Padronizados (Máximo 3 linhas + Tooltip informativo) */}
+      {/* BARRA DE RBAC & CONTROLE DE PERFIS DO MÓDULO */}
+      <ModuloRbacBar
+        moduloId="farmacia-estoque"
+        activeRole={activeRole}
+        onRoleChange={setActiveRole}
+        accentColor="#0E9F6E"
+        lightBg="bg-emerald-50"
+        lightBorder="border-emerald-200"
+      />
+
+      {/* KPIS GLOBAIS DA FARMÁCIA */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <KpiCard
-          title="Itens em Estoque"
-          value="2.345"
-          subtitle="Catalogados OpenBoxes"
-          icon={Package}
-          tooltipInfo="Quantidade total de códigos farmacêuticos e insumos hospitalares ativos com controle de lote e rastreamento atômico."
-          trend={{ text: "100% Rastreáveis", isPositive: true }}
+          title="Prescrições do Dia"
+          value="482"
+          subtitle="Atendidas beira-leito"
+          icon={<Pill className="w-5 h-5 text-emerald-600" />}
+          trend={{ text: "100% Aprazadas", isPositive: true }}
         />
-
         <KpiCard
-          title="Alerta Crítico (< 30d)"
-          value="3 Lotes"
-          subtitle="Prioridade Máxima"
-          icon={ShieldAlert}
-          tooltipInfo="Medicamentos com prazo de validade inferior a 30 dias que devem ser consumidos prioritariamente pelo critério FEFO para evitar perdas."
-          trend={{ text: "Ação de Consumo", isAlert: true }}
+          title="Controle Portaria 344"
+          value="538 ampolas"
+          subtitle="Saldo A1/A2/B1 conferido"
+          icon={<ShieldCheck className="w-5 h-5 text-emerald-600" />}
+          trend={{ text: "Livro SNGPC Fechado", isPositive: true }}
         />
-
         <KpiCard
-          title="Economia FEFO Apurada"
-          value="R$ 14.820"
-          subtitle="Desperdício Evitado"
-          icon={TrendingDown}
-          tooltipInfo="Economia financeira acumulada obtida pela priorização sistemática de lotes com vencimento mais próximo em relação ao consumo aleatório."
-          trend={{ text: "Zero Perdas por Validade", isPositive: true }}
+          title="Doses Unitizadas"
+          value="1.820"
+          subtitle="Etiquetadas com DataMatrix"
+          icon={<Package className="w-5 h-5 text-emerald-600" />}
+          trend={{ text: "Zero erro de rotulagem", isPositive: true }}
         />
-
         <KpiCard
-          title="Auditoria Teto CMED"
-          value="100%"
-          subtitle="Conformidade de Preço"
-          icon={DollarSign}
-          tooltipInfo="Índice de conformidade das aquisições frente à tabela regulatória de preços-teto da Câmara de Regulação do Mercado de Medicamentos (CMED)."
-          trend={{ text: "Dentro do Teto Legal", isPositive: true }}
+          title="Alertas de Interação"
+          value="3 bloqueios"
+          subtitle="Intervenção farmacêutica"
+          icon={<AlertTriangle className="w-5 h-5 text-amber-600" />}
+          trend={{ text: "Evitou evento adverso", isPositive: true }}
         />
       </div>
 
-      {/* Conteúdo Principal: Tabela de Lotes FEFO e Detalhe Lateral */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Tabela de Lotes com Filtros */}
-        <div className="lg:col-span-2 bg-white rounded-2xl border border-[#E0E0E0] shadow-sm p-5">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-5">
-            <div className="relative w-full sm:w-72">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Buscar medicamento, lote ou código..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-9 pr-4 py-2.5 min-h-[44px] text-xs border border-[#E0E0E0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0E9F6E]"
-              />
-            </div>
+      {/* SUB-NAVEGAÇÃO POR ABAS */}
+      <div className="bg-white border border-[#E0E0E0] rounded-2xl p-1.5 mb-6 shadow-xs flex items-center gap-1 overflow-x-auto">
+        {[
+          { id: 'dispensacao', label: '1. Dispensação Beira-Leito', icon: Pill },
+          { id: 'psicotropicos', label: '2. Livro Psicotrópicos (Portaria 344)', icon: ShieldAlert },
+          { id: 'fracionamento', label: '3. Fracionamento & Dose Unitária', icon: Package },
+          { id: 'interacoes', label: '4. Interações & Farmacovigilância', icon: AlertTriangle },
+          { id: 'devolucoes', label: '5. Devoluções & Sobras', icon: RefreshCw },
+          { id: 'perfis', label: '6. Perfis & Matriz RBAC', icon: Lock }
+        ].map(tab => {
+          const Icon = tab.icon;
+          const isActive = abaAtiva === tab.id;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setAbaAtiva(tab.id as AbaFarmacia)}
+              className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap min-h-[44px] touch-manipulation ${
+                isActive
+                  ? 'bg-[#0E9F6E] text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+              }`}
+            >
+              <Icon className="w-4 h-4 shrink-0" />
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
+      </div>
 
-            <div className="flex items-center gap-2 w-full sm:w-auto">
-              <Filter className="w-4 h-4 text-slate-400" />
-              <select
-                value={categoryFilter}
-                onChange={(e) => setCategoryFilter(e.target.value)}
-                className="text-xs border border-[#E0E0E0] rounded-xl px-3 py-2.5 min-h-[44px] bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0E9F6E]"
-              >
-                <option value="Todos">Todas as Categorias</option>
-                <option value="Antibiótico">Antibiótico</option>
-                <option value="Analgésico">Analgésico</option>
-                <option value="Cardiológico">Cardiológico</option>
-                <option value="Insumo Cirúrgico">Insumo Cirúrgico</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-slate-700">
-              <thead className="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider text-[10px] border-b border-slate-200">
-                <tr>
-                  <th className="px-4 py-3">Medicamento / Insumo</th>
-                  <th className="px-4 py-3">Lote</th>
-                  <th className="px-4 py-3">Validade (FEFO)</th>
-                  <th className="px-4 py-3">Saldo</th>
-                  <th className="px-4 py-3">Custo Un.</th>
-                  <th className="px-4 py-3 text-right">Ação</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {filteredLots.map((lot) => {
-                  const isSelected = selectedLot?.id === lot.id;
-                  return (
-                    <tr
-                      key={lot.id}
-                      onClick={() => setSelectedLot(lot)}
-                      className={`hover:bg-slate-50 cursor-pointer transition-colors ${
-                        isSelected ? 'bg-emerald-50/70 border-l-2 border-[#0E9F6E]' : ''
-                      }`}
-                    >
-                      <td className="px-4 py-3.5">
-                        <div className="font-bold text-slate-900">{lot.name}</div>
-                        <div className="text-[11px] text-slate-500">{lot.dosage}</div>
-                      </td>
-                      <td className="px-4 py-3.5">
-                        <span className="font-mono text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded">
-                          {lot.lotNumber}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3.5">
-                        <div className="flex items-center gap-1.5">
-                          {lot.daysToExpiry <= 15 ? (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
-                              {lot.daysToExpiry} dias (Crítico)
-                            </span>
-                          ) : lot.daysToExpiry <= 35 ? (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
-                              {lot.daysToExpiry} dias (Prioritário)
-                            </span>
-                          ) : (
-                            <span className="text-slate-600">
-                              {lot.daysToExpiry} dias
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3.5 font-semibold text-slate-900">
-                        {lot.currentStock} {lot.unit}
-                      </td>
-                      <td className="px-4 py-3.5 font-bold text-slate-900">
-                        R$ {lot.unitCost.toFixed(2)}
-                      </td>
-                      <td className="px-4 py-3.5 text-right">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleSimulateFefoDispensation(lot);
-                          }}
-                          className="min-h-[44px] px-2 text-xs font-bold text-[#0E9F6E] hover:text-emerald-800 hover:underline"
-                        >
-                          Dispensar
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Painel Lateral: Detalhes do Lote Selecionado & Algoritmo FEFO */}
-        <div className="bg-white rounded-2xl border border-[#E0E0E0] shadow-sm p-5 flex flex-col justify-between">
-          {selectedLot ? (
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                  Detalhes do Lote
-                </span>
-                <span className="text-xs font-mono font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                  {selectedLot.code}
-                </span>
-              </div>
-
-              <h3 className="text-base font-extrabold text-slate-900">{selectedLot.name}</h3>
-              <p className="text-xs text-slate-500 mb-5">{selectedLot.dosage}</p>
-
-              <div className="space-y-3 text-xs">
-                <div className="flex justify-between py-1.5 border-b border-slate-100">
-                  <span className="text-slate-500">Número do Lote</span>
-                  <span className="font-bold text-slate-800">{selectedLot.lotNumber}</span>
-                </div>
-                <div className="flex justify-between py-1.5 border-b border-slate-100">
-                  <span className="text-slate-500">Data de Validade</span>
-                  <span className="font-bold text-rose-600">{selectedLot.expiryDate}</span>
-                </div>
-                <div className="flex justify-between py-1.5 border-b border-slate-100">
-                  <span className="text-slate-500">Localização Física</span>
-                  <span className="font-medium text-slate-700 text-right">{selectedLot.storageLocation}</span>
-                </div>
-                <div className="flex justify-between py-1.5 border-b border-slate-100">
-                  <span className="text-slate-500">Preço Unitário de Custo</span>
-                  <span className="font-bold text-slate-900">R$ {selectedLot.unitCost.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between py-1.5 border-b border-slate-100">
-                  <span className="text-slate-500">Preço Teto CMED</span>
-                  <span className="font-bold text-slate-700">R$ {selectedLot.cmedCeilingPrice.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between py-1.5 border-b border-slate-100">
-                  <span className="text-slate-500">Margem sob o Teto</span>
-                  <span className="font-bold text-[#0E9F6E]">
-                    -{Math.round((1 - selectedLot.unitCost / selectedLot.cmedCeilingPrice) * 100)}% mais barato
-                  </span>
-                </div>
-              </div>
-
-              <div className="mt-5 p-3.5 rounded-xl bg-emerald-50/50 border border-emerald-200/60">
-                <h4 className="text-xs font-bold text-slate-800 mb-1 flex items-center gap-1.5">
-                  <Layers className="w-3.5 h-3.5 text-[#0E9F6E]" />
-                  Regra FEFO Ativa:
-                </h4>
-                <p className="text-[11px] text-slate-600 leading-relaxed">
-                  Quando o médico prescrever este medicamento no OpenEMR, o robô do n8n selecionará automaticamente este lote por ser o de vencimento mais próximo, debitando do estoque e repassando o custo exato para a conta do paciente.
+      {/* ABA 1: DISPENSAÇÃO BEIRA-LEITO */}
+      {abaAtiva === 'dispensacao' && (
+        <div className="space-y-4">
+          <div className="bg-white border border-[#E0E0E0] rounded-2xl p-4 shadow-xs">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-sm font-bold text-slate-900">
+                  Fila de Prescrições Hospitalares para Separação e Dispensação
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Conferência dos 5 certos: Paciente Certo, Medicamento Certo, Via Certa, Dose Certa e Horário Certo.
                 </p>
               </div>
             </div>
-          ) : (
-            <div className="text-center py-12 text-slate-400 text-xs">
-              Selecione um lote ao lado para ver os detalhes
-            </div>
-          )}
 
-          <button
-            onClick={() => selectedLot && handleSimulateFefoDispensation(selectedLot)}
-            className="mt-6 w-full py-3 min-h-[44px] bg-[#0E9F6E] hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-2"
-          >
-            <CheckCircle2 className="w-4 h-4" />
-            Dispensar Este Lote para Paciente
-          </button>
+            <div className="space-y-4">
+              {prescricoes.map(p => (
+                <div key={p.id} className="p-4 rounded-2xl border border-[#E0E0E0] bg-white hover:border-emerald-300 transition-all">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs font-bold text-slate-900">{p.id}</span>
+                        <span className="font-bold text-slate-900">{p.paciente}</span>
+                        <span className="text-xs text-slate-500">({p.prontuario})</span>
+                        {p.prioridade === 'STAT' && (
+                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                            PRIORIDADE STAT (IMEDIATA)
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-emerald-800 font-semibold mt-0.5">
+                        {p.leito} • Prescrito por: {p.medicoPrescritor}
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => handleDispensarPrescricao(p.id)}
+                      className="px-4 py-2 rounded-xl text-xs font-bold bg-[#0E9F6E] hover:bg-emerald-700 text-white transition-colors min-h-[44px] touch-manipulation"
+                    >
+                      Liberar Kit de Medicamentos
+                    </button>
+                  </div>
+
+                  {p.alertaAlergia && (
+                    <div className="my-2 p-2.5 bg-rose-50 border border-rose-200 rounded-xl flex items-center gap-2 text-xs font-bold text-rose-800">
+                      <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                      <span>{p.alertaAlergia}</span>
+                    </div>
+                  )}
+
+                  <div className="mt-3 space-y-2">
+                    <span className="text-[11px] font-bold uppercase text-slate-500 tracking-wider block">
+                      Itens Prescritos para Aprazamento:
+                    </span>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                      {p.medicamentos.map((m, idx) => (
+                        <div key={idx} className="p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 text-xs">
+                          <div className="font-bold text-slate-900">{m.item}</div>
+                          <div className="text-slate-600 text-[11px]">{m.dose} • {m.via}</div>
+                          <div className="flex items-center justify-between mt-2 pt-1 border-t border-slate-200 text-[10px]">
+                            <span className="text-slate-500">Horário: {m.horario}</span>
+                            <span className={`font-bold px-1.5 py-0.5 rounded ${
+                              m.status === 'DISPENSADO'
+                                ? 'bg-emerald-100 text-emerald-800'
+                                : m.status === 'SEPARADO'
+                                ? 'bg-blue-100 text-blue-800'
+                                : 'bg-amber-100 text-amber-800'
+                            }`}>
+                              {m.status}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* ABA 2: LIVRO DE PSICOTRÓPICOS */}
+      {abaAtiva === 'psicotropicos' && (
+        <div className="space-y-4">
+          <div className="bg-white border border-[#E0E0E0] rounded-2xl p-6 shadow-xs max-w-4xl">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-700">
+                <ShieldAlert className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-slate-900">
+                  Livro Registro de Psicotrópicos e Entorpecentes (Portaria SVS/MS 344/98)
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Escrituração eletrônica imutável conectada ao SNGPC / ANVISA e termo de guarda em cofre.
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              {ITENS_PORTARIA_344.map(item => (
+                <div key={item.id} className="p-4 rounded-2xl border border-[#E0E0E0] bg-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-sm text-slate-900">{item.nome}</span>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-50 text-rose-800 border border-rose-200">
+                        {item.lista}
+                      </span>
+                    </div>
+                    <div className="text-xs text-slate-500 mt-1">
+                      Última movimentação: <strong>{item.ultimoMovimento}</strong>
+                    </div>
+                    <div className="text-[11px] text-slate-600 mt-0.5">
+                      Responsável Técnico: {item.responsavelAssinatura}
+                    </div>
+                  </div>
+
+                  <div className="text-right">
+                    <span className="text-xs text-slate-500 block">Saldo em Cofre:</span>
+                    <strong className="text-lg font-black text-slate-900">{item.saldoEscriturado} {item.unidade}</strong>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex justify-end gap-2 pt-4 border-t border-slate-100 mt-4">
+              <button
+                type="button"
+                disabled={!hasPermission(activeRole, 'EXPORT')}
+                onClick={() => triggerNotificacao('Balanço Trimestral BSPO (Portaria 344) emitido para envio à Vigilância Sanitária.')}
+                className="px-4 py-2 rounded-xl text-xs font-bold border border-[#E0E0E0] text-slate-700 hover:bg-slate-50 min-h-[44px]"
+              >
+                Gerar Relatório Trimestral BSPO (ANVISA)
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ABA 3: FRACIONAMENTO & DOSE UNITÁRIA */}
+      {abaAtiva === 'fracionamento' && (
+        <div className="space-y-4">
+          <div className="bg-white border border-[#E0E0E0] rounded-2xl p-6 shadow-xs max-w-3xl">
+            <h3 className="text-base font-bold text-slate-900 mb-1">
+              Central de Fracionamento & Unitização de Doses
+            </h3>
+            <p className="text-xs text-slate-500 mb-4">
+              Cada comprimido ou ampola recebe código DataMatrix individual com validade redefinida conforme RDC 67/2007.
+            </p>
+
+            <div className="p-4 bg-emerald-50/50 border border-emerald-200 rounded-xl space-y-2 text-xs text-emerald-900 mb-4">
+              <strong>Garantia de Rastreabilidade Total:</strong>
+              <p>
+                A dose unitária impede trocas no momento da administração, garante que medicamentos fracionados não fiquem expostos a umidade e identifica exatamente qual lote foi consumido por qual leito.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1">
+                  Medicamento para Unitização
+                </label>
+                <input
+                  type="text"
+                  defaultValue="Omeprazol 20mg Cápsula (Caixa c/ 500 comprimidos)"
+                  className="w-full text-xs p-2.5 border border-[#E0E0E0] rounded-xl focus:border-emerald-500 focus:outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Quantidade Fracionada</label>
+                  <input
+                    type="number"
+                    defaultValue={500}
+                    className="w-full text-xs p-2.5 border border-[#E0E0E0] rounded-xl"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Validade Pós-Fracionamento</label>
+                  <input
+                    type="text"
+                    defaultValue="180 dias (21/03/2027)"
+                    className="w-full text-xs p-2.5 border border-[#E0E0E0] rounded-xl"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  disabled={!hasPermission(activeRole, 'CREATE')}
+                  onClick={() => triggerNotificacao('Etiquetas DataMatrix geradas e enviadas para impressora térmica de dose unitária.')}
+                  className="px-5 py-2.5 rounded-xl text-xs font-bold bg-[#0E9F6E] hover:bg-emerald-700 text-white min-h-[44px]"
+                >
+                  Imprimir 500 Etiquetas DataMatrix
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ABA 4: INTERAÇÕES MEDICAMENTOSAS */}
+      {abaAtiva === 'interacoes' && (
+        <div className="space-y-4">
+          <div className="bg-white border border-[#E0E0E0] rounded-2xl p-6 shadow-xs max-w-3xl">
+            <h3 className="text-base font-bold text-slate-900 mb-1">
+              Motor de Farmacovigilância & Anti-Interação Medicamentosa
+            </h3>
+            <p className="text-xs text-slate-500 mb-4">
+              Inteligência clínica cruzando prescrições ativas com a base Micromedex / UpToDate.
+            </p>
+
+            <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3 text-xs text-amber-900">
+              <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+              <div>
+                <strong className="block text-sm">Interação Grave Detectada:</strong>
+                <p className="mt-0.5">
+                  Associação de <strong>Ciprofloxacino</strong> + <strong>Amiodarona</strong> no leito 08 (UTI). 
+                  Risco de prolongamento do intervalo QT e arritmia ventricular grave.
+                </p>
+                <div className="mt-3 flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => triggerNotificacao('Intervenção Farmacêutica enviada diretamente ao prontuário do médico assistente.')}
+                    className="px-3 py-1.5 bg-[#0E9F6E] text-white rounded-lg font-bold text-xs"
+                  >
+                    Emitir Alerta ao Médico Prescritor
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ABA 5: DEVOLUÇÕES & SOBRAS */}
+      {abaAtiva === 'devolucoes' && (
+        <div className="space-y-4">
+          <div className="bg-white border border-[#E0E0E0] rounded-2xl p-6 shadow-xs max-w-3xl">
+            <h3 className="text-base font-bold text-slate-900 mb-1">
+              Recebimento de Devoluções de Enfermagem
+            </h3>
+            <p className="text-xs text-slate-500 mb-4">
+              Medicamentos devolvidos após alta, óbito ou alteração posológica com checagem de integridade de lacre.
+            </p>
+
+            <div className="p-4 border border-[#E0E0E0] rounded-xl flex items-center justify-between text-xs">
+              <div>
+                <strong className="text-slate-900 block">Enoxaparina 40mg (2 ampolas)</strong>
+                <span className="text-slate-500">Devolvido de: Leito 12-B • Motivo: Suspensão pré-cirúrgica</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => triggerNotificacao('Lacre validado. Medicamento reintegrado com segurança ao estoque da farmácia.')}
+                className="px-3 py-2 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl font-bold"
+              >
+                Reintegrar ao Estoque
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ABA 6: PERFIS & MATRIZ RBAC */}
+      {abaAtiva === 'perfis' && (
+        <div className="space-y-4">
+          <div className="bg-white border border-[#E0E0E0] rounded-2xl p-6 shadow-xs">
+            <h3 className="text-base font-bold text-slate-900 mb-1">
+              Perfis de Acesso do Módulo Farmácia Hospitalar
+            </h3>
+            <p className="text-xs text-slate-500 mb-6">
+              Responsabilidade sanitária, controle de psicotrópicos e triagem beira-leito.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {roles.map(role => (
+                <div key={role.id} className="p-4 rounded-2xl border border-[#E0E0E0] bg-white">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200">
+                      {role.level}
+                    </span>
+                    {role.id === activeRole.id && (
+                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                        Perfil Ativo
+                      </span>
+                    )}
+                  </div>
+                  <h4 className="text-sm font-bold text-slate-900 mb-1">{role.name}</h4>
+                  <p className="text-xs text-slate-600 mb-3">{role.description}</p>
+                  
+                  <div className="text-[11px] text-slate-500 pt-2 border-t border-slate-100">
+                    Responsável: <strong>{role.responsavelPadrao}</strong>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </VigiaSidebarLayout>
   );
 }

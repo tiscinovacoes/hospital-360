@@ -243,13 +243,21 @@ export default function HubModulosPage() {
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row lg:flex-col gap-3 flex-shrink-0">
+            <div className="flex flex-col sm:flex-row lg:flex-col gap-3 flex-shrink-0">
             <Link
               href="/dashboard-executivo"
               className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-[#1A56DB] hover:bg-blue-700 text-white font-black text-sm shadow-md shadow-blue-600/20 transition-all hover:scale-[1.01]"
             >
               <span>Abrir Custo do Paciente</span>
               <ArrowRight className="w-4 h-4" />
+            </Link>
+
+            <Link
+              href="/admin/perfis-acessos"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs border border-indigo-200 transition-all"
+            >
+              <ShieldCheck className="w-4 h-4 text-indigo-600" />
+              <span>Gestão de Perfis &amp; Acessos (RBAC)</span>
             </Link>
 
             <Link

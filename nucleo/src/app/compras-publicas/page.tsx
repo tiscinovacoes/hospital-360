@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { KpiCard, IconBadge } from '../../components/KpiCard';
+import { ModuloRbacBar } from '../../components/ModuloRbacBar';
+import { ModuloRole, MODULO_ROLES_CATALOG, hasPermission } from '@/types/rbac';
 import {
   FileText,
   ShoppingCart,
@@ -189,6 +191,9 @@ export default function VigiaComprasPage() {
   const [tempAferida, setTempAferida] = useState('21.4ºC');
   const [confirmandoEntrega, setConfirmandoEntrega] = useState(false);
   const [reciboCascata, setReciboCascata] = useState<any | null>(null);
+
+  const rolesCompras = MODULO_ROLES_CATALOG['compras-publicas'];
+  const [activeRoleCompras, setActiveRoleCompras] = useState<ModuloRole>(rolesCompras[0]);
 
   // Checklist de Conferência do PdC
   const [checklist, setChecklist] = useState({
@@ -946,6 +951,16 @@ export default function VigiaComprasPage() {
               {menuItens.find((m) => m.id === secaoAtiva)?.label || 'Painel'}
             </span>
           </div>
+
+          {/* BARRA DE RBAC & CONTROLE DE PERFIS DO MÓDULO */}
+          <ModuloRbacBar
+            moduloId="compras-publicas"
+            activeRole={activeRoleCompras}
+            onRoleChange={setActiveRoleCompras}
+            accentColor="#1A56DB"
+            lightBg="bg-blue-50"
+            lightBorder="border-blue-200"
+          />
 
           {/* ========================================================================= */}
           {/* SEÇÃO 1: NOVO PEDIDO DE COMPRA (PdC) - FIEL À IMAGEM DO USUÁRIO */}
