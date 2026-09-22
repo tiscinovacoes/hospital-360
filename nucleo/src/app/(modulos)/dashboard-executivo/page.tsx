@@ -106,7 +106,7 @@ export default function ExecutiveDashboardPage() {
 
             <button
               onClick={() => setShowSimModal(true)}
-              className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] rounded-xl bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-bold shadow-sm transition-all cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] rounded-xl bg-[#1B1F1C] hover:bg-[#33382F] text-white text-xs font-bold shadow-sm transition-all cursor-pointer"
             >
               <Sliders className="w-4 h-4" />
               <span>Simulador de Leitos</span>
@@ -116,7 +116,7 @@ export default function ExecutiveDashboardPage() {
       />
       {/* Toast Flutuante Asséptico (Sem preto) */}
       {toastMessage && (
-        <div className="fixed top-20 right-6 z-50 bg-white text-slate-800 px-5 py-3.5 rounded-xl shadow-xl border border-blue-300 flex items-center gap-3 animate-fadeIn">
+        <div className="fixed top-20 right-6 z-50 bg-white text-slate-800 px-5 py-3.5 rounded-xl shadow-xl border border-[#1B1F1C]/30 flex items-center gap-3 animate-fadeIn">
           <CheckCircle2 className="w-5 h-5 text-emerald-600" />
           <span className="text-xs font-semibold">{toastMessage}</span>
           <button onClick={() => setToastMessage(null)} className="text-slate-400 hover:text-slate-700 ml-2 min-w-[36px] min-h-[36px] flex items-center justify-center">
@@ -125,15 +125,17 @@ export default function ExecutiveDashboardPage() {
         </div>
       )}
 
-      {/* BARRA DE RBAC & CONTROLE DE PERFIS DO MÓDULO */}
-      <ModuloRbacBar
-        moduloId="dashboard-executivo"
-        activeRole={activeRole}
-        onRoleChange={setActiveRole}
-        accentColor="#2563EB"
-        lightBg="bg-blue-50"
-        lightBorder="border-blue-200"
-      />
+      {/* PERFIS & MATRIZ RBAC — só aparece na seção "Perfis" do menu lateral, não em todas as telas */}
+      {abaAtiva === 'perfis' && (
+        <ModuloRbacBar
+          moduloId="dashboard-executivo"
+          activeRole={activeRole}
+          onRoleChange={setActiveRole}
+          accentColor="#1B1F1C"
+          lightBg="bg-[#1B1F1C]/[0.08]"
+          lightBorder="border-[#1B1F1C]/20"
+        />
+      )}
 
       {/* SUB-NAVEGAÇÃO POR ABAS */}
       <div className="bg-white border border-[#E0E0E0] rounded-2xl p-1.5 mb-6 shadow-xs flex items-center gap-1 overflow-x-auto">
@@ -153,7 +155,7 @@ export default function ExecutiveDashboardPage() {
               onClick={() => setAbaAtiva(tab.id as any)}
               className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap min-h-[44px] touch-manipulation ${
                 isActive
-                  ? 'bg-[#2563EB] text-white shadow-xs'
+                  ? 'bg-[#1B1F1C] text-white shadow-xs'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
               }`}
             >
@@ -178,7 +180,7 @@ export default function ExecutiveDashboardPage() {
             {roles.map((role) => (
               <div key={role.id} className="p-4 rounded-2xl border border-[#E0E0E0] bg-white">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-blue-50 text-blue-800 border border-blue-200">
+                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-[#1B1F1C]/[0.08] text-[#1B1F1C] border border-[#1B1F1C]/20">
                     {role.level}
                   </span>
                   {role.id === activeRole.id && (
@@ -236,16 +238,16 @@ export default function ExecutiveDashboardPage() {
                 <div className="text-[10px] text-amber-700 font-semibold mt-2">API: /api/hub/despesas/ingestao</div>
               </div>
 
-              <div className="p-4 rounded-2xl border border-blue-200 bg-blue-50/40">
+              <div className="p-4 rounded-2xl border border-[#1B1F1C]/20 bg-[#1B1F1C]/40">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-100 text-blue-900 border border-blue-200">
+                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[#1B1F1C]/[0.12] text-[#1B1F1C] border border-[#1B1F1C]/20">
                     Compras &amp; Atas
                   </span>
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 </div>
                 <div className="text-lg font-bold text-slate-900">R$ 161.000,00</div>
                 <div className="text-[11px] text-slate-600 mt-1">2 empenhos liquidados</div>
-                <div className="text-[10px] text-blue-700 font-semibold mt-2">API: Webhook de Homologação</div>
+                <div className="text-[10px] text-[#1B1F1C] font-semibold mt-2">API: Webhook de Homologação</div>
               </div>
 
               <div className="p-4 rounded-2xl border border-purple-200 bg-purple-50/40">
@@ -308,7 +310,7 @@ export default function ExecutiveDashboardPage() {
                     <td className="p-3 text-center"><span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">Consolidado</span></td>
                   </tr>
                   <tr className="hover:bg-slate-50/50">
-                    <td className="p-3 font-bold text-blue-700">COMPRAS &amp; ATAS</td>
+                    <td className="p-3 font-bold text-[#1B1F1C]">COMPRAS &amp; ATAS</td>
                     <td className="p-3 text-slate-900 font-medium">Kit Prótese Fixação Ortopédica Titânio (1 kit)</td>
                     <td className="p-3 text-slate-600">Centro Cirúrgico</td>
                     <td className="p-3 text-slate-700 font-mono">Carlos Eduardo Silveira (#8841)</td>
@@ -323,10 +325,10 @@ export default function ExecutiveDashboardPage() {
       )}
 
       {/* 1. BANNER MINIMALISTA: O CUSTO DO PACIENTE COMO O GRANDE CONSOLIDADOR */}
-      <div className="bg-white rounded-2xl border border-blue-200/80 p-5 mb-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white rounded-2xl border border-[#1B1F1C]/80 p-5 mb-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="max-w-3xl">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-extrabold uppercase tracking-wider bg-blue-50 text-[#1A56DB] border border-blue-200 px-2 py-0.5 rounded-md">
+            <span className="text-[10px] font-extrabold uppercase tracking-wider bg-[#1B1F1C]/[0.08] text-[#1B1F1C] border border-[#1B1F1C]/20 px-2 py-0.5 rounded-md">
               MÓDULO UNIFICADOR CENTRAL
             </span>
             <span className="text-xs font-bold text-slate-400">Apuração Real vs SIGTAP (SUS) & TUSS</span>
@@ -403,7 +405,7 @@ export default function ExecutiveDashboardPage() {
                   Rastreabilidade integral da admissão à alta com confronto SIGTAP / TUSS
                 </p>
               </div>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#1B1F1C]/[0.08] text-[#1B1F1C] border border-[#1B1F1C]/20">
                 Modelo Absorção + ABC
               </span>
             </div>
@@ -459,10 +461,10 @@ export default function ExecutiveDashboardPage() {
               ].map(estacao => (
                 <div
                   key={estacao.num}
-                  className="p-3.5 rounded-xl border border-slate-200/90 hover:border-blue-300 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/50"
+                  className="p-3.5 rounded-xl border border-slate-200/90 hover:border-[#1B1F1C]/30 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/50"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="w-7 h-7 rounded-lg bg-blue-100/80 text-[#1A56DB] font-black text-xs flex items-center justify-center flex-shrink-0">
+                    <span className="w-7 h-7 rounded-lg bg-[#1B1F1C]/80 text-[#1B1F1C] font-black text-xs flex items-center justify-center flex-shrink-0">
                       {estacao.num}
                     </span>
                     <div>
@@ -522,7 +524,7 @@ export default function ExecutiveDashboardPage() {
                       </td>
                       <td className="py-3 text-slate-700">{p.clinica}</td>
                       <td className="py-3">
-                        <span className="bg-blue-50 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-blue-200">
+                        <span className="bg-[#1B1F1C]/[0.08] text-[#1B1F1C] text-[10px] font-bold px-2 py-0.5 rounded-full border border-[#1B1F1C]/20">
                           {p.status}
                         </span>
                       </td>
@@ -541,7 +543,7 @@ export default function ExecutiveDashboardPage() {
           <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5">
             <div className="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
-                <Bell className="w-4 h-4 text-[#1A56DB]" />
+                <Bell className="w-4 h-4 text-[#1B1F1C]" />
                 <h3 className="font-extrabold text-sm text-slate-900">Feed de Eventos Integrados</h3>
               </div>
               {unreadCount > 0 && (
@@ -556,7 +558,7 @@ export default function ExecutiveDashboardPage() {
                 <div
                   key={n.id}
                   className={`p-3 rounded-xl border text-xs transition-all ${
-                    n.unread ? 'bg-blue-50/50 border-blue-200/90' : 'bg-slate-50/50 border-slate-200/70'
+                    n.unread ? 'bg-[#1B1F1C]/50 border-[#1B1F1C]/90' : 'bg-slate-50/50 border-slate-200/70'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2">
@@ -567,7 +569,7 @@ export default function ExecutiveDashboardPage() {
                   {n.unread && (
                     <button
                       onClick={() => markAsRead(n.id)}
-                      className="text-[10px] font-bold text-[#1A56DB] hover:underline mt-2 inline-block"
+                      className="text-[10px] font-bold text-[#1B1F1C] hover:underline mt-2 inline-block"
                     >
                       Marcar como ciente
                     </button>
@@ -598,7 +600,7 @@ export default function ExecutiveDashboardPage() {
       {showSimModal && (
         <div className="fixed inset-0 bg-slate-900/20 backdrop-blur-xs z-50 flex items-center justify-center p-4">
           <div className="bg-white max-w-md w-full rounded-3xl shadow-xl border border-[#E0E0E0] overflow-hidden animate-fadeIn">
-            <div className="px-6 py-4 bg-[#2563EB] text-white flex items-center justify-between">
+            <div className="px-6 py-4 bg-[#1B1F1C] text-white flex items-center justify-between">
               <h3 className="font-extrabold text-base">Simulador de Expansão de Leitos</h3>
               <button onClick={() => setShowSimModal(false)} className="min-w-[44px] min-h-[44px] flex items-center justify-center font-bold text-white/80 hover:text-white">✕</button>
             </div>
@@ -612,7 +614,7 @@ export default function ExecutiveDashboardPage() {
                   max="10"
                   value={extraBeds}
                   onChange={e => setExtraBeds(Number(e.target.value))}
-                  className="w-full accent-blue-600"
+                  className="w-full accent-[#1B1F1C]"
                 />
                 <span className="text-right block font-mono font-bold text-sm text-slate-900">{extraBeds} leitos</span>
               </div>
@@ -625,12 +627,12 @@ export default function ExecutiveDashboardPage() {
                   max="100"
                   value={occupancyAssumption}
                   onChange={e => setOccupancyAssumption(Number(e.target.value))}
-                  className="w-full accent-blue-600"
+                  className="w-full accent-[#1B1F1C]"
                 />
                 <span className="text-right block font-mono font-bold text-sm text-slate-900">{occupancyAssumption}%</span>
               </div>
 
-              <div className="p-4 bg-blue-50/50 rounded-2xl border border-blue-200/60 space-y-2">
+              <div className="p-4 bg-[#1B1F1C]/50 rounded-2xl border border-[#1B1F1C]/60 space-y-2">
                 <div className="flex justify-between">
                   <span>Receita Adicional Estimada:</span>
                   <strong className="text-slate-900 font-bold">R$ {totalExtraRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}/mês</strong>
@@ -644,7 +646,7 @@ export default function ExecutiveDashboardPage() {
               <div className="flex justify-end pt-2">
                 <button
                   onClick={() => setShowSimModal(false)}
-                  className="px-5 py-2.5 min-h-[44px] bg-[#2563EB] hover:bg-blue-700 text-white rounded-xl font-bold shadow-sm transition-colors"
+                  className="px-5 py-2.5 min-h-[44px] bg-[#1B1F1C] hover:bg-[#33382F] text-white rounded-xl font-bold shadow-sm transition-colors"
                 >
                   Concluir Simulação
                 </button>
@@ -768,7 +770,7 @@ export default function ExecutiveDashboardPage() {
                         setImportando(false);
                       }
                     }}
-                    className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-xs transition-colors cursor-pointer"
+                    className="px-3 py-2 bg-[#1B1F1C] hover:bg-[#33382F] text-white font-bold rounded-xl shadow-xs transition-colors cursor-pointer"
                   >
                     {importando ? 'Processando Lote...' : 'Simular Ingestão de Compras (.json)'}
                   </button>

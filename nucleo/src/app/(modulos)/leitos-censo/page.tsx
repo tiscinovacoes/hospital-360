@@ -283,7 +283,7 @@ export default function LeitosCensoPage() {
       label: 'Mapa Visual de Leitos',
       icon: Bed,
       badge: `${occupancyRate}%`,
-      badgeCor: 'bg-sky-600 text-white shadow-xs font-bold'
+      badgeCor: 'bg-[#C1622D] text-white shadow-xs font-bold'
     },
     {
       id: 'regulacao',
@@ -348,7 +348,7 @@ export default function LeitosCensoPage() {
 
             <Link
               href="/tarefas"
-              className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] text-xs font-bold text-white bg-[#0284C7] hover:bg-sky-700 rounded-xl transition-all shadow-xs touch-manipulation cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] text-xs font-bold text-white bg-[#C1622D] hover:bg-[#A8531F] rounded-xl transition-all shadow-xs touch-manipulation cursor-pointer"
             >
               <QrCode className="w-4 h-4" />
               <span>App de Tarefas (Hotelaria)</span>
@@ -370,16 +370,16 @@ export default function LeitosCensoPage() {
       {/* CORPO PRINCIPAL COM SIDEBAR EXCLUSIVA DO PRODUTO CENSO & LEITOS */}
       {/* ========================================================================= */}
       <div className="flex flex-1 overflow-hidden relative">
-        {/* Menu Lateral Colorido com a Cor do Módulo (Azul Céu / Sky #0284C7) */}
+        {/* Menu Lateral Colorido com a Cor do Módulo (Azul Céu / Sky #C1622D) */}
         <aside
           className={`
             fixed lg:static inset-y-0 left-0 z-50 lg:z-30
             ${sidebarAberta ? 'translate-x-0 w-72 lg:w-64 shadow-xl lg:shadow-none' : '-translate-x-full lg:translate-x-0 lg:w-0 lg:hidden'}
-            shrink-0 bg-gradient-to-b from-sky-50/95 via-white to-sky-50/80 border-r border-sky-200/90 flex flex-col justify-between transition-all duration-200 ease-in-out
+            shrink-0 bg-gradient-to-b from-[#C1622D]/95 via-white to-[#C1622D]/80 border-r border-[#C1622D]/90 flex flex-col justify-between transition-all duration-200 ease-in-out
           `}
         >
           <nav className="p-3 space-y-1.5 flex-1 overflow-y-auto">
-            <div className="px-3 pb-2 text-[10px] font-bold text-sky-800 uppercase tracking-wider">
+            <div className="px-3 pb-2 text-[10px] font-bold text-[#C1622D] uppercase tracking-wider">
               Menu Censo Hospitalar &amp; NIR
             </div>
             {menuItens.map((item) => {
@@ -394,16 +394,16 @@ export default function LeitosCensoPage() {
                       setSidebarAberta(false);
                     }
                   }}
-                  className={`w-full min-h-[44px] sm:min-h-[38px] flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all text-left cursor-pointer focus:ring-2 focus:ring-sky-600 focus:outline-none ${
+                  className={`w-full min-h-[44px] sm:min-h-[38px] flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all text-left cursor-pointer focus:ring-2 focus:ring-[#C1622D] focus:outline-none ${
                     ativo
-                      ? 'bg-[#0284C7] text-white font-bold border border-sky-600 shadow-sm shadow-sky-600/25'
-                      : 'text-slate-700 hover:bg-white/90 hover:text-[#0284C7] hover:shadow-2xs border border-transparent'
+                      ? 'bg-[#C1622D] text-white font-bold border border-[#C1622D] shadow-sm shadow-[#C1622D]/25'
+                      : 'text-slate-700 hover:bg-white/90 hover:text-[#C1622D] hover:shadow-2xs border border-transparent'
                   }`}
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <Icone
                       className={`w-4 h-4 shrink-0 transition-colors ${
-                        ativo ? 'text-white' : 'text-sky-700 group-hover:text-[#0284C7]'
+                        ativo ? 'text-white' : 'text-[#C1622D] group-hover:text-[#C1622D]'
                       }`}
                     />
                     <span className="truncate">{item.label}</span>
@@ -411,7 +411,7 @@ export default function LeitosCensoPage() {
                   {item.badge && (
                     <span
                       className={`text-[10px] px-1.5 py-0.5 rounded-md shrink-0 ml-1 font-semibold ${
-                        item.badgeCor || (ativo ? 'bg-white/20 text-white' : 'bg-sky-100 text-sky-800')
+                        item.badgeCor || (ativo ? 'bg-white/20 text-white' : 'bg-[#C1622D]/[0.12] text-[#C1622D]')
                       }`}
                     >
                       {item.badge}
@@ -423,13 +423,13 @@ export default function LeitosCensoPage() {
           </nav>
 
           {/* Rodapé da Sidebar: Retorno ao Hub */}
-          <div className="p-3 border-t border-sky-200/80 bg-white/70">
+          <div className="p-3 border-t border-[#C1622D]/80 bg-white/70">
             <Link
               href="/"
-              className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-600 hover:text-sky-900 hover:bg-sky-100/60 transition-all border border-sky-200/70"
+              className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-600 hover:text-[#C1622D] hover:bg-[#A8531F]/60 transition-all border border-[#C1622D]/70"
             >
               <div className="flex items-center gap-2">
-                <ArrowLeft className="w-3.5 h-3.5 text-sky-700" />
+                <ArrowLeft className="w-3.5 h-3.5 text-[#C1622D]" />
                 <span>Voltar ao Hub de Módulos</span>
               </div>
               <ChevronRight className="w-3 h-3 opacity-60" />
@@ -443,30 +443,32 @@ export default function LeitosCensoPage() {
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
           {/* Toast Feedback */}
           {feedbackMessage && (
-            <div className="p-3.5 bg-sky-50 border border-sky-300 rounded-2xl flex items-center justify-between text-xs text-sky-950 shadow-sm animate-in fade-in duration-200">
+            <div className="p-3.5 bg-[#C1622D]/[0.08] border border-[#C1622D]/30 rounded-2xl flex items-center justify-between text-xs text-[#A8531F] shadow-sm animate-in fade-in duration-200">
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-[#0284C7] shrink-0" />
+                <CheckCircle2 className="w-4 h-4 text-[#C1622D] shrink-0" />
                 <span className="font-bold">{feedbackMessage}</span>
               </div>
               <button 
                 type="button" 
                 onClick={() => setFeedbackMessage(null)}
-                className="text-sky-600 hover:text-sky-800 p-1 min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
+                className="text-[#C1622D] hover:text-[#C1622D] p-1 min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
           )}
 
-          {/* BARRA DE RBAC & CONTROLE DE PERFIS DO MÓDULO */}
-          <ModuloRbacBar
-            moduloId="leitos-censo"
-            activeRole={activeRole}
-            onRoleChange={setActiveRole}
-            accentColor="#0284C7"
-            lightBg="bg-sky-50"
-            lightBorder="border-sky-200"
-          />
+          {/* PERFIS & MATRIZ RBAC — só aparece na seção "Perfis" do menu lateral, não em todas as telas */}
+          {secaoAtiva === 'perfis' && (
+            <ModuloRbacBar
+              moduloId="leitos-censo"
+              activeRole={activeRole}
+              onRoleChange={setActiveRole}
+              accentColor="#C1622D"
+              lightBg="bg-[#C1622D]/[0.08]"
+              lightBorder="border-[#C1622D]/20"
+            />
+          )}
 
           {/* CARDS DE MÉTRICAS */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -474,7 +476,7 @@ export default function LeitosCensoPage() {
               title="Taxa de Ocupação"
               value={`${occupancyRate}%`}
               subtitle={`${occupiedBeds} de ${totalBeds} leitos ativos`}
-              icon={<Activity className="w-5 h-5 text-sky-600" />}
+              icon={<Activity className="w-5 h-5 text-[#C1622D]" />}
               trend={{ text: `${occupiedBeds} Leitos Ocupados`, isPositive: true }}
             />
 
@@ -482,7 +484,7 @@ export default function LeitosCensoPage() {
               title="Leitos Vagos Imediatos"
               value={vacantBeds}
               subtitle="Prontos para Internação"
-              icon={<Bed className="w-5 h-5 text-sky-600" />}
+              icon={<Bed className="w-5 h-5 text-[#C1622D]" />}
               trend={{ text: "Disponibilidade Imediata", isPositive: true }}
             />
 
@@ -498,7 +500,7 @@ export default function LeitosCensoPage() {
               title="Diária Média Integrada"
               value="R$ 875,00"
               subtitle="Confronto SIGTAP / SUS"
-              icon={<ShieldCheck className="w-5 h-5 text-sky-600" />}
+              icon={<ShieldCheck className="w-5 h-5 text-[#C1622D]" />}
               trend={{ text: "Confronto SIGTAP OK", isPositive: true }}
             />
           </div>
@@ -514,7 +516,7 @@ export default function LeitosCensoPage() {
                     onClick={() => setSelectedWing(wing)}
                     className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap min-h-[44px] cursor-pointer ${
                       selectedWing === wing
-                        ? 'bg-[#0284C7] text-white shadow-xs'
+                        ? 'bg-[#C1622D] text-white shadow-xs'
                         : 'bg-white text-slate-700 border border-[#E0E0E0] hover:bg-slate-50'
                     }`}
                   >
@@ -534,8 +536,8 @@ export default function LeitosCensoPage() {
                         onClick={() => setSelectedBed(bed)}
                         className={`p-4 rounded-2xl border transition-all cursor-pointer bg-white relative flex flex-col justify-between ${
                           isSelected
-                            ? 'border-[#0284C7] ring-2 ring-sky-100 shadow-md'
-                            : 'border-[#E0E0E0] hover:border-sky-300 shadow-xs'
+                            ? 'border-[#C1622D] ring-2 ring-[#C1622D]/[0.12] shadow-md'
+                            : 'border-[#E0E0E0] hover:border-[#C1622D]/30 shadow-xs'
                         }`}
                       >
                         <div>
@@ -564,7 +566,7 @@ export default function LeitosCensoPage() {
                             <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-xs space-y-0.5">
                               <strong className="text-slate-900 block truncate">{bed.currentPatient.name}</strong>
                               <span className="text-[11px] text-slate-500 block truncate">{bed.currentPatient.diagnosis}</span>
-                              <span className="text-[10px] text-sky-700 font-semibold block">{bed.currentPatient.doctor}</span>
+                              <span className="text-[10px] text-[#C1622D] font-semibold block">{bed.currentPatient.doctor}</span>
                             </div>
                           ) : (
                             <div className="p-3 bg-slate-50/50 rounded-xl text-center text-xs text-slate-400">
@@ -621,7 +623,7 @@ export default function LeitosCensoPage() {
                         </div>
                         <div>
                           <span className="text-slate-400 block text-[11px]">Médico Assistente Responsável:</span>
-                          <strong className="text-sky-700">{selectedBed.currentPatient.doctor}</strong>
+                          <strong className="text-[#C1622D]">{selectedBed.currentPatient.doctor}</strong>
                         </div>
                       </div>
                     ) : (
@@ -639,7 +641,7 @@ export default function LeitosCensoPage() {
                       <button
                         type="button"
                         onClick={() => handleSimulateCleaningCall(selectedBed)}
-                        className="w-full py-2.5 px-3 rounded-xl bg-sky-50 text-[#0284C7] hover:bg-sky-100 font-bold text-xs transition-colors flex items-center justify-center gap-2 border border-sky-200 min-h-[44px] touch-manipulation cursor-pointer"
+                        className="w-full py-2.5 px-3 rounded-xl bg-[#C1622D]/[0.08] text-[#C1622D] hover:bg-[#A8531F]/[0.12] font-bold text-xs transition-colors flex items-center justify-center gap-2 border border-[#C1622D]/20 min-h-[44px] touch-manipulation cursor-pointer"
                       >
                         <Sparkles className="w-4 h-4" />
                         <span>Acionar Higienização Terminal</span>
@@ -656,7 +658,7 @@ export default function LeitosCensoPage() {
             <div className="space-y-4">
               <div className="bg-white border border-[#E0E0E0] rounded-2xl p-6 shadow-xs max-w-4xl">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center text-[#0284C7]">
+                  <div className="w-10 h-10 rounded-xl bg-[#C1622D]/[0.08] border border-[#C1622D]/20 flex items-center justify-center text-[#C1622D]">
                     <ArrowRightLeft className="w-5 h-5" />
                   </div>
                   <div>
@@ -697,7 +699,7 @@ export default function LeitosCensoPage() {
                           <button
                             type="button"
                             onClick={() => handleAlocarLeitoNir(sol.id)}
-                            className="px-4 py-2 bg-[#0284C7] hover:bg-sky-700 text-white rounded-xl text-xs font-bold shadow-xs min-h-[44px] cursor-pointer"
+                            className="px-4 py-2 bg-[#C1622D] hover:bg-[#A8531F] text-white rounded-xl text-xs font-bold shadow-xs min-h-[44px] cursor-pointer"
                           >
                             Autorizar e Alocar Leito
                           </button>
@@ -726,7 +728,7 @@ export default function LeitosCensoPage() {
                   Controle do tempo de turnaround entre a alta médica e a liberação física do leito higienizado.
                 </p>
 
-                <div className="p-4 bg-sky-50 border border-sky-200 rounded-xl space-y-2 text-xs text-sky-950 mb-4">
+                <div className="p-4 bg-[#C1622D]/[0.08] border border-[#C1622D]/20 rounded-xl space-y-2 text-xs text-[#A8531F] mb-4">
                   <strong>SLA de Higienização:</strong>
                   <p>
                     Meta institucional de giro: <strong>&le; 30 minutos</strong> para enfermaria e <strong>&le; 45 minutos</strong> para UTI.
@@ -838,7 +840,7 @@ export default function LeitosCensoPage() {
                         triggerFeedback('Erro ao sincronizar diárias com o Hub.');
                       }
                     }}
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-[#0284C7] hover:bg-sky-700 text-white shadow-xs transition-all cursor-pointer"
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-[#C1622D] hover:bg-[#A8531F] text-white shadow-xs transition-all cursor-pointer"
                   >
                     <RefreshCw className="w-3.5 h-3.5" />
                     <span>Sincronizar com Hub 360</span>
@@ -851,11 +853,11 @@ export default function LeitosCensoPage() {
                 <div className="bg-white border border-[#E0E0E0] rounded-2xl p-4 shadow-xs">
                   <div className="text-xs font-bold text-slate-500 mb-1">Custo de Diárias Faturadas no Mês</div>
                   <div className="text-2xl font-bold text-slate-900">R$ 138.450,00</div>
-                  <div className="text-[11px] text-sky-600 font-semibold mt-1">11 Diárias em Lote Ativo</div>
+                  <div className="text-[11px] text-[#C1622D] font-semibold mt-1">11 Diárias em Lote Ativo</div>
                 </div>
                 <div className="bg-white border border-[#E0E0E0] rounded-2xl p-4 shadow-xs">
                   <div className="text-xs font-bold text-slate-500 mb-1">Pacientes com Diárias Imputadas</div>
-                  <div className="text-2xl font-bold text-sky-600">4 Pacientes</div>
+                  <div className="text-2xl font-bold text-[#C1622D]">4 Pacientes</div>
                   <div className="text-[11px] text-slate-500 mt-1">UTI Geral, Adulto e Enf. Cirúrgica</div>
                 </div>
                 <div className="bg-white border border-[#E0E0E0] rounded-2xl p-4 shadow-xs">
@@ -884,8 +886,8 @@ export default function LeitosCensoPage() {
                     </thead>
                     <tbody className="divide-y divide-slate-100">
                       {DESPESAS_LEITOS_SEED.map((dsp) => (
-                        <tr key={dsp.id_transacao} className="hover:bg-sky-50/20">
-                          <td className="p-3 font-mono font-bold text-sky-700">{dsp.id_transacao}</td>
+                        <tr key={dsp.id_transacao} className="hover:bg-[#A8531F]/20">
+                          <td className="p-3 font-mono font-bold text-[#C1622D]">{dsp.id_transacao}</td>
                           <td className="p-3">
                             <div className="font-bold text-slate-900">{dsp.paciente_nome}</div>
                             <div className="text-[11px] text-slate-500">CPF: {dsp.paciente_cpf} • {dsp.prontuario_episodio}</div>
@@ -895,7 +897,7 @@ export default function LeitosCensoPage() {
                             <div className="text-[11px] text-slate-500">{dsp.item_descricao}</div>
                           </td>
                           <td className="p-3">
-                            <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-sky-50 text-sky-800 border border-sky-200">
+                            <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#C1622D]/[0.08] text-[#C1622D] border border-[#C1622D]/20">
                               {dsp.centro_custo}
                             </span>
                           </td>
@@ -931,7 +933,7 @@ export default function LeitosCensoPage() {
                   {roles.map((role) => (
                     <div key={role.id} className="p-4 rounded-2xl border border-[#E0E0E0] bg-white">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-sky-50 text-sky-800 border border-sky-200">
+                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-[#C1622D]/[0.08] text-[#C1622D] border border-[#C1622D]/20">
                           {role.level}
                         </span>
                         {role.id === activeRole.id && (

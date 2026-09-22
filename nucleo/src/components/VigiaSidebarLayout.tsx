@@ -7,7 +7,6 @@ import {
   LayoutDashboard,
   ShoppingCart,
   Boxes,
-  FileText,
   UserCheck,
   Stethoscope,
   Pill,
@@ -23,15 +22,10 @@ import {
   X,
   Bell,
   LogOut,
-  Sparkles,
   Layers,
-  ArrowRight,
-  CheckCircle2,
-  Building2,
-  DollarSign,
   UserCog
 } from 'lucide-react';
-import { ModuloId, MODULO_THEMES, ModuloThemeConfig } from './ModuloLayoutShell';
+import { ModuloId, MODULO_THEMES } from './ModuloLayoutShell';
 
 interface NavItem {
   id: ModuloId | 'home' | 'admin-perfis';
@@ -195,29 +189,27 @@ export function VigiaSidebarLayout({
   const currentTheme = MODULO_THEMES[resolvedModuloId] || MODULO_THEMES['compras-publicas'];
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex text-slate-800 antialiased font-sans">
+    <div className="min-h-screen bg-[#F6F3EC] flex text-[#1B1F1C] antialiased font-sans">
       {/* Backdrop suave para mobile (sem tons escuros opacos) */}
       {mobileOpen && (
         <div
           onClick={() => setMobileOpen(false)}
-          className="fixed inset-0 bg-slate-900/20 backdrop-blur-xs z-40 lg:hidden transition-opacity"
+          className="fixed inset-0 bg-[#1B1F1C]/20 backdrop-blur-xs z-40 lg:hidden transition-opacity"
           aria-label="Fechar menu de navegação"
         />
       )}
 
-      {/* SIDEBAR LATERAL DO VIGIA SAÚDE COLORIDA COM A COR DO MÓDULO */}
+      {/* SIDEBAR LATERAL — CHROME NEUTRO (TINTA/PAPEL); A COR DO MÓDULO VIRA SÓ UM SINAL DISCRETO */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 ${currentTheme.lightBg}/50 border-r ${currentTheme.lightBorder} flex flex-col transition-all duration-300 ease-in-out backdrop-blur-xs ${
+        className={`fixed top-0 bottom-0 left-0 z-50 bg-[#EFEAE0]/70 border-r border-[#1B1F1C]/12 flex flex-col transition-all duration-300 ease-in-out backdrop-blur-xs ${
           collapsed ? 'w-20' : 'w-72'
         } ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
       >
         {/* Topo da Sidebar: Brand & Botão de Colapso */}
-        <div className={`h-16 px-4 flex items-center justify-between border-b ${currentTheme.lightBorder} ${currentTheme.lightBg}/80 flex-shrink-0`}>
+        <div className="h-16 px-4 flex items-center justify-between border-b border-[#1B1F1C]/12 bg-[#EFEAE0]/90 flex-shrink-0">
           <Link href="/" className="flex items-center gap-3 overflow-hidden">
-            {/* Escudo Vigia Saúde com a cor do módulo atual */}
-            <div
-              className={`w-10 h-10 flex-shrink-0 ${currentTheme.primaryBg} rounded-xl flex items-center justify-center text-white shadow-sm transition-colors`}
-            >
+            {/* Escudo Vigia Saúde — tinta, único em todo o produto (não varia por módulo) */}
+            <div className="w-10 h-10 flex-shrink-0 bg-[#1B1F1C] rounded-xl flex items-center justify-center text-[#F6F3EC] shadow-sm">
               <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
                 <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-1 6h2v4h4v2h-4v4h-2v-4H7v-2h4V7z" />
               </svg>
@@ -226,11 +218,12 @@ export function VigiaSidebarLayout({
             {!collapsed && (
               <div className="flex flex-col leading-tight">
                 <div className="flex items-center gap-1.5">
-                  <span className="font-extrabold text-base tracking-tight text-slate-900">
-                    Vigia <span className={currentTheme.primaryText}>Saúde</span>
+                  <span className="font-display font-semibold text-base tracking-tight text-[#1B1F1C]">
+                    Vigia <span className="text-[#0E5C4C]">Saúde</span>
                   </span>
                 </div>
-                <span className={`text-[11px] font-bold ${currentTheme.primaryText}`}>
+                <span className="flex items-center gap-1.5 text-[11px] font-semibold text-[#1B1F1C]/45">
+                  <span className={`w-[6px] h-[6px] rounded-full flex-shrink-0 ${currentTheme.primaryBg}`} />
                   {currentTheme.corNome}
                 </span>
               </div>
@@ -240,7 +233,7 @@ export function VigiaSidebarLayout({
           {/* Botão de fechar no mobile (touch target >= 44px) */}
           <button
             onClick={() => setMobileOpen(false)}
-            className="lg:hidden min-w-[44px] min-h-[44px] rounded-xl flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-white/60 transition-colors"
+            className="lg:hidden min-w-[44px] min-h-[44px] rounded-xl flex items-center justify-center text-[#1B1F1C]/60 hover:text-[#1B1F1C] hover:bg-white/60 transition-colors"
             aria-label="Fechar gaveta"
           >
             <X className="w-5 h-5" />
@@ -249,7 +242,7 @@ export function VigiaSidebarLayout({
           {/* Botão de colapsar sidebar no desktop */}
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="hidden lg:flex w-8 h-8 rounded-lg items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-white/60 transition-colors"
+            className="hidden lg:flex w-8 h-8 rounded-lg items-center justify-center text-[#1B1F1C]/40 hover:text-[#1B1F1C]/80 hover:bg-white/60 transition-colors"
             title={collapsed ? 'Expandir barra lateral' : 'Recolher barra lateral'}
           >
             {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
@@ -259,7 +252,7 @@ export function VigiaSidebarLayout({
         {/* Lista de Navegação com scroll suave */}
         <div className="flex-1 overflow-y-auto px-3 py-4 space-y-1.5 custom-scrollbar">
           {!collapsed && (
-            <div className={`px-3 pb-1 text-[10px] font-extrabold ${currentTheme.primaryText} uppercase tracking-wider`}>
+            <div className="px-3 pb-1 text-[10px] font-bold text-[#1B1F1C]/45 uppercase tracking-wider">
               Módulos Especializados
             </div>
           )}
@@ -282,20 +275,17 @@ export function VigiaSidebarLayout({
                 title={collapsed ? item.name : undefined}
                 className={`group flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all min-h-[44px] ${
                   isActive
-                    ? itemTheme
-                      ? `${itemTheme.primaryBg} text-white shadow-sm`
-                      : 'bg-[#1A56DB] text-white shadow-sm'
-                    : 'text-slate-700 hover:bg-white/90 hover:text-slate-900 border border-transparent'
+                    ? 'bg-[#1B1F1C] text-[#F6F3EC] shadow-sm'
+                    : 'text-[#1B1F1C]/75 hover:bg-white/90 hover:text-[#1B1F1C] border border-transparent'
                 } ${collapsed ? 'justify-center' : ''}`}
               >
+                {itemTheme && (
+                  <span className={`w-[6px] h-[6px] rounded-full flex-shrink-0 ${isActive ? 'bg-[#F6F3EC]' : itemTheme.primaryBg}`} />
+                )}
                 <Icon
                   className={`w-5 h-5 flex-shrink-0 transition-transform group-hover:scale-105 ${
-                    isActive
-                      ? 'text-white'
-                      : itemTheme
-                      ? itemTheme.primaryText
-                      : 'text-slate-500'
-                  }`}
+                    isActive ? 'text-[#F6F3EC]' : 'text-[#1B1F1C]/60'
+                  } ${itemTheme ? '' : ''}`}
                 />
 
                 {!collapsed && (
@@ -305,10 +295,10 @@ export function VigiaSidebarLayout({
                       <span
                         className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider flex-shrink-0 ${
                           isActive
-                            ? 'bg-white/20 text-white'
+                            ? 'bg-white/20 text-[#F6F3EC]'
                             : itemTheme
                             ? `${itemTheme.lightBg} ${itemTheme.primaryText} border ${itemTheme.lightBorder}`
-                            : 'bg-white text-slate-600 border border-[#E0E0E0]'
+                            : 'bg-white text-[#1B1F1C]/60 border border-[#1B1F1C]/12'
                         }`}
                       >
                         {item.badge}
@@ -322,23 +312,21 @@ export function VigiaSidebarLayout({
         </div>
 
         {/* Rodapé da Sidebar: Perfil & Sair */}
-        <div className={`p-3 border-t ${currentTheme.lightBorder} flex-shrink-0 ${currentTheme.lightBg}/70`}>
+        <div className="p-3 border-t border-[#1B1F1C]/12 flex-shrink-0 bg-[#EFEAE0]/90">
           <div className={`flex items-center gap-3 ${collapsed ? 'justify-center' : 'px-2 py-1.5'}`}>
-            <div
-              className={`w-8 h-8 rounded-full ${currentTheme.primaryBg} text-white font-bold text-xs flex items-center justify-center flex-shrink-0 shadow-xs`}
-            >
+            <div className="w-8 h-8 rounded-full bg-[#1B1F1C] text-[#F6F3EC] font-bold text-xs flex items-center justify-center flex-shrink-0 shadow-xs">
               CD
             </div>
             {!collapsed && (
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-bold text-slate-800 truncate">Diretoria Clínica / CD</p>
-                <p className={`text-[10px] ${currentTheme.primaryText} font-semibold truncate`}>Hospital Central 360</p>
+                <p className="text-xs font-bold text-[#1B1F1C] truncate">Diretoria Clínica / CD</p>
+                <p className="text-[10px] text-[#0E5C4C] font-semibold truncate">Hospital Central 360</p>
               </div>
             )}
             {!collapsed && (
               <Link
                 href="/login"
-                className="text-slate-400 hover:text-rose-600 transition-colors p-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
+                className="text-[#1B1F1C]/40 hover:text-[#9C3B2E] transition-colors p-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
                 title="Trocar de Usuário / Sair"
               >
                 <LogOut className="w-4 h-4" />
@@ -354,13 +342,13 @@ export function VigiaSidebarLayout({
           collapsed ? 'lg:pl-20' : 'lg:pl-72'
         }`}
       >
-        {/* TOPBAR / HEADER SUPERIOR COM IDENTIDADE VISUAL DO MÓDULO */}
-        <header className="h-16 bg-white/95 backdrop-blur-md border-b border-[#E0E0E0] sticky top-0 z-30 px-3 sm:px-6 lg:px-8 flex items-center justify-between">
+        {/* TOPBAR / HEADER SUPERIOR — NEUTRO; CATEGORIA SÓ NA TAG REGULATÓRIA */}
+        <header className="h-16 bg-white/95 backdrop-blur-md border-b border-[#1B1F1C]/12 sticky top-0 z-30 px-3 sm:px-6 lg:px-8 flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Hambúrguer temático para abrir sidebar no mobile (Touch target >= 44px) */}
+            {/* Hambúrguer para abrir sidebar no mobile (Touch target >= 44px) */}
             <button
               onClick={() => setMobileOpen(true)}
-              className={`lg:hidden min-w-[44px] min-h-[44px] p-2 rounded-xl border flex items-center justify-center transition-colors ${currentTheme.lightBg} ${currentTheme.primaryText} ${currentTheme.lightBorder}`}
+              className="lg:hidden min-w-[44px] min-h-[44px] p-2 rounded-xl border border-[#1B1F1C]/12 bg-[#EFEAE0] text-[#1B1F1C] flex items-center justify-center transition-colors"
               aria-label="Abrir menu lateral"
             >
               <Menu className="w-5 h-5" />
@@ -369,11 +357,11 @@ export function VigiaSidebarLayout({
             {/* Breadcrumb / Título Ativo */}
             <div>
               <div className="flex items-center gap-1.5 sm:gap-2">
-                <span className="text-[10px] sm:text-[11px] font-semibold text-slate-400 uppercase tracking-wider hidden sm:inline">
+                <span className="text-[10px] sm:text-[11px] font-semibold text-[#1B1F1C]/40 uppercase tracking-wider hidden sm:inline">
                   Vigia Saúde 360
                 </span>
-                <span className="text-slate-300 hidden sm:inline">/</span>
-                <h1 className="text-xs sm:text-base font-extrabold text-slate-900 truncate max-w-[200px] sm:max-w-none">
+                <span className="text-[#1B1F1C]/20 hidden sm:inline">/</span>
+                <h1 className="text-xs sm:text-base font-semibold text-[#1B1F1C] truncate max-w-[200px] sm:max-w-none">
                   {activeTitle || currentTheme.nome}
                 </h1>
                 {currentTheme.tagRegulatoria && (
@@ -385,7 +373,7 @@ export function VigiaSidebarLayout({
                 )}
               </div>
               {activeSubtitle && (
-                <p className="text-[10px] sm:text-[11px] text-slate-500 hidden md:block truncate max-w-xl">
+                <p className="text-[10px] sm:text-[11px] text-[#1B1F1C]/45 hidden md:block truncate max-w-xl">
                   {activeSubtitle}
                 </p>
               )}
@@ -398,35 +386,33 @@ export function VigiaSidebarLayout({
 
             <Link
               href="/"
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold border border-[#E0E0E0] transition-all"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl bg-white hover:bg-[#F6F3EC] text-[#1B1F1C]/75 text-xs font-bold border border-[#1B1F1C]/12 transition-all"
             >
-              <Layers className={`w-4 h-4 ${currentTheme.primaryText}`} />
+              <Layers className="w-4 h-4 text-[#0E5C4C]" />
               <span>Ver Módulos</span>
             </Link>
 
-            <div className="h-5 w-px bg-slate-200 hidden sm:block" />
+            <div className="h-5 w-px bg-[#1B1F1C]/12 hidden sm:block" />
 
             {/* Sino de Notificações com touch target 44px */}
             <div className="relative">
               <button
-                className="w-10 h-10 min-w-[40px] min-h-[40px] sm:min-w-[44px] sm:min-h-[44px] rounded-xl bg-white hover:bg-slate-50 border border-[#E0E0E0] text-slate-600 flex items-center justify-center transition-colors"
+                className="w-10 h-10 min-w-[40px] min-h-[40px] sm:min-w-[44px] sm:min-h-[44px] rounded-xl bg-white hover:bg-[#F6F3EC] border border-[#1B1F1C]/12 text-[#1B1F1C]/70 flex items-center justify-center transition-colors"
                 title="Notificações Operacionais"
               >
                 <Bell className="w-4 h-4" />
-                <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white animate-pulse" />
+                <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#9C3B2E] ring-2 ring-white animate-pulse" />
               </button>
             </div>
 
             {/* Avatar do Usuário Conectado */}
             <div className="flex items-center gap-2 pl-1 sm:pl-2">
-              <div
-                className={`w-9 h-9 min-w-[36px] min-h-[36px] sm:w-10 sm:h-10 rounded-xl ${currentTheme.primaryBg} text-white font-black text-xs flex items-center justify-center shadow-sm`}
-              >
+              <div className="w-9 h-9 min-w-[36px] min-h-[36px] sm:w-10 sm:h-10 rounded-xl bg-[#1B1F1C] text-[#F6F3EC] font-black text-xs flex items-center justify-center shadow-sm">
                 JS
               </div>
               <div className="hidden xl:block text-left leading-tight">
-                <span className="text-xs font-bold text-slate-800 block">João Silva</span>
-                <span className="text-[10px] text-slate-500 block">Gestor Hospitalar</span>
+                <span className="text-xs font-bold text-[#1B1F1C] block">João Silva</span>
+                <span className="text-[10px] text-[#1B1F1C]/45 block">Gestor Hospitalar</span>
               </div>
             </div>
           </div>

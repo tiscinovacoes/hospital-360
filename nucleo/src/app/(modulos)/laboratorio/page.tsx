@@ -180,21 +180,23 @@ export default function LabHubPage() {
               onClick={() => setShowFhirJsonModal(true)}
               className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] text-xs font-bold text-slate-700 bg-white border border-[#E0E0E0] rounded-xl hover:bg-slate-50 transition-all shadow-sm"
             >
-              <Sparkles className="w-4 h-4 text-[#0D9488]" />
+              <Sparkles className="w-4 h-4 text-[#C1622D]" />
               <span>Ver Payload FHIR R4</span>
             </button>
           </div>
         }
       />
-      {/* BARRA DE RBAC & CONTROLE DE PERFIS DO MÓDULO */}
-      <ModuloRbacBar
-        moduloId="laboratorio"
-        activeRole={activeRole}
-        onRoleChange={setActiveRole}
-        accentColor="#0D9488"
-        lightBg="bg-teal-50"
-        lightBorder="border-teal-200"
-      />
+      {/* PERFIS & MATRIZ RBAC — só aparece na seção "Perfis" do menu lateral, não em todas as telas */}
+      {abaAtiva === 'perfis' && (
+        <ModuloRbacBar
+          moduloId="laboratorio"
+          activeRole={activeRole}
+          onRoleChange={setActiveRole}
+          accentColor="#C1622D"
+          lightBg="bg-[#C1622D]/[0.08]"
+          lightBorder="border-[#C1622D]/20"
+        />
+      )}
 
       {/* SUB-NAVEGAÇÃO POR ABAS */}
       <div className="bg-white border border-[#E0E0E0] rounded-2xl p-1.5 mb-6 shadow-xs flex items-center gap-1 overflow-x-auto">
@@ -211,7 +213,7 @@ export default function LabHubPage() {
               onClick={() => setAbaAtiva(tab.id as any)}
               className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap min-h-[44px] touch-manipulation ${
                 isActive
-                  ? 'bg-[#0D9488] text-white shadow-xs'
+                  ? 'bg-[#C1622D] text-white shadow-xs'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
               }`}
             >
@@ -223,12 +225,12 @@ export default function LabHubPage() {
       </div>
 
       {actionSuccess && (
-        <div className="mb-6 p-4 bg-teal-50 border border-teal-200 rounded-2xl flex items-center justify-between text-xs text-teal-950 animate-in fade-in">
+        <div className="mb-6 p-4 bg-[#C1622D]/[0.08] border border-[#C1622D]/20 rounded-2xl flex items-center justify-between text-xs text-[#A8531F] animate-in fade-in">
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-[#0D9488]" />
+            <CheckCircle2 className="w-4 h-4 text-[#C1622D]" />
             <span className="font-bold">{actionSuccess}</span>
           </div>
-          <button onClick={() => setActionSuccess(null)} className="text-teal-600 hover:text-teal-800 min-w-[36px] min-h-[36px] flex items-center justify-center">
+          <button onClick={() => setActionSuccess(null)} className="text-[#C1622D] hover:text-[#C1622D] min-w-[36px] min-h-[36px] flex items-center justify-center">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -248,7 +250,7 @@ export default function LabHubPage() {
             {roles.map((role) => (
               <div key={role.id} className="p-4 rounded-2xl border border-[#E0E0E0] bg-white">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-teal-50 text-teal-800 border border-teal-200">
+                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-[#C1622D]/[0.08] text-[#C1622D] border border-[#C1622D]/20">
                     {role.level}
                   </span>
                   {role.id === activeRole.id && (
@@ -312,7 +314,7 @@ export default function LabHubPage() {
       {/* Banner de Interoperabilidade com Médicos */}
       <div className="bg-white border border-slate-200/80 p-5 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs text-slate-700 shadow-sm mb-6">
         <div className="flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#1A56DB] flex items-center justify-center flex-shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#C1622D] flex items-center justify-center flex-shrink-0">
             <FlaskConical className="w-5 h-5" />
           </div>
           <div>
@@ -326,7 +328,7 @@ export default function LabHubPage() {
         </div>
         <button
           onClick={() => setShowFhirJsonModal(true)}
-          className="px-3.5 py-2 bg-[#1A56DB] hover:bg-blue-700 text-white rounded-xl font-mono text-xs font-bold whitespace-nowrap shadow-sm transition-all"
+          className="px-3.5 py-2 bg-[#C1622D] hover:bg-blue-700 text-white rounded-xl font-mono text-xs font-bold whitespace-nowrap shadow-sm transition-all"
         >
           Ver FHIR R4
         </button>
@@ -370,7 +372,7 @@ export default function LabHubPage() {
                 placeholder="Buscar exame ou paciente..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 pr-4 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:ring-2 focus:ring-[#1A56DB]"
+                className="pl-9 pr-4 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:ring-2 focus:ring-[#C1622D]"
               />
             </div>
           </div>
@@ -398,7 +400,7 @@ export default function LabHubPage() {
                   </td>
                   <td className="py-3.5 px-4">
                     <span className="font-bold text-slate-900 block">{sample.exam}</span>
-                    <span className="font-mono text-[10px] text-[#1A56DB] bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100">
+                    <span className="font-mono text-[10px] text-[#C1622D] bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100">
                       LOINC {sample.loinc}
                     </span>
                   </td>
@@ -431,12 +433,12 @@ export default function LabHubPage() {
                         onClick={() => handleOpenReport(sample)}
                         className="px-3 py-1.5 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 font-bold flex items-center gap-1 ml-auto shadow-xs"
                       >
-                        <Eye className="w-3.5 h-3.5 text-[#1A56DB]" /> Ver Laudo
+                        <Eye className="w-3.5 h-3.5 text-[#C1622D]" /> Ver Laudo
                       </button>
                     ) : sample.status === 'Em Análise' ? (
                       <button
                         onClick={() => handleOpenReport(sample)}
-                        className="px-3 py-1.5 rounded-xl bg-[#1A56DB] hover:bg-blue-700 text-white font-bold flex items-center gap-1 ml-auto shadow-xs transition-colors"
+                        className="px-3 py-1.5 rounded-xl bg-[#C1622D] hover:bg-blue-700 text-white font-bold flex items-center gap-1 ml-auto shadow-xs transition-colors"
                       >
                         <FileText className="w-3.5 h-3.5" /> Digitar Laudo
                       </button>
@@ -460,7 +462,7 @@ export default function LabHubPage() {
       {showReportModal && selectedSample && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl max-w-2xl w-full border border-slate-200 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div className="bg-[#1A56DB] text-white p-5 flex items-center justify-between">
+            <div className="bg-[#C1622D] text-white p-5 flex items-center justify-between">
               <div>
                 <h3 className="text-base font-bold flex items-center gap-2">
                   <FlaskConical className="w-5 h-5 text-blue-200" />
@@ -481,10 +483,10 @@ export default function LabHubPage() {
             <div className="p-5 flex-1 overflow-y-auto space-y-4 text-xs">
               <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl flex items-center justify-between">
                 <div>
-                  <p className="font-bold text-[#1A56DB]">Amostra Biológica: {selectedSample.tube}</p>
+                  <p className="font-bold text-[#C1622D]">Amostra Biológica: {selectedSample.tube}</p>
                   <p className="text-[11px] text-slate-600">Coletado: {selectedSample.collectedAt || 'Hoje às 08:30'}</p>
                 </div>
-                <span className="font-mono text-xs font-bold text-[#1A56DB] bg-white px-2 py-0.5 rounded border border-blue-200">
+                <span className="font-mono text-xs font-bold text-[#C1622D] bg-white px-2 py-0.5 rounded border border-blue-200">
                   LOINC {selectedSample.loinc}
                 </span>
               </div>
@@ -533,7 +535,7 @@ export default function LabHubPage() {
                 <textarea
                   rows={2}
                   defaultValue="Exame processado por quimioluminescência automatizada com controles normais validados."
-                  className="w-full p-2.5 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-[#1A56DB]"
+                  className="w-full p-2.5 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-[#C1622D]"
                 />
               </div>
 
@@ -559,7 +561,7 @@ export default function LabHubPage() {
                 </button>
                 <button
                   onClick={handleReleaseReport}
-                  className="px-5 py-2.5 min-h-[44px] bg-[#0D9488] hover:bg-teal-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition-colors"
+                  className="px-5 py-2.5 min-h-[44px] bg-[#C1622D] hover:bg-[#A8531F] text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition-colors"
                 >
                   <Send className="w-4 h-4" />
                   Liberar &amp; Transmitir Laudo
@@ -574,12 +576,12 @@ export default function LabHubPage() {
       {showFhirJsonModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/20 backdrop-blur-xs animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl max-w-2xl w-full border border-[#E0E0E0] shadow-xl overflow-hidden flex flex-col max-h-[85vh]">
-            <div className="bg-[#0D9488] text-white p-5 flex items-center justify-between">
+            <div className="bg-[#C1622D] text-white p-5 flex items-center justify-between">
               <div>
                 <h3 className="text-base font-mono font-bold text-white">
                   FHIR R4 — DiagnosticReport Resource
                 </h3>
-                <p className="text-xs text-teal-100 mt-0.5">
+                <p className="text-xs text-[#C1622D]/[0.12] mt-0.5">
                   Padrão internacional de mensageria em saúde (HL7 International)
                 </p>
               </div>
@@ -646,7 +648,7 @@ export default function LabHubPage() {
             <div className="p-4 bg-white flex justify-end">
               <button
                 onClick={() => setShowFhirJsonModal(false)}
-                className="px-5 py-2.5 min-h-[44px] bg-[#0D9488] hover:bg-teal-700 text-white rounded-xl text-xs font-bold transition-colors shadow-sm"
+                className="px-5 py-2.5 min-h-[44px] bg-[#C1622D] hover:bg-[#A8531F] text-white rounded-xl text-xs font-bold transition-colors shadow-sm"
               >
                 Fechar
               </button>

@@ -7,9 +7,7 @@ import {
   X,
   ChevronRight,
   ArrowLeft,
-  UserCheck,
-  Building,
-  Layers
+  UserCheck
 } from 'lucide-react';
 
 export type ModuloId =
@@ -27,13 +25,17 @@ export type ModuloId =
   | 'dashboard-executivo'
   | 'regulacao-vagas';
 
+export type ModuloCategoria = 'SUPRIMENTOS' | 'ASSISTENCIAL' | 'OPERACAO' | 'FINANCEIRO';
+
 export interface ModuloThemeConfig {
   id: ModuloId;
   nome: string;
   subtitulo: string;
   tagRegulatoria: string;
+  /** Nome de exibição da categoria (Design System v2 — ver IDENTIDADE_VISUAL). */
   corNome: string;
-  // Classes Tailwind Semânticas
+  categoria: ModuloCategoria;
+  // Classes Tailwind Semânticas — v2: uma cor por CATEGORIA, não mais por módulo.
   primaryBg: string;
   primaryHoverBg: string;
   primaryText: string;
@@ -42,175 +44,163 @@ export interface ModuloThemeConfig {
   ringColor: string;
 }
 
+/**
+ * Design System v2.0.0 — categoria substitui a cor exclusiva por módulo.
+ * Ver IDENTIDADE_VISUAL (1).md § 2 e § 8. As quatro categorias:
+ * Suprimentos (teal), Assistencial (terracota), Operação (ocre), Financeiro (tinta).
+ */
+const CATEGORIA_THEME: Record<ModuloCategoria, Omit<ModuloThemeConfig, 'id' | 'nome' | 'subtitulo' | 'tagRegulatoria' | 'corNome' | 'categoria'>> = {
+  SUPRIMENTOS: {
+    primaryBg: 'bg-[#0E5C4C]',
+    primaryHoverBg: 'hover:bg-[#0A4A3D]',
+    primaryText: 'text-[#0E5C4C]',
+    lightBg: 'bg-[#0E5C4C]/[0.08]',
+    lightBorder: 'border-[#0E5C4C]/20',
+    ringColor: 'focus:ring-[#0E5C4C]'
+  },
+  ASSISTENCIAL: {
+    primaryBg: 'bg-[#C1622D]',
+    primaryHoverBg: 'hover:bg-[#A8531F]',
+    primaryText: 'text-[#C1622D]',
+    lightBg: 'bg-[#C1622D]/[0.08]',
+    lightBorder: 'border-[#C1622D]/20',
+    ringColor: 'focus:ring-[#C1622D]'
+  },
+  OPERACAO: {
+    primaryBg: 'bg-[#8A6A16]',
+    primaryHoverBg: 'hover:bg-[#6E5511]',
+    primaryText: 'text-[#8A6A16]',
+    lightBg: 'bg-[#8A6A16]/[0.10]',
+    lightBorder: 'border-[#8A6A16]/20',
+    ringColor: 'focus:ring-[#8A6A16]'
+  },
+  FINANCEIRO: {
+    primaryBg: 'bg-[#1B1F1C]',
+    primaryHoverBg: 'hover:bg-[#33382F]',
+    primaryText: 'text-[#1B1F1C]',
+    lightBg: 'bg-[#1B1F1C]/[0.06]',
+    lightBorder: 'border-[#1B1F1C]/15',
+    ringColor: 'focus:ring-[#1B1F1C]'
+  }
+};
+
 export const MODULO_THEMES: Record<ModuloId, ModuloThemeConfig> = {
   'compras-publicas': {
     id: 'compras-publicas',
     nome: 'Compras Públicas & Gestão de Atas',
     subtitulo: 'Ata de Registro de Preços (ARP) → Contrato (50%) → Empenho → PdC → NF-e',
     tagRegulatoria: 'Lei 14.133/21',
-    corNome: 'Azul Cobalto Real',
-    primaryBg: 'bg-[#1A56DB]',
-    primaryHoverBg: 'hover:bg-blue-700',
-    primaryText: 'text-[#1A56DB]',
-    lightBg: 'bg-blue-50',
-    lightBorder: 'border-blue-200',
-    ringColor: 'focus:ring-blue-500'
+    corNome: 'Suprimentos & Atas',
+    categoria: 'SUPRIMENTOS',
+    ...CATEGORIA_THEME.SUPRIMENTOS
   },
   'estoque-central': {
     id: 'estoque-central',
     nome: 'Estoque Central & CD Vigia',
     subtitulo: 'Centro de Distribuição, Almoxarifado Central, FEFO e Rastreabilidade de Lotes',
     tagRegulatoria: 'RDC 430 FEFO',
-    corNome: 'Laranja Âmbar Logístico',
-    primaryBg: 'bg-[#D97706]',
-    primaryHoverBg: 'hover:bg-amber-700',
-    primaryText: 'text-[#D97706]',
-    lightBg: 'bg-amber-50',
-    lightBorder: 'border-amber-200',
-    ringColor: 'focus:ring-amber-500'
+    corNome: 'Suprimentos & Atas',
+    categoria: 'SUPRIMENTOS',
+    ...CATEGORIA_THEME.SUPRIMENTOS
   },
   'escala-medica': {
     id: 'escala-medica',
     nome: 'Escala Médica & Plantonistas',
     subtitulo: 'Corpo Clínico, Ponto GPS <100m, CRM/ATLS, Trocas de Plantão e PIX D+0',
     tagRegulatoria: 'Res. CFM 2.147',
-    corNome: 'Roxo Índigo Clínico',
-    primaryBg: 'bg-[#4F46E5]',
-    primaryHoverBg: 'hover:bg-indigo-700',
-    primaryText: 'text-[#4F46E5]',
-    lightBg: 'bg-indigo-50',
-    lightBorder: 'border-indigo-200',
-    ringColor: 'focus:ring-indigo-500'
+    corNome: 'Pessoas & Operação',
+    categoria: 'OPERACAO',
+    ...CATEGORIA_THEME.OPERACAO
   },
   'farmacia-estoque': {
     id: 'farmacia-estoque',
     nome: 'Farmácia Satélite & Dispensação',
     subtitulo: 'Dispensação Beira-Leito, Dose Unitária, Farmacovigilância e Portaria 344/98',
     tagRegulatoria: 'Portaria 344/98',
-    corNome: 'Verde Esmeralda Clínico',
-    primaryBg: 'bg-[#0E9F6E]',
-    primaryHoverBg: 'hover:bg-emerald-700',
-    primaryText: 'text-[#0E9F6E]',
-    lightBg: 'bg-emerald-50',
-    lightBorder: 'border-emerald-200',
-    ringColor: 'focus:ring-emerald-500'
+    corNome: 'Suprimentos & Atas',
+    categoria: 'SUPRIMENTOS',
+    ...CATEGORIA_THEME.SUPRIMENTOS
   },
   'gestao-clinica': {
     id: 'gestao-clinica',
     nome: 'Gestão Clínica & PEP',
     subtitulo: 'Prontuário Eletrônico (OpenEMR), Anamnese, Evolução Multiprofissional e Prescrição',
     tagRegulatoria: 'SBIS / CFM',
-    corNome: 'Azul Turquesa Assistencial',
-    primaryBg: 'bg-[#0891B2]',
-    primaryHoverBg: 'hover:bg-cyan-700',
-    primaryText: 'text-[#0891B2]',
-    lightBg: 'bg-cyan-50',
-    lightBorder: 'border-cyan-200',
-    ringColor: 'focus:ring-cyan-500'
+    corNome: 'Clínico & Assistencial',
+    categoria: 'ASSISTENCIAL',
+    ...CATEGORIA_THEME.ASSISTENCIAL
   },
   'laboratorio': {
     id: 'laboratorio',
     nome: 'Laboratório & Diagnóstico LIS',
     subtitulo: 'Interfaceamento de Analisadores, Triagem de Amostras, Laudos e Assinatura Digital',
     tagRegulatoria: 'RDC 302/2005',
-    corNome: 'Azul Petróleo / Teal',
-    primaryBg: 'bg-[#0D9488]',
-    primaryHoverBg: 'hover:bg-teal-700',
-    primaryText: 'text-[#0D9488]',
-    lightBg: 'bg-teal-50',
-    lightBorder: 'border-teal-200',
-    ringColor: 'focus:ring-teal-500'
+    corNome: 'Clínico & Assistencial',
+    categoria: 'ASSISTENCIAL',
+    ...CATEGORIA_THEME.ASSISTENCIAL
   },
   'leitos-censo': {
     id: 'leitos-censo',
     nome: 'Censo Hospitalar, Leitos & NIR',
     subtitulo: 'Núcleo Interno de Regulação, Gestão de Vagas, Taxa de Ocupação e Higienização',
     tagRegulatoria: 'Portaria MS 354',
-    corNome: 'Azul Céu / Sky',
-    primaryBg: 'bg-[#0284C7]',
-    primaryHoverBg: 'hover:bg-sky-700',
-    primaryText: 'text-[#0284C7]',
-    lightBg: 'bg-sky-50',
-    lightBorder: 'border-sky-200',
-    ringColor: 'focus:ring-sky-500'
+    corNome: 'Clínico & Assistencial',
+    categoria: 'ASSISTENCIAL',
+    ...CATEGORIA_THEME.ASSISTENCIAL
   },
   'financeiro-split': {
     id: 'financeiro-split',
     nome: 'Fintech Split & Contábil',
     subtitulo: 'Faturamento SUS/Convênios, Split de Pagamento D+0, Conciliação e NFS-e',
     tagRegulatoria: 'Split D+0 / BACEN',
-    corNome: 'Verde Florestal Monetário',
-    primaryBg: 'bg-[#16A34A]',
-    primaryHoverBg: 'hover:bg-green-700',
-    primaryText: 'text-[#16A34A]',
-    lightBg: 'bg-green-50',
-    lightBorder: 'border-green-200',
-    ringColor: 'focus:ring-green-500'
+    corNome: 'Financeiro & Governança',
+    categoria: 'FINANCEIRO',
+    ...CATEGORIA_THEME.FINANCEIRO
   },
   'automacao-mensageria': {
     id: 'automacao-mensageria',
     nome: 'Automação & Mensageria WhatsApp',
     subtitulo: 'Inteligência Artificial Poli, Workflows n8n, Confirmação de Consultas e Avisos',
     tagRegulatoria: 'n8n / Meta API',
-    corNome: 'Verde Mensageria',
-    primaryBg: 'bg-[#059669]',
-    primaryHoverBg: 'hover:bg-emerald-700',
-    primaryText: 'text-[#059669]',
-    lightBg: 'bg-emerald-50',
-    lightBorder: 'border-emerald-200',
-    ringColor: 'focus:ring-emerald-500'
+    corNome: 'Pessoas & Operação',
+    categoria: 'OPERACAO',
+    ...CATEGORIA_THEME.OPERACAO
   },
   'ingestao-modulos': {
     id: 'ingestao-modulos',
     nome: 'Ingestão & Conectores HL7/FHIR',
     subtitulo: 'ETL em Lote, Importação de CSV/XLSX, Barramento de Integração e Interoperabilidade',
     tagRegulatoria: 'HL7 v2.5 / FHIR',
-    corNome: 'Laranja Coral Integração',
-    primaryBg: 'bg-[#EA580C]',
-    primaryHoverBg: 'hover:bg-orange-700',
-    primaryText: 'text-[#EA580C]',
-    lightBg: 'bg-orange-50',
-    lightBorder: 'border-orange-200',
-    ringColor: 'focus:ring-orange-500'
+    corNome: 'Pessoas & Operação',
+    categoria: 'OPERACAO',
+    ...CATEGORIA_THEME.OPERACAO
   },
   'arquitetura-seguranca': {
     id: 'arquitetura-seguranca',
     nome: 'Blindagem LGPD & CISO Governança',
     subtitulo: 'Segurança Operacional, Trilha de Auditoria Imutável WORM e Criptografia em Trânsito',
     tagRegulatoria: 'LGPD Art. 46 / WORM',
-    corNome: 'Violeta Governança CISO',
-    primaryBg: 'bg-[#7C3AED]',
-    primaryHoverBg: 'hover:bg-violet-700',
-    primaryText: 'text-[#7C3AED]',
-    lightBg: 'bg-violet-50',
-    lightBorder: 'border-violet-200',
-    ringColor: 'focus:ring-violet-500'
+    corNome: 'Financeiro & Governança',
+    categoria: 'FINANCEIRO',
+    ...CATEGORIA_THEME.FINANCEIRO
   },
   'dashboard-executivo': {
     id: 'dashboard-executivo',
     nome: 'Custo do Paciente 360 (Executivo)',
     subtitulo: 'Unificação dos 13 Satélites, Rateio Absorção/ABC, Custo por Episódio e Margens',
     tagRegulatoria: 'Core Hospital 360',
-    corNome: 'Azul Marinho Hospitalar',
-    primaryBg: 'bg-[#2563EB]',
-    primaryHoverBg: 'hover:bg-blue-700',
-    primaryText: 'text-[#2563EB]',
-    lightBg: 'bg-blue-50',
-    lightBorder: 'border-blue-200',
-    ringColor: 'focus:ring-blue-500'
+    corNome: 'Financeiro & Governança',
+    categoria: 'FINANCEIRO',
+    ...CATEGORIA_THEME.FINANCEIRO
   },
   'regulacao-vagas': {
     id: 'regulacao-vagas',
     nome: 'Regulação de Vagas & TFD',
     subtitulo: 'Complexo Regulador SUS, Protocolo de Manchester, Ambulâncias e Transferências',
     tagRegulatoria: 'Complexo Regulador SUS',
-    corNome: 'Bordeaux / Magenta Clínico',
-    primaryBg: 'bg-[#BE185D]',
-    primaryHoverBg: 'hover:bg-pink-800',
-    primaryText: 'text-[#BE185D]',
-    lightBg: 'bg-pink-50',
-    lightBorder: 'border-pink-200',
-    ringColor: 'focus:ring-pink-500'
+    corNome: 'Clínico & Assistencial',
+    categoria: 'ASSISTENCIAL',
+    ...CATEGORIA_THEME.ASSISTENCIAL
   }
 };
 

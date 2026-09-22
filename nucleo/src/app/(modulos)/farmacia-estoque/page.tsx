@@ -249,7 +249,7 @@ export default function VigiaFarmaciaEstoquePage() {
       label: 'Dispensação Beira-Leito',
       icon: Pill,
       badge: '5 Certos',
-      badgeCor: 'bg-emerald-600 text-white shadow-xs'
+      badgeCor: 'bg-[#0E5C4C] text-white shadow-xs'
     },
     {
       id: 'psicotropicos',
@@ -284,7 +284,7 @@ export default function VigiaFarmaciaEstoquePage() {
       label: 'Exportar Despesas ao Hub',
       icon: FileSpreadsheet,
       badge: 'Hub 360',
-      badgeCor: 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+      badgeCor: 'bg-[#0E5C4C]/[0.12] text-[#0E5C4C] border border-[#0E5C4C]/20'
     },
     {
       id: 'perfis',
@@ -311,7 +311,7 @@ export default function VigiaFarmaciaEstoquePage() {
             </button>
 
             <div className="hidden xl:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700">
-              <Building2 className="w-3.5 h-3.5 text-emerald-600" />
+              <Building2 className="w-3.5 h-3.5 text-[#0E5C4C]" />
               <span>Unidade:</span>
               <select
                 value={farmaciaSelecionada}
@@ -328,7 +328,7 @@ export default function VigiaFarmaciaEstoquePage() {
             <button
               type="button"
               onClick={() => setSecaoAtiva('despesas_hub')}
-              className="hidden md:flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition-all shadow-xs cursor-pointer"
+              className="hidden md:flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl text-xs font-bold bg-[#0E5C4C] hover:bg-[#0A4A3D] text-white transition-all shadow-xs cursor-pointer"
             >
               <FileSpreadsheet className="w-3.5 h-3.5" />
               <span>Exportar Despesas Hub</span>
@@ -337,7 +337,7 @@ export default function VigiaFarmaciaEstoquePage() {
             <button
               type="button"
               onClick={() => triggerNotificacao('Leitor de Código de Barras DataMatrix conectado e pronto para bipagem.')}
-              className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] rounded-xl bg-[#0E9F6E] hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition-colors touch-manipulation cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] rounded-xl bg-[#0E5C4C] hover:bg-[#0A4A3D] text-white text-xs font-bold shadow-xs transition-colors touch-manipulation cursor-pointer"
             >
               <QrCode className="w-4 h-4" />
               <span>Bipar Dose</span>
@@ -364,11 +364,11 @@ export default function VigiaFarmaciaEstoquePage() {
           className={`
             fixed lg:static inset-y-0 left-0 z-50 lg:z-30
             ${sidebarAberta ? 'translate-x-0 w-72 lg:w-64 shadow-xl lg:shadow-none' : '-translate-x-full lg:translate-x-0 lg:w-0 lg:hidden'}
-            shrink-0 bg-gradient-to-b from-emerald-50/95 via-white to-emerald-50/80 border-r border-emerald-200/90 flex flex-col justify-between transition-all duration-200 ease-in-out
+            shrink-0 bg-gradient-to-b from-[#0E5C4C]/95 via-white to-[#0E5C4C]/80 border-r border-[#0E5C4C]/90 flex flex-col justify-between transition-all duration-200 ease-in-out
           `}
         >
           <nav className="p-3 space-y-1.5 flex-1 overflow-y-auto">
-            <div className="px-3 pb-2 text-[10px] font-bold text-emerald-800 uppercase tracking-wider">
+            <div className="px-3 pb-2 text-[10px] font-bold text-[#0E5C4C] uppercase tracking-wider">
               Menu Farmácia &amp; Dispensação
             </div>
             {menuItens.map((item) => {
@@ -383,16 +383,16 @@ export default function VigiaFarmaciaEstoquePage() {
                       setSidebarAberta(false);
                     }
                   }}
-                  className={`w-full min-h-[44px] sm:min-h-[38px] flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all text-left cursor-pointer focus:ring-2 focus:ring-emerald-600 focus:outline-none ${
+                  className={`w-full min-h-[44px] sm:min-h-[38px] flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all text-left cursor-pointer focus:ring-2 focus:ring-[#0E5C4C] focus:outline-none ${
                     ativo
-                      ? 'bg-[#0E9F6E] text-white font-bold border border-emerald-600 shadow-sm shadow-emerald-600/25'
-                      : 'text-slate-700 hover:bg-white/90 hover:text-[#0E9F6E] hover:shadow-2xs border border-transparent'
+                      ? 'bg-[#0E5C4C] text-white font-bold border border-[#0E5C4C] shadow-sm shadow-[#0E5C4C]/25'
+                      : 'text-slate-700 hover:bg-white/90 hover:text-[#0E5C4C] hover:shadow-2xs border border-transparent'
                   }`}
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <Icone
                       className={`w-4 h-4 shrink-0 transition-colors ${
-                        ativo ? 'text-white' : 'text-emerald-700 group-hover:text-[#0E9F6E]'
+                        ativo ? 'text-white' : 'text-[#0E5C4C] group-hover:text-[#0E5C4C]'
                       }`}
                     />
                     <span className="truncate">{item.label}</span>
@@ -400,7 +400,7 @@ export default function VigiaFarmaciaEstoquePage() {
                   {item.badge && (
                     <span
                       className={`text-[10px] px-1.5 py-0.5 rounded-md shrink-0 ml-1 font-semibold ${
-                        item.badgeCor || (ativo ? 'bg-white/20 text-white' : 'bg-emerald-100 text-emerald-800')
+                        item.badgeCor || (ativo ? 'bg-white/20 text-white' : 'bg-[#0E5C4C]/[0.12] text-[#0E5C4C]')
                       }`}
                     >
                       {item.badge}
@@ -412,13 +412,13 @@ export default function VigiaFarmaciaEstoquePage() {
           </nav>
 
           {/* Rodapé da Sidebar: Retorno ao Hub */}
-          <div className="p-3 border-t border-emerald-200/80 bg-white/70">
+          <div className="p-3 border-t border-[#0E5C4C]/80 bg-white/70">
             <Link
               href="/"
-              className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-600 hover:text-emerald-900 hover:bg-emerald-100/60 transition-all border border-emerald-200/70"
+              className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-600 hover:text-[#0E5C4C] hover:bg-[#0A4A3D]/60 transition-all border border-[#0E5C4C]/70"
             >
               <div className="flex items-center gap-2">
-                <ArrowLeft className="w-3.5 h-3.5 text-emerald-700" />
+                <ArrowLeft className="w-3.5 h-3.5 text-[#0E5C4C]" />
                 <span>Voltar ao Hub de Módulos</span>
               </div>
               <ChevronRight className="w-3 h-3 opacity-60" />
@@ -432,30 +432,32 @@ export default function VigiaFarmaciaEstoquePage() {
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
           {/* Toast Notification */}
           {notificacao && (
-            <div className="p-3.5 bg-emerald-50 border border-emerald-300 rounded-2xl flex items-center justify-between shadow-sm animate-in fade-in duration-200">
-              <div className="flex items-center gap-2 text-xs font-bold text-emerald-900">
-                <Info className="w-4 h-4 text-emerald-600 shrink-0" />
+            <div className="p-3.5 bg-[#0E5C4C]/[0.08] border border-[#0E5C4C]/30 rounded-2xl flex items-center justify-between shadow-sm animate-in fade-in duration-200">
+              <div className="flex items-center gap-2 text-xs font-bold text-[#0E5C4C]">
+                <Info className="w-4 h-4 text-[#0E5C4C] shrink-0" />
                 <span>{notificacao}</span>
               </div>
               <button 
                 type="button" 
                 onClick={() => setNotificacao(null)}
-                className="text-emerald-600 hover:text-emerald-800 p-1 min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
+                className="text-[#0E5C4C] hover:text-[#0E5C4C] p-1 min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
           )}
 
-          {/* BARRA DE RBAC & CONTROLE DE PERFIS DO MÓDULO */}
-          <ModuloRbacBar
-            moduloId="farmacia-estoque"
-            activeRole={activeRole}
-            onRoleChange={setActiveRole}
-            accentColor="#0E9F6E"
-            lightBg="bg-emerald-50"
-            lightBorder="border-emerald-200"
-          />
+          {/* PERFIS & MATRIZ RBAC — só aparece na seção "Perfis" do menu lateral, não em todas as telas */}
+          {secaoAtiva === 'perfis' && (
+            <ModuloRbacBar
+              moduloId="farmacia-estoque"
+              activeRole={activeRole}
+              onRoleChange={setActiveRole}
+              accentColor="#0E5C4C"
+              lightBg="bg-[#0E5C4C]/[0.08]"
+              lightBorder="border-[#0E5C4C]/20"
+            />
+          )}
 
           {/* KPIS GLOBAIS DA FARMÁCIA */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -463,21 +465,21 @@ export default function VigiaFarmaciaEstoquePage() {
               title="Prescrições do Dia"
               value="482"
               subtitle="Atendidas beira-leito"
-              icon={<Pill className="w-5 h-5 text-emerald-600" />}
+              icon={<Pill className="w-5 h-5 text-[#0E5C4C]" />}
               trend={{ text: "100% Aprazadas", isPositive: true }}
             />
             <KpiCard
               title="Controle Portaria 344"
               value="538 ampolas"
               subtitle="Saldo A1/A2/B1 conferido"
-              icon={<ShieldCheck className="w-5 h-5 text-emerald-600" />}
+              icon={<ShieldCheck className="w-5 h-5 text-[#0E5C4C]" />}
               trend={{ text: "Livro SNGPC Fechado", isPositive: true }}
             />
             <KpiCard
               title="Doses Unitizadas"
               value="1.820"
               subtitle="Etiquetadas com DataMatrix"
-              icon={<Package className="w-5 h-5 text-emerald-600" />}
+              icon={<Package className="w-5 h-5 text-[#0E5C4C]" />}
               trend={{ text: "Zero erro de rotulagem", isPositive: true }}
             />
             <KpiCard
@@ -506,7 +508,7 @@ export default function VigiaFarmaciaEstoquePage() {
 
                 <div className="space-y-4">
                   {prescricoes.map(p => (
-                    <div key={p.id} className="p-4 rounded-2xl border border-[#E0E0E0] bg-white hover:border-emerald-300 transition-all">
+                    <div key={p.id} className="p-4 rounded-2xl border border-[#E0E0E0] bg-white hover:border-[#0E5C4C]/30 transition-all">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
                         <div>
                           <div className="flex items-center gap-2">
@@ -519,7 +521,7 @@ export default function VigiaFarmaciaEstoquePage() {
                               </span>
                             )}
                           </div>
-                          <p className="text-xs text-emerald-800 font-semibold mt-0.5">
+                          <p className="text-xs text-[#0E5C4C] font-semibold mt-0.5">
                             {p.leito} • Prescrito por: {p.medicoPrescritor}
                           </p>
                         </div>
@@ -527,7 +529,7 @@ export default function VigiaFarmaciaEstoquePage() {
                         <button
                           type="button"
                           onClick={() => handleDispensarPrescricao(p.id)}
-                          className="px-4 py-2 rounded-xl text-xs font-bold bg-[#0E9F6E] hover:bg-emerald-700 text-white transition-colors min-h-[44px] touch-manipulation cursor-pointer"
+                          className="px-4 py-2 rounded-xl text-xs font-bold bg-[#0E5C4C] hover:bg-[#0A4A3D] text-white transition-colors min-h-[44px] touch-manipulation cursor-pointer"
                         >
                           Liberar Kit de Medicamentos
                         </button>
@@ -553,7 +555,7 @@ export default function VigiaFarmaciaEstoquePage() {
                                 <span className="text-slate-500">Horário: {m.horario}</span>
                                 <span className={`font-bold px-1.5 py-0.5 rounded ${
                                   m.status === 'DISPENSADO'
-                                    ? 'bg-emerald-100 text-emerald-800'
+                                    ? 'bg-[#0E5C4C]/[0.12] text-[#0E5C4C]'
                                     : m.status === 'SEPARADO'
                                     ? 'bg-blue-100 text-blue-800'
                                     : 'bg-amber-100 text-amber-800'
@@ -577,7 +579,7 @@ export default function VigiaFarmaciaEstoquePage() {
             <div className="space-y-4">
               <div className="bg-white border border-[#E0E0E0] rounded-2xl p-6 shadow-xs max-w-4xl">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-700">
+                  <div className="w-10 h-10 rounded-xl bg-[#0E5C4C]/[0.08] border border-[#0E5C4C]/20 flex items-center justify-center text-[#0E5C4C]">
                     <ShieldAlert className="w-5 h-5" />
                   </div>
                   <div>
@@ -641,7 +643,7 @@ export default function VigiaFarmaciaEstoquePage() {
                   Cada comprimido ou ampola recebe código DataMatrix individual com validade redefinida conforme RDC 67/2007.
                 </p>
 
-                <div className="p-4 bg-emerald-50/50 border border-emerald-200 rounded-xl space-y-2 text-xs text-emerald-900 mb-4">
+                <div className="p-4 bg-[#0E5C4C]/50 border border-[#0E5C4C]/20 rounded-xl space-y-2 text-xs text-[#0E5C4C] mb-4">
                   <strong>Garantia de Rastreabilidade Total:</strong>
                   <p>
                     A dose unitária impede trocas no momento da administração, garante que medicamentos fracionados não fiquem expostos a umidade e identifica exatamente qual lote foi consumido por qual leito.
@@ -656,7 +658,7 @@ export default function VigiaFarmaciaEstoquePage() {
                     <input
                       type="text"
                       defaultValue="Omeprazol 20mg Cápsula (Caixa c/ 500 comprimidos)"
-                      className="w-full text-xs p-2.5 border border-[#E0E0E0] rounded-xl focus:border-emerald-500 focus:outline-none"
+                      className="w-full text-xs p-2.5 border border-[#E0E0E0] rounded-xl focus:border-[#0E5C4C] focus:outline-none"
                     />
                   </div>
 
@@ -684,7 +686,7 @@ export default function VigiaFarmaciaEstoquePage() {
                       type="button"
                       disabled={!hasPermission(activeRole, 'CREATE')}
                       onClick={() => triggerNotificacao('Etiquetas DataMatrix geradas e enviadas para impressora térmica de dose unitária.')}
-                      className="px-5 py-2.5 rounded-xl text-xs font-bold bg-[#0E9F6E] hover:bg-emerald-700 text-white min-h-[44px] cursor-pointer"
+                      className="px-5 py-2.5 rounded-xl text-xs font-bold bg-[#0E5C4C] hover:bg-[#0A4A3D] text-white min-h-[44px] cursor-pointer"
                     >
                       Imprimir 500 Etiquetas DataMatrix
                     </button>
@@ -717,7 +719,7 @@ export default function VigiaFarmaciaEstoquePage() {
                       <button
                         type="button"
                         onClick={() => triggerNotificacao('Intervenção Farmacêutica enviada diretamente ao prontuário do médico assistente.')}
-                        className="px-3 py-1.5 bg-[#0E9F6E] text-white rounded-lg font-bold text-xs cursor-pointer"
+                        className="px-3 py-1.5 bg-[#0E5C4C] text-white rounded-lg font-bold text-xs cursor-pointer"
                       >
                         Emitir Alerta ao Médico Prescritor
                       </button>
@@ -747,7 +749,7 @@ export default function VigiaFarmaciaEstoquePage() {
                   <button
                     type="button"
                     onClick={() => triggerNotificacao('Lacre validado. Medicamento reintegrado com segurança ao estoque da farmácia.')}
-                    className="px-3 py-2 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl font-bold cursor-pointer"
+                    className="px-3 py-2 bg-[#0E5C4C]/[0.08] text-[#0E5C4C] border border-[#0E5C4C]/20 rounded-xl font-bold cursor-pointer"
                   >
                     Reintegrar ao Estoque
                   </button>
@@ -818,7 +820,7 @@ export default function VigiaFarmaciaEstoquePage() {
                         triggerNotificacao('Erro ao sincronizar despesas com o Hub.');
                       }
                     }}
-                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition-all cursor-pointer"
+                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-[#0E5C4C] hover:bg-[#0A4A3D] text-white shadow-xs transition-all cursor-pointer"
                   >
                     <RefreshCw className="w-3.5 h-3.5" />
                     <span>Sincronizar com Hub 360</span>
@@ -831,16 +833,16 @@ export default function VigiaFarmaciaEstoquePage() {
                 <div className="bg-white border border-[#E0E0E0] rounded-2xl p-4 shadow-xs">
                   <div className="text-xs font-bold text-slate-500 mb-1">Medicamentos Dispensados no Mês</div>
                   <div className="text-2xl font-bold text-slate-900">R$ 84.320,00</div>
-                  <div className="text-[11px] text-emerald-600 font-semibold mt-1">4 Prescrições em Lote Ativo</div>
+                  <div className="text-[11px] text-[#0E5C4C] font-semibold mt-1">4 Prescrições em Lote Ativo</div>
                 </div>
                 <div className="bg-white border border-[#E0E0E0] rounded-2xl p-4 shadow-xs">
                   <div className="text-xs font-bold text-slate-500 mb-1">Doses Unitizadas Imputadas</div>
-                  <div className="text-2xl font-bold text-emerald-600">19 Doses / Kits</div>
+                  <div className="text-2xl font-bold text-[#0E5C4C]">19 Doses / Kits</div>
                   <div className="text-[11px] text-slate-500 mt-1">Vinculadas a CPF e Leito</div>
                 </div>
                 <div className="bg-white border border-[#E0E0E0] rounded-2xl p-4 shadow-xs">
                   <div className="text-xs font-bold text-slate-500 mb-1">Conexão com Hub 360</div>
-                  <div className="text-2xl font-bold text-emerald-600">Ativa (REST/Event)</div>
+                  <div className="text-2xl font-bold text-[#0E5C4C]">Ativa (REST/Event)</div>
                   <div className="text-[11px] text-slate-500 mt-1">Alimentando Custo Door-to-Door</div>
                 </div>
               </div>
@@ -864,8 +866,8 @@ export default function VigiaFarmaciaEstoquePage() {
                     </thead>
                     <tbody className="divide-y divide-slate-100">
                       {DESPESAS_FARMACIA_SEED.map((dsp) => (
-                        <tr key={dsp.id_transacao} className="hover:bg-emerald-50/20">
-                          <td className="p-3 font-mono font-bold text-emerald-700">{dsp.id_transacao}</td>
+                        <tr key={dsp.id_transacao} className="hover:bg-[#0A4A3D]/20">
+                          <td className="p-3 font-mono font-bold text-[#0E5C4C]">{dsp.id_transacao}</td>
                           <td className="p-3">
                             <div className="font-bold text-slate-900">{dsp.paciente_nome}</div>
                             <div className="text-[11px] text-slate-500">CPF: {dsp.paciente_cpf} • {dsp.prontuario_episodio}</div>
@@ -875,7 +877,7 @@ export default function VigiaFarmaciaEstoquePage() {
                             <div className="text-[11px] text-slate-500 font-mono">Lote: {dsp.lote_fabricante}</div>
                           </td>
                           <td className="p-3">
-                            <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                            <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#0E5C4C]/[0.08] text-[#0E5C4C] border border-[#0E5C4C]/20">
                               {dsp.leito_identificador}
                             </span>
                           </td>
@@ -883,7 +885,7 @@ export default function VigiaFarmaciaEstoquePage() {
                           <td className="p-3 text-right font-mono text-slate-700">R$ {dsp.valor_unitario_medio.toFixed(2)}</td>
                           <td className="p-3 text-right font-mono font-bold text-slate-900">R$ {dsp.valor_total_imputado.toFixed(2)}</td>
                           <td className="p-3 text-center">
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#0E5C4C]/[0.08] text-[#0E5C4C] border border-[#0E5C4C]/20">
                               Sincronizado Hub
                             </span>
                           </td>
@@ -911,11 +913,11 @@ export default function VigiaFarmaciaEstoquePage() {
                   {roles.map(role => (
                     <div key={role.id} className="p-4 rounded-2xl border border-[#E0E0E0] bg-white">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200">
+                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-[#0E5C4C]/[0.08] text-[#0E5C4C] border border-[#0E5C4C]/20">
                           {role.level}
                         </span>
                         {role.id === activeRole.id && (
-                          <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                          <span className="text-[10px] font-bold text-[#0E5C4C] bg-[#0E5C4C]/[0.08] px-2 py-0.5 rounded-md border border-[#0E5C4C]/20">
                             Perfil Ativo
                           </span>
                         )}

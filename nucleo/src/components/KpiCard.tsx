@@ -6,7 +6,7 @@ import { Info } from 'lucide-react';
 export type IconVariant = 'blue' | 'emerald' | 'amber' | 'indigo' | 'teal' | 'rose' | 'slate';
 
 const VARIANT_MAP: Record<IconVariant, { bg: string; text: string; border: string }> = {
-  blue: { bg: 'bg-blue-50', text: 'text-[#1A56DB]', border: 'border-[#E0E0E0]' },
+  blue: { bg: 'bg-[#0E5C4C]/[0.08]', text: 'text-[#0E5C4C]', border: 'border-[#E0E0E0]' },
   emerald: { bg: 'bg-emerald-50', text: 'text-[#0E9F6E]', border: 'border-[#E0E0E0]' },
   amber: { bg: 'bg-amber-50', text: 'text-[#D97706]', border: 'border-[#E0E0E0]' },
   indigo: { bg: 'bg-indigo-50', text: 'text-[#4F46E5]', border: 'border-[#E0E0E0]' },

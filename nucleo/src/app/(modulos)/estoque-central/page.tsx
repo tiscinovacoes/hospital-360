@@ -539,7 +539,7 @@ export default function VigiaEstoqueCentralPage() {
       label: 'Visão Geral & Posição',
       icon: Boxes,
       badge: '1.248 itens',
-      badgeCor: 'bg-amber-100 text-amber-900 border border-amber-200'
+      badgeCor: 'bg-[#0E5C4C]/[0.12] text-[#0E5C4C] border border-[#0E5C4C]/20'
     },
     {
       id: 'fefo',
@@ -560,7 +560,7 @@ export default function VigiaEstoqueCentralPage() {
       label: 'Transferências CD ↔ Hospital',
       icon: ArrowRightLeft,
       badge: `${transferencias.filter(t => t.status === 'PENDENTE').length} pendentes`,
-      badgeCor: 'bg-amber-100 text-amber-900 border border-amber-200'
+      badgeCor: 'bg-[#0E5C4C]/[0.12] text-[#0E5C4C] border border-[#0E5C4C]/20'
     },
     {
       id: 'recall',
@@ -602,7 +602,7 @@ export default function VigiaEstoqueCentralPage() {
 
             <button
               onClick={() => setSecaoAtiva('nfe')}
-              className="flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl text-xs font-bold bg-[#D97706] text-white hover:bg-amber-700 transition-all shadow-xs cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl text-xs font-bold bg-[#0E5C4C] text-white hover:bg-[#0A4A3D] transition-all shadow-xs cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Importar NF-e (XML)</span>
@@ -645,11 +645,11 @@ export default function VigiaEstoqueCentralPage() {
           className={`
             fixed lg:static inset-y-0 left-0 z-50 lg:z-30
             ${sidebarAberta ? 'translate-x-0 w-72 lg:w-64 shadow-xl lg:shadow-none' : '-translate-x-full lg:translate-x-0 lg:w-0 lg:hidden'}
-            shrink-0 bg-gradient-to-b from-amber-50/95 via-white to-amber-50/80 border-r border-amber-200/90 flex flex-col justify-between transition-all duration-200 ease-in-out
+            shrink-0 bg-gradient-to-b from-[#0E5C4C]/95 via-white to-[#0E5C4C]/80 border-r border-[#0E5C4C]/90 flex flex-col justify-between transition-all duration-200 ease-in-out
           `}
         >
           <nav className="p-3 space-y-1.5 flex-1 overflow-y-auto">
-            <div className="px-3 pb-2 text-[10px] font-bold text-amber-700 uppercase tracking-wider">
+            <div className="px-3 pb-2 text-[10px] font-bold text-[#0E5C4C] uppercase tracking-wider">
               Menu de Estoque Central &amp; CD
             </div>
             {menuItens.map((item) => {
@@ -664,16 +664,16 @@ export default function VigiaEstoqueCentralPage() {
                       setSidebarAberta(false);
                     }
                   }}
-                  className={`w-full min-h-[44px] sm:min-h-[38px] flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all text-left cursor-pointer focus:ring-2 focus:ring-amber-600 focus:outline-none ${
+                  className={`w-full min-h-[44px] sm:min-h-[38px] flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all text-left cursor-pointer focus:ring-2 focus:ring-[#0E5C4C] focus:outline-none ${
                     ativo
-                      ? 'bg-[#D97706] text-white font-bold border border-amber-600 shadow-sm shadow-amber-600/25'
-                      : 'text-slate-700 hover:bg-white/90 hover:text-[#D97706] hover:shadow-2xs border border-transparent'
+                      ? 'bg-[#0E5C4C] text-white font-bold border border-[#0E5C4C] shadow-sm shadow-[#0E5C4C]/25'
+                      : 'text-slate-700 hover:bg-white/90 hover:text-[#0E5C4C] hover:shadow-2xs border border-transparent'
                   }`}
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <Icone
                       className={`w-4 h-4 shrink-0 transition-colors ${
-                        ativo ? 'text-white' : 'text-amber-600/80 group-hover:text-[#D97706]'
+                        ativo ? 'text-white' : 'text-[#0E5C4C]/80 group-hover:text-[#0E5C4C]'
                       }`}
                     />
                     <span className="truncate">{item.label}</span>
@@ -683,7 +683,7 @@ export default function VigiaEstoqueCentralPage() {
                       className={`text-[10px] px-2 py-0.5 rounded-full font-bold ml-2 shrink-0 ${
                         ativo
                           ? 'bg-white/20 text-white'
-                          : item.badgeCor || 'bg-amber-100 text-amber-900 border border-amber-200'
+                          : item.badgeCor || 'bg-[#0E5C4C]/[0.12] text-[#0E5C4C] border border-[#0E5C4C]/20'
                       }`}
                     >
                       {item.badge}
@@ -695,10 +695,10 @@ export default function VigiaEstoqueCentralPage() {
           </nav>
 
           {/* Rodapé do Menu Exclusivo: Saída para o Hub Geral */}
-          <div className="p-3 border-t border-amber-200/90 bg-amber-50/90 space-y-2">
+          <div className="p-3 border-t border-[#0E5C4C]/90 bg-[#0E5C4C]/90 space-y-2">
             <Link
               href="/"
-              className="flex items-center justify-center gap-2 w-full py-2.5 px-3 rounded-xl border border-amber-200 bg-white text-[#D97706] hover:text-amber-900 hover:bg-amber-50 text-xs font-bold transition-all shadow-2xs"
+              className="flex items-center justify-center gap-2 w-full py-2.5 px-3 rounded-xl border border-[#0E5C4C]/20 bg-white text-[#0E5C4C] hover:text-[#0E5C4C] hover:bg-[#0A4A3D]/[0.08] text-xs font-bold transition-all shadow-2xs"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Voltar ao Hub de Módulos</span>
@@ -721,30 +721,32 @@ export default function VigiaEstoqueCentralPage() {
 
           {/* Toast Notification Flutuante */}
           {notificacao && (
-            <div className="p-3.5 bg-amber-50 border border-amber-300 rounded-2xl flex items-center justify-between shadow-sm animate-in fade-in duration-200">
-              <div className="flex items-center gap-2 text-xs font-bold text-amber-900">
-                <Info className="w-4 h-4 text-amber-600 shrink-0" />
+            <div className="p-3.5 bg-[#0E5C4C]/[0.08] border border-[#0E5C4C]/30 rounded-2xl flex items-center justify-between shadow-sm animate-in fade-in duration-200">
+              <div className="flex items-center gap-2 text-xs font-bold text-[#0E5C4C]">
+                <Info className="w-4 h-4 text-[#0E5C4C] shrink-0" />
                 <span>{notificacao}</span>
               </div>
               <button 
                 type="button" 
                 onClick={() => setNotificacao(null)}
-                className="text-amber-600 hover:text-amber-800 p-1 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                className="text-[#0E5C4C] hover:text-[#0E5C4C] p-1 min-h-[44px] min-w-[44px] flex items-center justify-center"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
           )}
 
-          {/* BARRA DE RBAC & CONTROLE DE PERFIS DO MÓDULO */}
-          <ModuloRbacBar
-            moduloId="estoque-central"
-            activeRole={activeRole}
-            onRoleChange={setActiveRole}
-            accentColor="#D97706"
-            lightBg="bg-amber-50"
-            lightBorder="border-amber-200"
-          />
+          {/* PERFIS & MATRIZ RBAC — só aparece na seção "Trilha de Auditoria & RBAC" do menu lateral */}
+          {secaoAtiva === 'perfis_rbac' && (
+            <ModuloRbacBar
+              moduloId="estoque-central"
+              activeRole={activeRole}
+              onRoleChange={setActiveRole}
+              accentColor="#0E5C4C"
+              lightBg="bg-[#0E5C4C]/[0.08]"
+              lightBorder="border-[#0E5C4C]/20"
+            />
+          )}
 
           {/* ========================================================================= */}
           {/* SEÇÃO 1: VISÃO GERAL & POSIÇÃO DE ESTOQUE (CURVA ABC) */}
@@ -764,28 +766,28 @@ export default function VigiaEstoqueCentralPage() {
                   title="Itens no CD Central"
                   value="1.248"
                   subtitle="Itens monitorados"
-                  icon={<Boxes className="w-5 h-5 text-amber-600" />}
+                  icon={<Boxes className="w-5 h-5 text-[#0E5C4C]" />}
                   trend={{ text: "+12 itens novos", isPositive: true }}
                 />
                 <KpiCard
                   title="Valor Total em Estoque"
                   value="R$ 4.890.412"
                   subtitle="Custo médio apurado"
-                  icon={<TrendingUp className="w-5 h-5 text-amber-600" />}
+                  icon={<TrendingUp className="w-5 h-5 text-[#0E5C4C]" />}
                   trend={{ text: "Auditoria TCU Ativa", isPositive: true }}
                 />
                 <KpiCard
                   title="Lotes com Alerta FEFO"
                   value="18 lotes"
                   subtitle="Validade ≤ 60 dias"
-                  icon={<Clock className="w-5 h-5 text-amber-600" />}
+                  icon={<Clock className="w-5 h-5 text-[#0E5C4C]" />}
                   trend={{ text: "Prioridade de saída", isAlert: true }}
                 />
                 <KpiCard
                   title="Risco de Ruptura"
                   value="4 itens"
                   subtitle="Abaixo do ponto de pedido"
-                  icon={<AlertOctagon className="w-5 h-5 text-amber-600" />}
+                  icon={<AlertOctagon className="w-5 h-5 text-[#0E5C4C]" />}
                   trend={{ text: "Disparado alerta compras", isAlert: true }}
                 />
               </div>
@@ -800,7 +802,7 @@ export default function VigiaEstoqueCentralPage() {
                       placeholder="Buscar por medicamento, código ANVISA ou endereço..."
                       value={busca}
                       onChange={e => setBusca(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2 border border-[#E0E0E0] rounded-xl text-xs focus:outline-none focus:border-amber-500 transition-colors"
+                      className="w-full pl-9 pr-3 py-2 border border-[#E0E0E0] rounded-xl text-xs focus:outline-none focus:border-[#0E5C4C] transition-colors"
                     />
                   </div>
 
@@ -840,7 +842,7 @@ export default function VigiaEstoqueCentralPage() {
                         i.nome.toLowerCase().includes(busca.toLowerCase()) ||
                         i.codigoAnvisa.includes(busca)
                       ).map(item => (
-                        <tr key={item.id} className="hover:bg-amber-50/20 transition-colors">
+                        <tr key={item.id} className="hover:bg-[#0A4A3D]/20 transition-colors">
                           <td className="p-3">
                             <div className="font-bold text-slate-900">{item.nome}</div>
                             <div className="text-[11px] text-slate-500">
@@ -856,7 +858,7 @@ export default function VigiaEstoqueCentralPage() {
                           <td className="p-3">
                             <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${
                               item.categoria === 'A'
-                                ? 'bg-amber-50 text-amber-800 border-amber-200'
+                                ? 'bg-[#0E5C4C]/[0.08] text-[#0E5C4C] border-[#0E5C4C]/20'
                                 : item.categoria === 'B'
                                 ? 'bg-blue-50 text-blue-800 border-blue-200'
                                 : 'bg-slate-100 text-slate-700 border-slate-200'
@@ -881,7 +883,7 @@ export default function VigiaEstoqueCentralPage() {
                               item.status === 'NORMAL'
                                 ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                                 : item.status === 'ATENCAO'
-                                ? 'bg-amber-50 text-amber-800 border-amber-200'
+                                ? 'bg-[#0E5C4C]/[0.08] text-[#0E5C4C] border-[#0E5C4C]/20'
                                 : 'bg-rose-50 text-rose-700 border-rose-200'
                             }`}>
                               {item.status === 'NORMAL' ? 'Estoque Normal' : item.status === 'ATENCAO' ? 'Ponto de Atenção' : 'Ruptura Iminente'}
@@ -892,7 +894,7 @@ export default function VigiaEstoqueCentralPage() {
                               type="button"
                               onClick={() => setModalAjuste(item)}
                               title="Ajuste de Inventário Físico"
-                              className="p-1.5 rounded-lg border border-[#E0E0E0] text-slate-600 hover:text-amber-600 hover:border-amber-400 transition-colors"
+                              className="p-1.5 rounded-lg border border-[#E0E0E0] text-slate-600 hover:text-[#0E5C4C] hover:border-[#0E5C4C]/40 transition-colors"
                             >
                               <History className="w-3.5 h-3.5" />
                             </button>
@@ -926,7 +928,7 @@ export default function VigiaEstoqueCentralPage() {
                 </div>
                 <div className="bg-white border border-[#E0E0E0] rounded-2xl p-4 shadow-xs">
                   <div className="text-xs font-bold text-slate-500 mb-1">Alertas Amarelos (≤ 60 dias)</div>
-                  <div className="text-2xl font-bold text-amber-600">15 Lotes</div>
+                  <div className="text-2xl font-bold text-[#0E5C4C]">15 Lotes</div>
                   <div className="text-[11px] text-slate-500 mt-1">Sugerido consumo prioritário em UTI</div>
                 </div>
                 <div className="bg-white border border-[#E0E0E0] rounded-2xl p-4 shadow-xs">
@@ -951,7 +953,7 @@ export default function VigiaEstoqueCentralPage() {
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {LOTES_FEFO_MOCK.map(lote => (
-                      <tr key={lote.batchId} className="hover:bg-amber-50/20 transition-colors">
+                      <tr key={lote.batchId} className="hover:bg-[#0A4A3D]/20 transition-colors">
                         <td className="p-3 font-mono font-bold text-slate-900">{lote.batchId}</td>
                         <td className="p-3">
                           <div className="font-bold text-slate-900">{lote.medicamento}</div>
@@ -963,7 +965,7 @@ export default function VigiaEstoqueCentralPage() {
                             lote.diasParaVencer <= 30
                               ? 'bg-rose-50 text-rose-700 border-rose-200 animate-pulse'
                               : lote.diasParaVencer <= 60
-                              ? 'bg-amber-50 text-amber-800 border-amber-200'
+                              ? 'bg-[#0E5C4C]/[0.08] text-[#0E5C4C] border-[#0E5C4C]/20'
                               : 'bg-emerald-50 text-emerald-700 border-emerald-200'
                           }`}>
                             {lote.diasParaVencer} dias
@@ -977,7 +979,7 @@ export default function VigiaEstoqueCentralPage() {
                           <button
                             type="button"
                             onClick={() => triggerNotificacao(`Lote ${lote.batchId} colocado como prioridade máxima no roteiro de dispensação!`)}
-                            className="px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-[11px] font-bold transition-colors"
+                            className="px-2.5 py-1 rounded-lg bg-[#0E5C4C]/[0.08] hover:bg-[#0A4A3D]/[0.12] text-[#0E5C4C] border border-[#0E5C4C]/20 text-[11px] font-bold transition-colors"
                           >
                             Priorizar Saída
                           </button>
@@ -1002,8 +1004,8 @@ export default function VigiaEstoqueCentralPage() {
                 </p>
               </div>
 
-              <div className="bg-white border-2 border-dashed border-amber-300 rounded-3xl p-8 text-center bg-amber-50/20">
-                <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-800 mx-auto flex items-center justify-center mb-3">
+              <div className="bg-white border-2 border-dashed border-[#0E5C4C]/30 rounded-3xl p-8 text-center bg-[#0E5C4C]/20">
+                <div className="w-12 h-12 rounded-2xl bg-[#0E5C4C]/[0.12] text-[#0E5C4C] mx-auto flex items-center justify-center mb-3">
                   <Upload className="w-6 h-6" />
                 </div>
                 <h3 className="text-sm font-bold text-slate-900 mb-1">
@@ -1016,7 +1018,7 @@ export default function VigiaEstoqueCentralPage() {
                   <button
                     type="button"
                     onClick={() => triggerNotificacao('Arquivo XML NF-e 004.891.201 carregado! 3 itens e 3 lotes identificados para conferência cega.')}
-                    className="px-4 py-2 rounded-xl text-xs font-bold bg-[#D97706] hover:bg-amber-700 text-white shadow-xs transition-colors"
+                    className="px-4 py-2 rounded-xl text-xs font-bold bg-[#0E5C4C] hover:bg-[#0A4A3D] text-white shadow-xs transition-colors"
                   >
                     Simular Upload de NF-e (Distribuidora Nacional)
                   </button>
@@ -1033,12 +1035,12 @@ export default function VigiaEstoqueCentralPage() {
                       <div className="text-[11px] text-slate-500 font-mono mt-0.5">
                         Chave: 3526 0912 3456 7800 0190 5500 1004 8912 0110 4918 2741 • Valor: R$ 97.000,00
                       </div>
-                      <div className="text-[11px] text-amber-700 font-semibold mt-1">
+                      <div className="text-[11px] text-[#0E5C4C] font-semibold mt-1">
                         Vinculado ao Pedido de Compra: PdC-2026-0001 (Empenho EMP-2026/894120)
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-200">
+                      <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#0E5C4C]/[0.12] text-[#0E5C4C] border border-[#0E5C4C]/20">
                         Aguardando Conferência Cega
                       </span>
                       <button
@@ -1071,7 +1073,7 @@ export default function VigiaEstoqueCentralPage() {
                 <button
                   type="button"
                   onClick={() => triggerNotificacao('Formulário de Nova Transferência aberto. Selecione o destino e os lotes.')}
-                  className="px-3 py-2 rounded-xl text-xs font-bold bg-[#D97706] hover:bg-amber-700 text-white shadow-xs transition-colors"
+                  className="px-3 py-2 rounded-xl text-xs font-bold bg-[#0E5C4C] hover:bg-[#0A4A3D] text-white shadow-xs transition-colors"
                 >
                   + Nova Transferência
                 </button>
@@ -1092,7 +1094,7 @@ export default function VigiaEstoqueCentralPage() {
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {transferencias.map(tr => (
-                      <tr key={tr.id} className="hover:bg-amber-50/20 transition-colors">
+                      <tr key={tr.id} className="hover:bg-[#0A4A3D]/20 transition-colors">
                         <td className="p-3 font-mono font-bold text-slate-900">{tr.rastreio}</td>
                         <td className="p-3 font-bold text-slate-800">{tr.destino}</td>
                         <td className="p-3 text-center font-mono">{tr.itensQtd} itens</td>
@@ -1104,7 +1106,7 @@ export default function VigiaEstoqueCentralPage() {
                               ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                               : tr.status === 'TRANSITO'
                               ? 'bg-blue-50 text-blue-700 border-blue-200'
-                              : 'bg-amber-50 text-amber-800 border-amber-200'
+                              : 'bg-[#0E5C4C]/[0.08] text-[#0E5C4C] border-[#0E5C4C]/20'
                           }`}>
                             {tr.status}
                           </span>
@@ -1230,7 +1232,7 @@ export default function VigiaEstoqueCentralPage() {
                     onClick={handleExportarJsonDespesas}
                     className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-white text-slate-700 border border-[#E0E0E0] hover:bg-slate-50 shadow-2xs transition-all"
                   >
-                    <Download className="w-3.5 h-3.5 text-amber-600" />
+                    <Download className="w-3.5 h-3.5 text-[#0E5C4C]" />
                     <span>Exportar JSON (Hub Contract)</span>
                   </button>
 
@@ -1269,7 +1271,7 @@ export default function VigiaEstoqueCentralPage() {
 
                 <div className="bg-white border border-[#E0E0E0] rounded-2xl p-4 shadow-xs">
                   <div className="text-xs font-bold text-slate-500 mb-1">Centro de Custo Líder</div>
-                  <div className="text-2xl font-bold text-amber-600">UTI Adulto</div>
+                  <div className="text-2xl font-bold text-[#0E5C4C]">UTI Adulto</div>
                   <div className="text-[11px] text-slate-500 mt-1">
                     R$ 1.669,00 (87% dos itens críticos)
                   </div>
@@ -1288,7 +1290,7 @@ export default function VigiaEstoqueCentralPage() {
                   <div className="text-2xl font-bold text-slate-900">
                     {pendentesCount > 0 ? `${pendentesCount} Pendentes` : '100% Sincronizado'}
                   </div>
-                  <div className={`text-[11px] font-semibold mt-1 ${pendentesCount > 0 ? 'text-amber-600' : 'text-emerald-600'}`}>
+                  <div className={`text-[11px] font-semibold mt-1 ${pendentesCount > 0 ? 'text-[#0E5C4C]' : 'text-emerald-600'}`}>
                     {pendentesCount > 0 ? 'Aguardando exportação para o Hub' : 'Alimentando Custo do Paciente'}
                   </div>
                 </div>
@@ -1336,7 +1338,7 @@ export default function VigiaEstoqueCentralPage() {
                       {despesasEstoque
                         .filter(d => filtroCentroCusto === 'TODOS' || d.centroCusto === filtroCentroCusto)
                         .map(item => (
-                          <tr key={item.id} className="hover:bg-amber-50/20 transition-colors">
+                          <tr key={item.id} className="hover:bg-[#0A4A3D]/20 transition-colors">
                             <td className="p-3 font-mono font-bold text-slate-900">{item.id}</td>
                             <td className="p-3 font-mono text-slate-500">{item.dataHora}</td>
                             <td className="p-3">
@@ -1352,7 +1354,7 @@ export default function VigiaEstoqueCentralPage() {
                             </td>
                             <td className="p-3">
                               <div className="font-bold text-slate-800">{item.medicamento}</div>
-                              <div className="text-[11px] text-amber-700 font-mono">Lote: {item.lote}</div>
+                              <div className="text-[11px] text-[#0E5C4C] font-mono">Lote: {item.lote}</div>
                             </td>
                             <td className="p-3 text-center font-mono font-bold">{item.quantidade} un</td>
                             <td className="p-3 text-right font-mono text-slate-600">
@@ -1365,7 +1367,7 @@ export default function VigiaEstoqueCentralPage() {
                               <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
                                 item.statusHub === 'SINCRONIZADO'
                                   ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                                  : 'bg-amber-50 text-amber-800 border-amber-200 animate-pulse'
+                                  : 'bg-[#0E5C4C]/[0.08] text-[#0E5C4C] border-[#0E5C4C]/20 animate-pulse'
                               }`}>
                                 {item.statusHub === 'SINCRONIZADO' ? 'Ingerido no Hub' : 'Pendente'}
                               </span>
@@ -1395,7 +1397,7 @@ export default function VigiaEstoqueCentralPage() {
                 {roles.map(role => (
                   <div key={role.id} className="p-5 rounded-2xl border border-[#E0E0E0] bg-white shadow-xs">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-200">
+                      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-[#0E5C4C]/[0.08] text-[#0E5C4C] border border-[#0E5C4C]/20">
                         {role.level}
                       </span>
                       {role.id === activeRole.id && (
@@ -1485,7 +1487,7 @@ export default function VigiaEstoqueCentralPage() {
                   triggerNotificacao('Ajuste de inventário registrado com trilha de auditoria.');
                   setModalAjuste(null);
                 }}
-                className="px-4 py-2 rounded-xl text-xs font-bold bg-[#D97706] hover:bg-amber-700 text-white min-h-[44px]"
+                className="px-4 py-2 rounded-xl text-xs font-bold bg-[#0E5C4C] hover:bg-[#0A4A3D] text-white min-h-[44px]"
               >
                 Salvar Ajuste
               </button>

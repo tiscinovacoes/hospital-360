@@ -8,7 +8,6 @@ import {
   LayoutDashboard,
   ShoppingCart,
   Boxes,
-  FileText,
   UserCheck,
   Stethoscope,
   Pill,
@@ -19,15 +18,8 @@ import {
   FileSpreadsheet,
   ShieldCheck,
   ArrowRight,
-  TrendingUp,
-  Shield,
-  Sparkles,
-  Zap,
-  Activity,
   Search,
-  Filter,
-  CheckCircle2,
-  AlertTriangle
+  CheckCircle2
 } from 'lucide-react';
 
 interface ModuloCard {
@@ -196,7 +188,9 @@ export default function HubModulosPage() {
   const [categoriaAtiva, setCategoriaAtiva] = useState<string>('TODAS');
   const [busca, setBusca] = useState<string>('');
 
+  // "Custo do Paciente" já aparece no painel de destaque acima da grade — não duplicar o card.
   const modulosFiltrados = MODULOS_CATALOGO.filter(m => {
+    if (m.id === 'custo-paciente') return false;
     const matchCat = categoriaAtiva === 'TODAS' || m.categoria === categoriaAtiva;
     const matchBusca =
       m.titulo.toLowerCase().includes(busca.toLowerCase()) ||
@@ -206,48 +200,46 @@ export default function HubModulosPage() {
     return matchCat && matchBusca;
   });
 
-  const moduloCentral = MODULOS_CATALOGO.find(m => m.id === 'custo-paciente')!;
-
   return (
     <>
       <PageHeader
         activeTitle="Hub de Módulos & Catálogo de Soluções"
         activeSubtitle="Acesso centralizado a todas as capacidades do ecossistema hospitalar"
       />
-      {/* BANNER CENTRAL EXECUTIVO: O CUSTO DO PACIENTE (A JUNÇÃO DE TUDO) - DESIGN MINIMALISTA CLEAN */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-blue-200/80 shadow-sm mb-8">
+
+      {/* PAINEL DE DESTAQUE: O CUSTO DO PACIENTE (A JUNÇÃO DE TUDO) — ÚNICO ELEMENTO "ALTO" DA TELA */}
+      <div className="bg-[#1B1F1C] rounded-2xl p-6 sm:p-8 mb-8">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-blue-50 border border-blue-200 text-[#1A56DB] mb-3">
-              <Sparkles className="w-3.5 h-3.5 text-[#1A56DB]" />
-              <span>MÓDULO CENTRAL UNIFICADOR</span>
-            </div>
+            <span className="text-[11px] font-bold uppercase tracking-widest text-[#C1622D]">
+              Módulo central unificador
+            </span>
 
-            <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 leading-tight">
+            <h2 className="font-display font-semibold text-2xl sm:text-3xl text-[#F6F3EC] leading-tight mt-2">
               Custo do Paciente (Core 360)
             </h2>
 
-            <p className="mt-2 text-sm text-slate-600 leading-relaxed">
-              O coração analítico da nossa plataforma. Ele é a <strong className="text-slate-900 font-bold">junção de tudo o que oferecemos</strong>: absorve automaticamente os dados de prontuários (OpenEMR), dispensação de farmácia (FEFO), laudos de laboratório (LIMS), compras e contratos de atas, escalas médicas e faturamento, confrontando o custo real apurado com as tabelas <strong className="text-slate-900 font-bold">SIGTAP (SUS)</strong> e <strong className="text-slate-900 font-bold">TUSS</strong>.
+            <p className="mt-3 text-sm text-[#F6F3EC]/75 leading-relaxed">
+              O coração analítico da nossa plataforma. Ele é a <strong className="text-[#F6F3EC] font-bold">junção de tudo o que oferecemos</strong>: absorve automaticamente os dados de prontuários (OpenEMR), dispensação de farmácia (FEFO), laudos de laboratório (LIMS), compras e contratos de atas, escalas médicas e faturamento, confrontando o custo real apurado com as tabelas <strong className="text-[#F6F3EC] font-bold">SIGTAP (SUS)</strong> e <strong className="text-[#F6F3EC] font-bold">TUSS</strong>.
             </p>
 
-            <div className="flex flex-wrap items-center gap-3 mt-4 text-xs font-semibold text-slate-700">
-              <span className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-3 py-1 rounded-xl">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> 5 Estações de Custo
+            <div className="flex flex-wrap items-center gap-5 mt-5 text-xs font-semibold text-[#F6F3EC]/85">
+              <span className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#0E5C4C]" /> 5 Estações de Custo
               </span>
-              <span className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-3 py-1 rounded-xl">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Confronto SIGTAP Automático
+              <span className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#0E5C4C]" /> Confronto SIGTAP Automático
               </span>
-              <span className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-3 py-1 rounded-xl">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Importação de Sistemas Legados
+              <span className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#0E5C4C]" /> Importação de Sistemas Legados
               </span>
             </div>
           </div>
 
-            <div className="flex flex-col sm:flex-row lg:flex-col gap-3 flex-shrink-0">
+          <div className="flex flex-col sm:flex-row lg:flex-col gap-3 flex-shrink-0">
             <Link
               href="/dashboard-executivo"
-              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-[#1A56DB] hover:bg-blue-700 text-white font-black text-sm shadow-md shadow-blue-600/20 transition-all hover:scale-[1.01]"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-[#C1622D] hover:bg-[#A8531F] text-white font-bold text-sm transition-all"
             >
               <span>Abrir Custo do Paciente</span>
               <ArrowRight className="w-4 h-4" />
@@ -255,27 +247,26 @@ export default function HubModulosPage() {
 
             <Link
               href="/admin/perfis-acessos"
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs border border-indigo-200 transition-all"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-[#F6F3EC]/25 text-[#F6F3EC] font-semibold text-xs transition-all"
             >
-              <ShieldCheck className="w-4 h-4 text-indigo-600" />
+              <ShieldCheck className="w-4 h-4" />
               <span>Gestão de Perfis &amp; Acessos (RBAC)</span>
             </Link>
 
             <Link
               href="/ingestao-modulos"
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-xs border border-slate-200 transition-all"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-[#F6F3EC]/15 text-[#F6F3EC]/70 font-semibold text-xs transition-all"
             >
-              <FileSpreadsheet className="w-4 h-4 text-slate-500" />
+              <FileSpreadsheet className="w-4 h-4" />
               <span>Importar Dados Externos (CSV)</span>
             </Link>
           </div>
         </div>
       </div>
 
-      {/* BARRA DE FILTROS & PESQUISA DE MÓDULOS */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-        {/* Abas de Categorias (estilo pill com touch target HIG >= 44px) */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 custom-scrollbar">
+      {/* BARRA DE FILTROS & PESQUISA DE MÓDULOS — ABAS EM SUBLINHADO, NÃO EM PÍLULA CHEIA */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 border-b border-[#1B1F1C]/12 pb-0">
+        <div className="flex items-center gap-6 overflow-x-auto custom-scrollbar">
           {[
             { id: 'TODAS', label: 'Todos os Módulos' },
             { id: 'SUPRIMENTOS', label: 'Suprimentos & Atas' },
@@ -286,10 +277,10 @@ export default function HubModulosPage() {
             <button
               key={cat.id}
               onClick={() => setCategoriaAtiva(cat.id)}
-              className={`px-4 py-2.5 min-h-[44px] rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+              className={`pb-3 min-h-[44px] text-xs font-bold transition-all whitespace-nowrap border-b-2 -mb-px ${
                 categoriaAtiva === cat.id
-                  ? 'bg-[#1A56DB] text-white shadow-sm'
-                  : 'bg-white text-slate-700 hover:bg-slate-50 border border-[#E0E0E0]'
+                  ? 'border-[#0E5C4C] text-[#1B1F1C]'
+                  : 'border-transparent text-[#1B1F1C]/45 hover:text-[#1B1F1C]/70'
               }`}
             >
               {cat.label}
@@ -298,69 +289,67 @@ export default function HubModulosPage() {
         </div>
 
         {/* Campo de Busca com touch target HIG >= 44px */}
-        <div className="relative w-full md:w-72">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+        <div className="relative w-full md:w-64 mb-2">
+          <label htmlFor="busca-modulos" className="sr-only">Filtrar módulos</label>
+          <Search className="w-4 h-4 text-[#1B1F1C]/35 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
+            id="busca-modulos"
             type="text"
             placeholder="Filtrar módulos..."
             value={busca}
             onChange={e => setBusca(e.target.value)}
-            className="w-full pl-9 pr-4 py-2.5 min-h-[44px] text-xs bg-white border border-[#E0E0E0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1A56DB] font-medium"
+            className="w-full pl-9 pr-4 py-2.5 min-h-[44px] text-xs bg-white border border-[#1B1F1C]/12 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0E5C4C]/30 focus:border-[#0E5C4C] font-medium"
           />
         </div>
       </div>
 
-      {/* GRID DE MÓDULOS DO ECOSSISTEMA COM CORES EXCLUSIVAS POR MÓDULO */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      {/* GRID DE MÓDULOS — MONOCROMÁTICO; A CATEGORIA É UM PONTO DE 9PX, NÃO UM BLOCO COLORIDO */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {modulosFiltrados.map((modulo) => {
-          const Icone = modulo.icone;
           const theme = MODULO_THEMES[modulo.moduloId] || MODULO_THEMES['compras-publicas'];
 
           return (
             <Link
               key={modulo.id}
               href={modulo.href}
-              className="group bg-white rounded-2xl border border-[#E0E0E0] p-5 hover:shadow-md transition-all flex flex-col justify-between relative overflow-hidden"
+              className="group bg-white rounded-xl border border-[#1B1F1C]/12 p-5 hover:border-[#1B1F1C]/30 transition-colors flex flex-col justify-between"
             >
-              {/* Barra superior de acentuação no hover com a cor do módulo */}
-              <div className={`absolute top-0 left-0 right-0 h-1 bg-transparent group-hover:${theme.primaryBg} transition-colors`} />
-
               <div>
-                {/* Header do Card com a cor específica do módulo */}
                 <div className="flex items-start justify-between gap-3">
-                  <div className={`w-12 h-12 rounded-2xl ${theme.lightBg} ${theme.primaryText} flex items-center justify-center transition-all flex-shrink-0 shadow-sm border ${theme.lightBorder}`}>
-                    <Icone className="w-6 h-6" />
-                  </div>
-
-                  <span className={`text-[9px] font-extrabold px-2.5 py-1 rounded-md uppercase tracking-wider ${theme.lightBg} ${theme.primaryText} border ${theme.lightBorder}`}>
-                    {modulo.tag}
+                  <span className="flex items-center gap-2">
+                    <span className={`w-[9px] h-[9px] rounded-full flex-shrink-0 ${theme.primaryBg}`} />
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#1B1F1C]/45">
+                      {modulo.categoria === 'SUPRIMENTOS' && 'Suprimentos'}
+                      {modulo.categoria === 'ASSISTENCIAL' && 'Assistencial'}
+                      {modulo.categoria === 'OPERACAO' && 'Operação'}
+                      {modulo.categoria === 'FINANCEIRO' && 'Financeiro'}
+                    </span>
                   </span>
+                  <ArrowRight className="w-3.5 h-3.5 text-[#1B1F1C]/25 group-hover:text-[#1B1F1C]/50 group-hover:translate-x-0.5 transition-all -rotate-45" />
                 </div>
 
-                {/* Conteúdo */}
-                <h3 className={`font-extrabold text-base text-slate-900 mt-3 group-hover:${theme.primaryText} transition-colors`}>
+                <h3 className="font-display font-semibold text-[17px] text-[#1B1F1C] mt-3.5 leading-snug">
                   {modulo.titulo}
                 </h3>
-                <p className="text-xs font-semibold text-slate-400 mt-0.5">
+                <p className="text-xs font-semibold text-[#1B1F1C]/45 mt-0.5">
                   {modulo.subtitulo}
                 </p>
-                <p className="text-xs text-slate-600 mt-2 leading-relaxed">
+                <p className="text-xs text-[#1B1F1C]/70 mt-2.5 leading-relaxed">
                   {modulo.descricao}
                 </p>
               </div>
 
               {/* Footer do Card */}
-              <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+              <div className="mt-4 pt-3.5 border-t border-[#1B1F1C]/08 flex items-center justify-between text-xs">
                 {modulo.metricas ? (
-                  <span className="text-[11px] font-bold text-slate-500 flex items-center gap-1">
-                    <Activity className="w-3 h-3 text-emerald-600" />
+                  <span className={`text-[11px] font-bold ${theme.primaryText}`}>
                     {modulo.metricas}
                   </span>
                 ) : (
                   <span />
                 )}
 
-                <span className={`inline-flex items-center gap-1 font-extrabold ${theme.primaryText} group-hover:translate-x-0.5 transition-transform min-h-[44px]`}>
+                <span className="inline-flex items-center gap-1 font-bold text-[#1B1F1C] min-h-[44px]">
                   <span>Acessar</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </span>
@@ -371,20 +360,12 @@ export default function HubModulosPage() {
       </div>
 
       {/* RODAPÉ DO HUB COM TOTALIZADORES */}
-      <div className="mt-12 p-6 bg-white rounded-2xl border border-slate-200/80 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold">
-            <CheckCircle2 className="w-5 h-5" />
-          </div>
-          <div>
-            <p className="font-bold text-slate-800 text-sm">Plataforma 100% Homologada &amp; Operante</p>
-            <p className="text-[11px] text-slate-400">Todos os módulos integrados via Supabase RLS no projeto oficial.</p>
-          </div>
+      <div className="mt-10 pt-5 border-t border-[#1B1F1C]/12 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-[#1B1F1C]/45">
+        <div className="flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 text-[#0E5C4C]" />
+          <span>Plataforma homologada — RLS ativo em todos os módulos, via Supabase.</span>
         </div>
-
-        <div className="flex items-center gap-4">
-          <span className="font-semibold">Versão 360 Enterprise • Release 2026.09</span>
-        </div>
+        <span className="font-semibold">Vigia Saúde 360 &middot; Release 2026.09</span>
       </div>
     </>
   );
