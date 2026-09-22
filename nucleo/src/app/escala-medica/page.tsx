@@ -214,20 +214,21 @@ export default function EscalaMedicaPage() {
 
   return (
     <VigiaSidebarLayout
+      moduloId="escala-medica"
       activeTitle="Escala Médica & Plantonistas"
       activeSubtitle="Ponto eletrônico por geofencing (<100m), guarda de documentações (CFM) e antecipação PIX"
     >
         {/* Cabeçalho */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#E0E0E0] pb-6">
           <div className="flex items-center gap-3">
-            <span className="p-2.5 bg-indigo-600 text-white rounded-2xl shadow-sm">
+            <span className="p-3 bg-[#4F46E5] text-white rounded-2xl shadow-sm">
               <UserCheck className="w-6 h-6" />
             </span>
             <div>
-              <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">
+              <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900">
                 Escala Médica, Ponto GPS &amp; Antecipação Financeira
               </h1>
-              <p className="text-sm text-slate-500">
+              <p className="text-xs sm:text-sm text-slate-500">
                 Ponto biométrico por geofencing (&lt;100m), guarda de documentações (CRM/ATLS/PALS), trocas e antecipação PIX D+0 com CNAB 240.
               </p>
             </div>
@@ -235,9 +236,9 @@ export default function EscalaMedicaPage() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => { setModalAcao('COFRE_DOCS'); setResultadoAcao(null); }}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all shadow-sm"
+              className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] text-xs font-bold text-slate-700 bg-white border border-[#E0E0E0] rounded-xl hover:bg-slate-50 transition-all shadow-sm"
             >
-              <FileBadge className="w-4 h-4 text-[#1A56DB]" />
+              <FileBadge className="w-4 h-4 text-[#4F46E5]" />
               Cofre de Documentos Médicos (CFM)
             </button>
           </div>
@@ -401,16 +402,16 @@ export default function EscalaMedicaPage() {
 
         {/* Modal: Check-in por GPS & Biometria Facial */}
         {plantaoAtivo && modalAcao === 'CHECKIN' && (
-          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl border border-slate-200 overflow-hidden animate-fadeIn">
-              <div className="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
+          <div className="fixed inset-0 bg-slate-900/20 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+            <div className="bg-white w-full max-w-md rounded-3xl shadow-xl border border-[#E0E0E0] overflow-hidden animate-fadeIn">
+              <div className="px-6 py-4 bg-[#4F46E5] text-white flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Fingerprint className="w-5 h-5 text-emerald-400" />
+                  <Fingerprint className="w-5 h-5 text-indigo-200" />
                   <h3 className="font-bold text-base">Check-in Presencial Seguro</h3>
                 </div>
                 <button
                   onClick={() => { setPlantaoAtivo(null); setModalAcao(null); }}
-                  className="text-slate-400 hover:text-white font-bold"
+                  className="min-w-[44px] min-h-[44px] flex items-center justify-center text-white/80 hover:text-white font-bold"
                 >
                   ✕
                 </button>
@@ -480,26 +481,26 @@ export default function EscalaMedicaPage() {
 
         {/* Modal: Troca de Plantão Sem Furos */}
         {plantaoAtivo && modalAcao === 'TROCA' && (
-          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl border border-slate-200 overflow-hidden animate-fadeIn">
-              <div className="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
+          <div className="fixed inset-0 bg-slate-900/20 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+            <div className="bg-white w-full max-w-md rounded-3xl shadow-xl border border-[#E0E0E0] overflow-hidden animate-fadeIn">
+              <div className="px-6 py-4 bg-[#4F46E5] text-white flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <ArrowLeftRight className="w-5 h-5 text-indigo-400" />
+                  <ArrowLeftRight className="w-5 h-5 text-indigo-200" />
                   <h3 className="font-bold text-base">Solicitar Troca de Plantão</h3>
                 </div>
                 <button
                   onClick={() => { setPlantaoAtivo(null); setModalAcao(null); }}
-                  className="text-slate-400 hover:text-white font-bold"
+                  className="min-w-[44px] min-h-[44px] flex items-center justify-center text-white/80 hover:text-white font-bold"
                 >
                   ✕
                 </button>
               </div>
 
               <form onSubmit={handleTrocaPlantao} className="p-6 space-y-4">
-                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase">Titular Ofertante</span>
+                <div className="p-4 bg-indigo-50/50 rounded-2xl border border-indigo-200/60">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase">Titular Ofertante</span>
                   <p className="font-bold text-slate-900">{plantaoAtivo.medico_nome}</p>
-                  <p className="text-xs text-slate-500">{plantaoAtivo.crm} • Setor: {plantaoAtivo.setor}</p>
+                  <p className="text-xs text-slate-600">{plantaoAtivo.crm} • Setor: {plantaoAtivo.setor}</p>
                 </div>
 
                 <div>
@@ -509,7 +510,7 @@ export default function EscalaMedicaPage() {
                   <select
                     value={substitutoId}
                     onChange={e => setSubstitutoId(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3 py-2.5 min-h-[44px] bg-slate-50 border border-[#E0E0E0] rounded-xl text-xs font-semibold focus:ring-2 focus:ring-indigo-500"
                   >
                     {corpoClinico.filter(m => m.id !== plantaoAtivo.medico_id).map(m => (
                       <option key={m.id} value={m.id}>
@@ -519,7 +520,7 @@ export default function EscalaMedicaPage() {
                   </select>
                 </div>
 
-                <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl text-xs text-blue-900 font-semibold">
+                <div className="p-3 bg-indigo-50 border border-indigo-200 rounded-xl text-xs text-indigo-900 font-semibold">
                   🛡️ <strong>Regra de Ouro:</strong> A substituição é confirmada imediatamente após conferência automática do CRM e certificados de trauma (ATLS/ACLS) no CFM.
                 </div>
 
@@ -529,18 +530,18 @@ export default function EscalaMedicaPage() {
                   </div>
                 )}
 
-                <div className="flex justify-end gap-3 pt-3 border-t border-slate-200">
+                <div className="flex justify-end gap-3 pt-3 border-t border-[#E0E0E0]">
                   <button
                     type="button"
                     onClick={() => { setPlantaoAtivo(null); setModalAcao(null); }}
-                    className="px-4 py-2 text-xs font-bold text-slate-600"
+                    className="px-4 py-2.5 min-h-[44px] text-xs font-bold text-slate-600 hover:text-slate-900"
                   >
                     Cancelar
                   </button>
                   <button
                     type="submit"
                     disabled={processando}
-                    className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md"
+                    className="px-5 py-2.5 min-h-[44px] bg-[#4F46E5] hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-sm transition-colors"
                   >
                     {processando ? 'Aprovando...' : 'Homologar Troca'}
                   </button>
@@ -552,24 +553,24 @@ export default function EscalaMedicaPage() {
 
         {/* Modal: Antecipação PIX D+0 & Remessa CNAB 240 */}
         {plantaoAtivo && modalAcao === 'ANTECIPAR_PIX' && (
-          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl border border-slate-200 overflow-hidden animate-fadeIn">
-              <div className="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
+          <div className="fixed inset-0 bg-slate-900/20 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+            <div className="bg-white w-full max-w-md rounded-3xl shadow-xl border border-[#E0E0E0] overflow-hidden animate-fadeIn">
+              <div className="px-6 py-4 bg-[#4F46E5] text-white flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Zap className="w-5 h-5 text-amber-400" />
+                  <Zap className="w-5 h-5 text-amber-300" />
                   <h3 className="font-bold text-base">Antecipação Instantânea PIX (D+0)</h3>
                 </div>
                 <button
                   onClick={() => { setPlantaoAtivo(null); setModalAcao(null); }}
-                  className="text-slate-400 hover:text-white font-bold"
+                  className="min-w-[44px] min-h-[44px] flex items-center justify-center text-white/80 hover:text-white font-bold"
                 >
                   ✕
                 </button>
               </div>
 
               <form onSubmit={handleAnteciparPIX} className="p-6 space-y-4">
-                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase">Resumo da Operação</span>
+                <div className="p-4 bg-slate-50 rounded-2xl border border-[#E0E0E0]">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase">Resumo da Operação</span>
                   <div className="flex justify-between items-center mt-2 text-xs">
                     <span>Valor Bruto do Plantão:</span>
                     <strong className="text-slate-900">R$ {plantaoAtivo.valor_plantao.toFixed(2)}</strong>
@@ -578,7 +579,7 @@ export default function EscalaMedicaPage() {
                     <span>Taxa de Deságio (3.5%):</span>
                     <strong>- R$ {(plantaoAtivo.valor_plantao * 0.035).toFixed(2)}</strong>
                   </div>
-                  <div className="flex justify-between items-center mt-2 pt-2 border-t border-slate-200 font-bold text-sm text-emerald-700">
+                  <div className="flex justify-between items-center mt-2 pt-2 border-t border-[#E0E0E0] font-bold text-sm text-emerald-700">
                     <span>Líquido a Receber no PIX:</span>
                     <span>R$ {(plantaoAtivo.valor_plantao * 0.965).toFixed(2)}</span>
                   </div>
@@ -599,18 +600,18 @@ export default function EscalaMedicaPage() {
                   </div>
                 )}
 
-                <div className="flex justify-end gap-3 pt-3 border-t border-slate-200">
+                <div className="flex justify-end gap-3 pt-3 border-t border-[#E0E0E0]">
                   <button
                     type="button"
                     onClick={() => { setPlantaoAtivo(null); setModalAcao(null); }}
-                    className="px-4 py-2 text-xs font-bold text-slate-600"
+                    className="px-4 py-2.5 min-h-[44px] text-xs font-bold text-slate-600 hover:text-slate-900"
                   >
                     Cancelar
                   </button>
                   <button
                     type="submit"
                     disabled={processando}
-                    className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md flex items-center gap-1.5"
+                    className="px-5 py-2.5 min-h-[44px] bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm flex items-center gap-1.5 transition-colors"
                   >
                     <Zap className="w-3.5 h-3.5" />
                     {processando ? 'Transferindo...' : 'Transferir no PIX Agora'}
@@ -623,16 +624,16 @@ export default function EscalaMedicaPage() {
 
         {/* Modal: Cofre de Documentos Médicos & Certificações */}
         {modalAcao === 'COFRE_DOCS' && (
-          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl border border-slate-200 overflow-hidden animate-fadeIn">
-              <div className="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
+          <div className="fixed inset-0 bg-slate-900/20 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+            <div className="bg-white w-full max-w-2xl rounded-3xl shadow-xl border border-[#E0E0E0] overflow-hidden animate-fadeIn">
+              <div className="px-6 py-4 bg-[#4F46E5] text-white flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <FileBadge className="w-5 h-5 text-indigo-400" />
+                  <FileBadge className="w-5 h-5 text-indigo-200" />
                   <h3 className="font-bold text-base">Cofre em Nuvem de Documentações &amp; Vencimentos (CFM)</h3>
                 </div>
                 <button
                   onClick={() => setModalAcao(null)}
-                  className="text-slate-400 hover:text-white font-bold"
+                  className="min-w-[44px] min-h-[44px] flex items-center justify-center text-white/80 hover:text-white font-bold"
                 >
                   ✕
                 </button>
@@ -640,31 +641,31 @@ export default function EscalaMedicaPage() {
 
               <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
                 {corpoClinico.map((med) => (
-                  <div key={med.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
+                  <div key={med.id} className="p-4 bg-slate-50 rounded-2xl border border-[#E0E0E0] space-y-3">
                     <div className="flex items-start justify-between">
                       <div>
                         <h4 className="font-bold text-slate-900">{med.nome}</h4>
-                        <p className="text-xs text-indigo-600 font-semibold">{med.crm} • {med.especialidade}</p>
+                        <p className="text-xs text-[#4F46E5] font-semibold">{med.crm} • {med.especialidade}</p>
                       </div>
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-200">
                         CFM: {med.situacao_cfm}
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-200 text-xs">
-                      <div className={`p-2 rounded-xl border ${med.certificados.atls.status === 'ALERTA_VENCENDO' ? 'bg-amber-50 border-amber-300 text-amber-900' : 'bg-white border-slate-200'}`}>
+                    <div className="grid grid-cols-3 gap-2 pt-2 border-t border-[#E0E0E0] text-xs">
+                      <div className={`p-2 rounded-xl border ${med.certificados.atls.status === 'ALERTA_VENCENDO' ? 'bg-amber-50 border-amber-300 text-amber-900' : 'bg-white border-[#E0E0E0]'}`}>
                         <span className="text-[10px] font-bold block">ATLS (Trauma)</span>
                         <strong className="text-xs">{med.certificados.atls.validade}</strong>
                         <span className="text-[9px] block text-slate-500">{med.certificados.atls.dias_restantes}d restantes</span>
                       </div>
 
-                      <div className={`p-2 rounded-xl border ${med.certificados.acls.status === 'ALERTA_VENCENDO' ? 'bg-amber-50 border-amber-300 text-amber-900' : 'bg-white border-slate-200'}`}>
+                      <div className={`p-2 rounded-xl border ${med.certificados.acls.status === 'ALERTA_VENCENDO' ? 'bg-amber-50 border-amber-300 text-amber-900' : 'bg-white border-[#E0E0E0]'}`}>
                         <span className="text-[10px] font-bold block">ACLS (Cardíaco)</span>
                         <strong className="text-xs">{med.certificados.acls.validade}</strong>
                         <span className="text-[9px] block text-slate-500">{med.certificados.acls.dias_restantes}d restantes</span>
                       </div>
 
-                      <div className={`p-2 rounded-xl border ${med.certificados.pals.status === 'ALERTA_VENCENDO' ? 'bg-amber-50 border-amber-300 text-amber-900' : 'bg-white border-slate-200'}`}>
+                      <div className={`p-2 rounded-xl border ${med.certificados.pals.status === 'ALERTA_VENCENDO' ? 'bg-amber-50 border-amber-300 text-amber-900' : 'bg-white border-[#E0E0E0]'}`}>
                         <span className="text-[10px] font-bold block">PALS (Pediátrico)</span>
                         <strong className="text-xs">{med.certificados.pals.validade}</strong>
                         <span className="text-[9px] block text-slate-500">{med.certificados.pals.dias_restantes}d restantes</span>
@@ -679,10 +680,10 @@ export default function EscalaMedicaPage() {
                 ))}
               </div>
 
-              <div className="p-4 bg-slate-100 border-t border-slate-200 flex justify-end">
+              <div className="p-4 bg-slate-50 border-t border-[#E0E0E0] flex justify-end">
                 <button
                   onClick={() => setModalAcao(null)}
-                  className="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold shadow-sm"
+                  className="px-5 py-2.5 min-h-[44px] bg-[#4F46E5] hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-sm transition-colors"
                 >
                   Fechar Cofre
                 </button>

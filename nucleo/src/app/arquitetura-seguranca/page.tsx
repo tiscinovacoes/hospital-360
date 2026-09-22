@@ -23,18 +23,19 @@ export default function ArchitectureSecurityPage() {
 
   return (
     <VigiaSidebarLayout
+      moduloId="arquitetura-seguranca"
       activeTitle="Blindagem RN-IND & Auditoria CRED-OMEGA"
       activeSubtitle="Especificação de engenharia para isolamento financeiro, segurança multicamadas e auditoria"
       actions={
         <div className="flex items-center gap-2">
-          <span className="px-3 py-1.5 rounded-xl text-xs font-mono font-medium bg-emerald-50 border border-emerald-200 text-emerald-700 flex items-center gap-1.5 shadow-sm">
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+          <span className="px-3 py-2 min-h-[44px] rounded-xl text-xs font-mono font-medium bg-violet-50 border border-violet-200 text-[#7C3AED] flex items-center gap-1.5 shadow-sm">
+            <CheckCircle2 className="w-3.5 h-3.5 text-[#7C3AED]" />
             TLS 1.3 • AES-256-GCM
           </span>
         </div>
       }
     >
-      {/* Abas Padronizadas */}
+      {/* Abas Padronizadas com Touch Target HIG >= 44px */}
       <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-1 custom-scrollbar">
         {[
           { id: 'dados', label: '1. Autonomia de Faturamento (RN-IND)', icon: Database },
@@ -46,10 +47,10 @@ export default function ArchitectureSecurityPage() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap ${
+              className={`px-4 py-2.5 min-h-[44px] rounded-xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap ${
                 activeTab === tab.id
-                  ? 'bg-[#1A56DB] text-white shadow-sm'
-                  : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+                  ? 'bg-[#7C3AED] text-white shadow-sm'
+                  : 'bg-white text-slate-700 border border-[#E0E0E0] hover:bg-slate-50'
               }`}
             >
               <Icon className="w-4 h-4" />

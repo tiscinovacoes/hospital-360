@@ -161,27 +161,28 @@ export default function LaboratorioPage() {
 
   return (
     <VigiaSidebarLayout
+      moduloId="laboratorio"
       activeTitle="Laboratório Central & LIS do Hub (FHIR R4)"
       activeSubtitle="Bancada técnica automatizada com protocolo HL7 / FHIR R4 e DiagnosticReport"
       actions={
         <div className="flex items-center gap-2.5">
           <button
             onClick={() => setShowFhirJsonModal(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all shadow-sm"
+            className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] text-xs font-bold text-slate-700 bg-white border border-[#E0E0E0] rounded-xl hover:bg-slate-50 transition-all shadow-sm"
           >
-            <Sparkles className="w-3.5 h-3.5 text-[#1A56DB]" />
+            <Sparkles className="w-4 h-4 text-[#0D9488]" />
             <span>Ver Payload FHIR R4</span>
           </button>
         </div>
       }
     >
       {actionSuccess && (
-        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-2xl flex items-center justify-between text-xs text-slate-800 animate-in fade-in">
+        <div className="mb-6 p-4 bg-teal-50 border border-teal-200 rounded-2xl flex items-center justify-between text-xs text-teal-950 animate-in fade-in">
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-[#1A56DB]" />
+            <CheckCircle2 className="w-4 h-4 text-[#0D9488]" />
             <span className="font-bold">{actionSuccess}</span>
           </div>
-          <button onClick={() => setActionSuccess(null)} className="text-slate-400 hover:text-slate-700">
+          <button onClick={() => setActionSuccess(null)} className="text-teal-600 hover:text-teal-800 min-w-[36px] min-h-[36px] flex items-center justify-center">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -437,9 +438,9 @@ export default function LaboratorioPage() {
                 </button>
                 <button
                   onClick={handleReleaseReport}
-                  className="px-5 py-2 bg-[#1A56DB] hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition-colors"
+                  className="px-5 py-2.5 min-h-[44px] bg-[#0D9488] hover:bg-teal-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition-colors"
                 >
-                  <Send className="w-3.5 h-3.5" />
+                  <Send className="w-4 h-4" />
                   Liberar &amp; Transmitir Laudo
                 </button>
               </div>
@@ -450,26 +451,26 @@ export default function LaboratorioPage() {
 
       {/* MODAL: PAYLOAD FHIR R4 */}
       {showFhirJsonModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl max-w-2xl w-full border border-slate-200 shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
-            <div className="bg-slate-900 text-white p-5 flex items-center justify-between">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/20 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl max-w-2xl w-full border border-[#E0E0E0] shadow-xl overflow-hidden flex flex-col max-h-[85vh]">
+            <div className="bg-[#0D9488] text-white p-5 flex items-center justify-between">
               <div>
-                <h3 className="text-base font-mono font-bold text-blue-400">
+                <h3 className="text-base font-mono font-bold text-white">
                   FHIR R4 — DiagnosticReport Resource
                 </h3>
-                <p className="text-xs text-slate-400 mt-0.5">
+                <p className="text-xs text-teal-100 mt-0.5">
                   Padrão internacional de mensageria em saúde (HL7 International)
                 </p>
               </div>
               <button
                 onClick={() => setShowFhirJsonModal(false)}
-                className="text-slate-400 hover:text-white"
+                className="min-w-[44px] min-h-[44px] flex items-center justify-center text-white/80 hover:text-white"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="p-5 bg-slate-950 text-emerald-400 font-mono text-[11px] overflow-y-auto max-h-[450px]">
+            <div className="p-5 bg-slate-50 text-slate-800 font-mono text-[11px] overflow-y-auto max-h-[450px] border-b border-[#E0E0E0]">
               <pre>
 {JSON.stringify(
   {
@@ -521,10 +522,10 @@ export default function LaboratorioPage() {
               </pre>
             </div>
 
-            <div className="p-4 border-t border-slate-800 bg-slate-900 flex justify-end">
+            <div className="p-4 bg-white flex justify-end">
               <button
                 onClick={() => setShowFhirJsonModal(false)}
-                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold"
+                className="px-5 py-2.5 min-h-[44px] bg-[#0D9488] hover:bg-teal-700 text-white rounded-xl text-xs font-bold transition-colors shadow-sm"
               >
                 Fechar
               </button>

@@ -5,6 +5,71 @@ criado: 2026-09-21
 
 # Log de Atividades — hospital-360
 
+## 2026-09-21 22:25 — Implementação: Sistema de Cores por Módulo, Chassi HIG Touch-First e Adaptação Mobile
+
+**O que foi feito / Implantações Salvas:**
+- **Sistema de Cores Semânticas por Módulo (13 Identidades Clínicas)**:
+  - Definida e aplicada a paleta completa sem nenhum tom preto escuro (`bg-black`, `bg-slate-900` eliminados de cards, modais e fundos).
+  - Superfícies em branco hospitalar asséptico (`bg-white`), bordas `#E0E0E0` e variações em escala clínica suave (`50`, `200`, `600`, `700`).
+  - Cores associadas: Compras (Cobalto `#1A56DB`), Estoque (Âmbar `#D97706`), Escala (Índigo `#4F46E5`), Farmácia (Esmeralda `#0E9F6E`), Clínica (Ciano `#0891B2`), Laboratório (Teal `#0D9488`), Leitos (Sky `#0284C7`), Financeiro (Verde `#16A34A`), WhatsApp (Verde `#059669`), Ingestão (Coral `#EA580C`), CISO (Violeta `#7C3AED`) e Core 360 (Marinho `#2563EB`).
+- **Chassi Reutilizável & VigiaSidebarLayout Inteligente**:
+  - Criação do componente `ModuloLayoutShell.tsx` com o dicionário central de temas `MODULO_THEMES`.
+  - Atualização do componente compartilhado `VigiaSidebarLayout.tsx` com detecção dinâmica do módulo ativo via rota/prop `moduloId`.
+  - Botão hambúrguer no mobile coordenado dinamicamente com as cores do módulo em foco.
+  - Substituição de backdrops escuros por backdrop suave translúcido `bg-slate-900/20 backdrop-blur-xs`.
+- **Adaptação Mobile Apple Human Interface Guidelines (HIG)**:
+  - Touch targets $\ge 44\text{px}$ em todos os botões de ação, abas, filtros e controles de modal.
+  - Gaveta mobile off-canvas deslizante com fechamento automático ao toque em qualquer item de navegação.
+  - Ajuste de tabelas e grids sem quebra ou overflow horizontal em telas a partir de 375px.
+- **Replicação do Layout do Módulo 1 e Refinamento de Telas**:
+  - `compras-publicas`, `estoque-central`, `escala-medica`, `farmacia-estoque`, `gestao-clinica`, `laboratorio`, `leitos-censo`, `financeiro-split`, `automacao-mensageria`, `ingestao-modulos`, `arquitetura-seguranca`, `dashboard-executivo` e `page.tsx` (Hub principal) atualizados com uniformidade estética.
+- **Validação de Código e Rotas**:
+  - `npx tsc --noEmit` executado com **0 erros de tipagem**.
+  - Todas as 13 rotas testadas via HTTP com retorno **Status 200 OK**.
+
+**Arquivos alterados:**
+- `nucleo/src/components/ModuloLayoutShell.tsx` (criado)
+- `nucleo/src/components/VigiaSidebarLayout.tsx` (atualizado)
+- `nucleo/src/app/page.tsx` (atualizado)
+- `nucleo/src/app/compras-publicas/page.tsx` (atualizado)
+- `nucleo/src/app/estoque-central/page.tsx` (atualizado)
+- `nucleo/src/app/escala-medica/page.tsx` (atualizado)
+- `nucleo/src/app/farmacia-estoque/page.tsx` (atualizado)
+- `nucleo/src/app/gestao-clinica/page.tsx` (atualizado)
+- `nucleo/src/app/laboratorio/page.tsx` (atualizado)
+- `nucleo/src/app/leitos-censo/page.tsx` (atualizado)
+- `nucleo/src/app/financeiro-split/page.tsx` (atualizado)
+- `nucleo/src/app/automacao-mensageria/page.tsx` (atualizado)
+- `nucleo/src/app/ingestao-modulos/page.tsx` (atualizado)
+- `nucleo/src/app/arquitetura-seguranca/page.tsx` (atualizado)
+- `nucleo/src/app/dashboard-executivo/page.tsx` (atualizado)
+- `walkthrough.md` (atualizado)
+- `LOG_DE_ATIVIDADES_OBSIDIAN.md` (atualizado)
+
+---
+
+## 2026-09-21 22:14 — Planejamento: Sistema de Cores Minimalistas por Módulo, Replicação de Layout e Responsividade Mobile
+
+**O que foi feito / Implantações Salvas:**
+- **Ativação das Habilidades Especializadas**:
+  - Leitura e aplicação das diretrizes de `/frontend-design`, `/shadcn`, `/tailwind-patterns`, `/mobile-design`, `/hig-foundations`, `/animejs-animation` e `/magic-animator`.
+- **Definição da Paleta de Cores Minimalistas para os 13 Módulos**:
+  - Eliminação estrita de preto ou caixas escuras (`bg-black`, `bg-slate-900`), estabelecendo fundos brancos assépticos (`bg-white`), bordas limitadas a `#E0E0E0` e variações em escala clínica suave (`50`, `200`, `600`, `700`).
+  - Atribuição de uma cor semântica para cada módulo (ex.: Cobalto para Compras, Âmbar para Estoque/FEFO, Índigo para Escala Médica, Esmeralda para Farmácia, Turquesa para Gestão Clínica, etc.).
+  - Integração da cor do módulo no menu lateral retrátil, botão hambúrguer, badges e ações de destaque.
+- **Especificação de Responsividade Mobile (Apple HIG & Mobile Design)**:
+  - Touch targets mínimos de 44x44px.
+  - Drawer mobile flutuante sobreposto com efeito translúcido `backdrop-blur-sm` acionado pelo botão hambúrguer.
+  - Ajuste adaptativo de KPIs (1 coluna mobile → 2 colunas tablet → 4 colunas desktop) e tabelas touch-scroll.
+- **Submissão para Refinamento**:
+  - Proposta estruturada registrada no artefato de plano de implementação para alinhamento com o usuário antes da codificação em lote.
+
+**Arquivos alterados:**
+- `implementation_plan.md` (criado)
+- `LOG_DE_ATIVIDADES_OBSIDIAN.md` (atualizado)
+
+---
+
 ## 2026-09-21 22:12 — Deploy em Produção (Branch `master`) — Fluxo de Compras & Banco de Preços CMED
 
 **O que foi feito / Implantações Salvas:**

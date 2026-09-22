@@ -72,20 +72,21 @@ export default function VigiaEstoqueCDPage() {
 
   return (
     <VigiaSidebarLayout
+      moduloId="estoque-central"
       activeTitle="Dashboard — Visão Global CD"
       activeSubtitle="Monitoramento em tempo real do Centro de Distribuição e rede de farmácias"
       actions={
         <div className="flex items-center gap-2">
           <Link
             href="/"
-            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 border border-slate-200"
+            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 border border-[#E0E0E0] transition-colors"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Voltar ao Início</span>
           </Link>
 
-          <button className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#1A56DB] hover:bg-blue-700 text-white text-xs font-extrabold shadow-sm">
-            <Plus className="w-3.5 h-3.5" />
+          <button className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] rounded-xl bg-[#D97706] hover:bg-amber-700 text-white text-xs font-extrabold shadow-sm transition-colors">
+            <Plus className="w-4 h-4" />
             <span>Nova Entrada / Importar NF</span>
           </button>
         </div>
@@ -243,13 +244,13 @@ export default function VigiaEstoqueCDPage() {
 
           <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
             <span>Rastreabilidade FEFO Automatizada</span>
-            <span className="text-[#1A56DB] font-bold hover:underline cursor-pointer">Ver todos os lotes →</span>
+            <span className="text-[#D97706] font-bold hover:underline cursor-pointer">Ver todos os lotes →</span>
           </div>
         </div>
       </div>
 
       {/* 3. PEDIDOS PENDENTES DE APROVAÇÃO (Conforme Imagem 5 do Vigia) */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 mb-8">
+      <div className="bg-white rounded-2xl border border-[#E0E0E0] shadow-sm p-5 mb-8">
         <h3 className="font-extrabold text-base text-slate-900 mb-4">Pedidos Pendentes de Aprovação</h3>
 
         <div className="space-y-3">
@@ -259,7 +260,7 @@ export default function VigiaEstoqueCDPage() {
             return (
               <div
                 key={ped.id}
-                className="p-4 rounded-2xl border border-slate-200/90 hover:border-blue-300 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                className="p-4 rounded-2xl border border-[#E0E0E0] hover:border-amber-300 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4"
               >
                 <div>
                   <div className="flex items-center gap-2">
@@ -288,14 +289,14 @@ export default function VigiaEstoqueCDPage() {
                   </div>
 
                   {isAprovado ? (
-                    <span className="inline-flex items-center gap-1 px-4 py-2 rounded-xl bg-emerald-100 text-emerald-800 text-xs font-bold">
+                    <span className="inline-flex items-center gap-1 px-4 py-2 min-h-[44px] rounded-xl bg-emerald-50 text-emerald-800 text-xs font-bold border border-emerald-200">
                       <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                       Aprovado
                     </span>
                   ) : (
                     <button
                       onClick={() => setPedidoRevisando(ped)}
-                      className="px-5 py-2 rounded-xl bg-[#1A56DB] hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-sm"
+                      className="px-5 py-2.5 min-h-[44px] rounded-xl bg-[#D97706] hover:bg-amber-700 text-white text-xs font-bold transition-all shadow-sm"
                     >
                       Revisar
                     </button>
@@ -309,32 +310,32 @@ export default function VigiaEstoqueCDPage() {
 
       {/* Modal de Revisão e Despacho */}
       {pedidoRevisando && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl border border-slate-200 overflow-hidden animate-fadeIn">
-            <div className="px-6 py-4 bg-[#1A56DB] text-white flex items-center justify-between">
+        <div className="fixed inset-0 bg-slate-900/20 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-md rounded-3xl shadow-xl border border-[#E0E0E0] overflow-hidden animate-fadeIn">
+            <div className="px-6 py-4 bg-[#D97706] text-white flex items-center justify-between">
               <h3 className="font-extrabold text-base">Revisar e Autorizar Reposição</h3>
-              <button onClick={() => setPedidoRevisando(null)} className="font-bold text-white/80 hover:text-white">✕</button>
+              <button onClick={() => setPedidoRevisando(null)} className="min-w-[44px] min-h-[44px] flex items-center justify-center font-bold text-white/80 hover:text-white">✕</button>
             </div>
 
             <div className="p-6 space-y-4">
-              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200 text-xs">
-                <span className="font-bold text-slate-400 uppercase text-[10px]">Destino Solicitado</span>
+              <div className="p-3 bg-amber-50/50 rounded-2xl border border-amber-200/60 text-xs">
+                <span className="font-bold text-slate-500 uppercase text-[10px]">Destino Solicitado</span>
                 <strong className="text-slate-900 text-sm block mt-0.5">{pedidoRevisando.destino}</strong>
-                <p className="text-slate-500 mt-1">Pedido: <strong>{pedidoRevisando.id}</strong> • Itens: {pedidoRevisando.itens_qtd}</p>
-                <p className="text-slate-800 font-bold mt-1 text-sm">Valor: R$ {pedidoRevisando.valor_total.toFixed(2)}</p>
+                <p className="text-slate-600 mt-1">Pedido: <strong>{pedidoRevisando.id}</strong> • Itens: {pedidoRevisando.itens_qtd}</p>
+                <p className="text-slate-900 font-bold mt-1 text-sm">Valor: R$ {pedidoRevisando.valor_total.toFixed(2)}</p>
               </div>
 
-              <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl text-xs text-blue-900 font-semibold flex items-center gap-2">
-                <Snowflake className="w-4 h-4 text-blue-600 flex-shrink-0" />
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 font-semibold flex items-center gap-2">
+                <Snowflake className="w-4 h-4 text-amber-600 flex-shrink-0" />
                 <span>Cadeia de custódia térmica RDC 430/2020 validada no CD Central.</span>
               </div>
 
-              <div className="flex justify-end gap-3 pt-3 border-t border-slate-100">
-                <button type="button" onClick={() => setPedidoRevisando(null)} className="px-4 py-2 text-xs font-bold text-slate-600">Voltar</button>
+              <div className="flex justify-end gap-3 pt-3 border-t border-[#E0E0E0]">
+                <button type="button" onClick={() => setPedidoRevisando(null)} className="px-4 py-2.5 min-h-[44px] text-xs font-bold text-slate-600 hover:text-slate-900">Voltar</button>
                 <button
                   type="button"
                   onClick={() => handleAprovar(pedidoRevisando.id)}
-                  className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md"
+                  className="px-5 py-2.5 min-h-[44px] bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition-colors"
                 >
                   Aprovar e Despachar
                 </button>

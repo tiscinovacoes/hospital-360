@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { VigiaSidebarLayout } from '../components/VigiaSidebarLayout';
+import { MODULO_THEMES, ModuloId } from '../components/ModuloLayoutShell';
 import {
   LayoutDashboard,
   ShoppingCart,
@@ -31,6 +32,7 @@ import {
 
 interface ModuloCard {
   id: string;
+  moduloId: ModuloId;
   titulo: string;
   subtitulo: string;
   descricao: string;
@@ -38,7 +40,6 @@ interface ModuloCard {
   icone: React.ComponentType<{ className?: string }>;
   categoria: 'SUPRIMENTOS' | 'ASSISTENCIAL' | 'OPERACAO' | 'FINANCEIRO';
   tag: string;
-  tagColor: string;
   destaque?: boolean;
   metricas?: string;
 }
@@ -46,6 +47,7 @@ interface ModuloCard {
 const MODULOS_CATALOGO: ModuloCard[] = [
   {
     id: 'custo-paciente',
+    moduloId: 'dashboard-executivo',
     titulo: 'Custo do Paciente (Core Door-to-Door)',
     subtitulo: 'Motor de Absorção & Consolidação Multissistemas',
     descricao: 'A junção unificada de tudo o que oferecemos: consolida consultas, exames, medicamentos FEFO, diárias e honorários comparando com as tabelas SIGTAP e TUSS.',
@@ -53,12 +55,12 @@ const MODULOS_CATALOGO: ModuloCard[] = [
     icone: LayoutDashboard,
     categoria: 'FINANCEIRO',
     tag: 'JUNÇÃO DE TODOS OS MÓDULOS',
-    tagColor: 'bg-blue-50 text-[#1A56DB] border border-blue-200',
     destaque: true,
     metricas: '5 Estações Integradas'
   },
   {
     id: 'compras-atas',
+    moduloId: 'compras-publicas',
     titulo: 'Compras Públicas & Gestão de Atas (ARP)',
     subtitulo: 'Em Conformidade Estrita com a Lei 14.133/21',
     descricao: 'Gestão de Atas de Registro de Preços, limite legal carona (50%), empenho digital e trava preventiva contra sobrepreço baseada em CMED e BPS.',
@@ -66,11 +68,11 @@ const MODULOS_CATALOGO: ModuloCard[] = [
     icone: ShoppingCart,
     categoria: 'SUPRIMENTOS',
     tag: 'LEI 14.133/21',
-    tagColor: 'bg-slate-100 text-slate-700 border border-slate-200',
     metricas: 'Trava CMED & BPS Ativa'
   },
   {
     id: 'estoque-central',
+    moduloId: 'estoque-central',
     titulo: 'Estoque Central & Centro de Distribuição',
     subtitulo: 'Vigia Saúde • Armazenagem & Climatização RDC 430',
     descricao: 'Monitoramento contínuo de temperatura e umidade para CD Central e câmaras frias (2ºC a 8ºC), ordenação FEFO e laudo de quarentena sanitária.',
@@ -78,11 +80,11 @@ const MODULOS_CATALOGO: ModuloCard[] = [
     icone: Boxes,
     categoria: 'SUPRIMENTOS',
     tag: 'FEFO • RDC 430',
-    tagColor: 'bg-slate-100 text-slate-700 border border-slate-200',
     metricas: '4 Locais Monitorados'
   },
   {
     id: 'escala-medica',
+    moduloId: 'escala-medica',
     titulo: 'Escala Médica, Ponto GPS & PIX D+0',
     subtitulo: 'Ponto Eletrônico por Geofencing (<100m) e Biometria',
     descricao: 'Validação de presença em raio de 100m do hospital, cofre de certificados CRM/ATLS/PALS, substituições sem furos e antecipação instantânea PIX.',
@@ -90,11 +92,11 @@ const MODULOS_CATALOGO: ModuloCard[] = [
     icone: UserCheck,
     categoria: 'OPERACAO',
     tag: 'GEOFENCE <100M',
-    tagColor: 'bg-slate-100 text-slate-700 border border-slate-200',
     metricas: '100% Cobertura de Postos'
   },
   {
     id: 'farmacia-satelite',
+    moduloId: 'farmacia-estoque',
     titulo: 'Farmácia Satélite & Dispensação Beira-Leito',
     subtitulo: 'OpenBoxes Integration com Baixa Atômica',
     descricao: 'Dispensação segura de medicamentos por leitura de código de barras, conferência de dose unitária e baixa automática de estoque por lote FEFO.',
@@ -102,11 +104,11 @@ const MODULOS_CATALOGO: ModuloCard[] = [
     icone: Pill,
     categoria: 'SUPRIMENTOS',
     tag: 'BEIRA-LEITO',
-    tagColor: 'bg-slate-100 text-slate-700 border border-slate-200',
     metricas: 'Alerta de Lotes Vencendo'
   },
   {
     id: 'gestao-clinica',
+    moduloId: 'gestao-clinica',
     titulo: 'Consultório & Clínica Médica (OpenEMR)',
     subtitulo: 'Prontuário Eletrônico do Paciente (PEP)',
     descricao: 'Atendimento ambulatorial, anamnese, prescrição eletrônica estruturada e emissão automática de eventos de jornada clínica para o Custo do Paciente.',
@@ -114,11 +116,11 @@ const MODULOS_CATALOGO: ModuloCard[] = [
     icone: Stethoscope,
     categoria: 'ASSISTENCIAL',
     tag: 'PEP AMBULATORIAL',
-    tagColor: 'bg-slate-100 text-slate-700 border border-slate-200',
     metricas: 'Fila e Prontuário Rápido'
   },
   {
     id: 'laboratorio-lims',
+    moduloId: 'laboratorio',
     titulo: 'Laboratório & Análises Clínicas (LIMS)',
     subtitulo: 'Conector Senaite & Equipamentos Automatizados',
     descricao: 'Gestão de amostras biológicas, interfaceamento com analisadores bioquímicos e liberação de laudos com assinatura digital e rastreio de reagentes.',
@@ -126,11 +128,11 @@ const MODULOS_CATALOGO: ModuloCard[] = [
     icone: FlaskConical,
     categoria: 'ASSISTENCIAL',
     tag: 'LIMS SENAITE',
-    tagColor: 'bg-slate-100 text-slate-700 border border-slate-200',
     metricas: 'Tempo Porta-Resultado'
   },
   {
     id: 'leitos-censo',
+    moduloId: 'leitos-censo',
     titulo: 'Censo Hospitalar & Gestão de Leitos',
     subtitulo: 'Mapa de Ocupação em Tempo Real (UTI e Enfermarias)',
     descricao: 'Controle de internação, alta, transferência, higienização de leitos e tempo médio de permanência (TMP) com apuração de custo diária.',
@@ -138,11 +140,11 @@ const MODULOS_CATALOGO: ModuloCard[] = [
     icone: BedDouble,
     categoria: 'ASSISTENCIAL',
     tag: 'CENSO DE LEITOS',
-    tagColor: 'bg-slate-100 text-slate-700 border border-slate-200',
     metricas: 'Taxa de Ocupação Ativa'
   },
   {
     id: 'fintech-split',
+    moduloId: 'financeiro-split',
     titulo: 'Fintech Split de Pagamentos & NFS-e',
     subtitulo: 'Hyperswitch Engine & Serviço Fiscal .NET C#',
     descricao: 'Divisão imediata de receitas entre o condomínio hospitalar e os médicos parceiros, com emissão automática de notas fiscais de serviço.',
@@ -150,11 +152,11 @@ const MODULOS_CATALOGO: ModuloCard[] = [
     icone: CreditCard,
     categoria: 'FINANCEIRO',
     tag: 'SPLIT DE REPASSE',
-    tagColor: 'bg-slate-100 text-slate-700 border border-slate-200',
     metricas: 'Roteamento Multi-Adquirente'
   },
   {
     id: 'automacao-n8n',
+    moduloId: 'automacao-mensageria',
     titulo: 'Central n8n & Mensageria WhatsApp Poli',
     subtitulo: 'Barramento de Interoperabilidade e IA Conversacional',
     descricao: 'Disparo de lembretes de consultas no WhatsApp, triagem automatizada com IA e integração entre sistemas via webhooks e fila resiliente.',
@@ -162,11 +164,11 @@ const MODULOS_CATALOGO: ModuloCard[] = [
     icone: MessageSquare,
     categoria: 'OPERACAO',
     tag: 'N8N & WHATSAPP',
-    tagColor: 'bg-slate-100 text-slate-700 border border-slate-200',
     metricas: 'Atendimento Omnichannel'
   },
   {
     id: 'ingestao-dados',
+    moduloId: 'ingestao-modulos',
     titulo: 'Hub de Ingestão de Dados & Conectores CSV',
     subtitulo: 'Importador Universal para Sistemas Legados',
     descricao: 'Importe prontuários, estoques legados e escalas por arquivos CSV ou integração REST direta sem retrabalho manual de digitação.',
@@ -174,11 +176,11 @@ const MODULOS_CATALOGO: ModuloCard[] = [
     icone: FileSpreadsheet,
     categoria: 'OPERACAO',
     tag: 'IMPORTADOR CSV',
-    tagColor: 'bg-slate-100 text-slate-700 border border-slate-200',
     metricas: 'Validação de Schemas'
   },
   {
     id: 'blindagem-seguranca',
+    moduloId: 'arquitetura-seguranca',
     titulo: 'Blindagem RN-IND & Auditoria CRED-OMEGA',
     subtitulo: 'Conformidade LGPD, RLS e Rotação de Segredos',
     descricao: 'Painel de segurança da informação com trilha de auditoria completa, isolamento de inquilinos (tenants) e métricas Prometheus de barramento.',
@@ -186,7 +188,6 @@ const MODULOS_CATALOGO: ModuloCard[] = [
     icone: ShieldCheck,
     categoria: 'FINANCEIRO',
     tag: 'SEGURANÇA & RLS',
-    tagColor: 'bg-slate-100 text-slate-700 border border-slate-200',
     metricas: 'Segurança Militar'
   }
 ];
@@ -264,7 +265,7 @@ export default function HubModulosPage() {
 
       {/* BARRA DE FILTROS & PESQUISA DE MÓDULOS */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-        {/* Abas de Categorias (estilo pill) */}
+        {/* Abas de Categorias (estilo pill com touch target HIG >= 44px) */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 custom-scrollbar">
           {[
             { id: 'TODAS', label: 'Todos os Módulos' },
@@ -276,10 +277,10 @@ export default function HubModulosPage() {
             <button
               key={cat.id}
               onClick={() => setCategoriaAtiva(cat.id)}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+              className={`px-4 py-2.5 min-h-[44px] rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
                 categoriaAtiva === cat.id
                   ? 'bg-[#1A56DB] text-white shadow-sm'
-                  : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200/80'
+                  : 'bg-white text-slate-700 hover:bg-slate-50 border border-[#E0E0E0]'
               }`}
             >
               {cat.label}
@@ -287,7 +288,7 @@ export default function HubModulosPage() {
           ))}
         </div>
 
-        {/* Campo de Busca */}
+        {/* Campo de Busca com touch target HIG >= 44px */}
         <div className="relative w-full md:w-72">
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
@@ -295,39 +296,40 @@ export default function HubModulosPage() {
             placeholder="Filtrar módulos..."
             value={busca}
             onChange={e => setBusca(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1A56DB] font-medium"
+            className="w-full pl-9 pr-4 py-2.5 min-h-[44px] text-xs bg-white border border-[#E0E0E0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1A56DB] font-medium"
           />
         </div>
       </div>
 
-      {/* GRID DE MÓDULOS DO ECOSSISTEMA (ESTILO AIVO / VIGIA SAÚDE) */}
+      {/* GRID DE MÓDULOS DO ECOSSISTEMA COM CORES EXCLUSIVAS POR MÓDULO */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {modulosFiltrados.map((modulo) => {
           const Icone = modulo.icone;
+          const theme = MODULO_THEMES[modulo.moduloId] || MODULO_THEMES['compras-publicas'];
 
           return (
             <Link
               key={modulo.id}
               href={modulo.href}
-              className="group bg-white rounded-2xl border border-slate-200/90 p-5 hover:border-blue-400 hover:shadow-lg hover:shadow-blue-500/5 transition-all flex flex-col justify-between relative overflow-hidden"
+              className="group bg-white rounded-2xl border border-[#E0E0E0] p-5 hover:shadow-md transition-all flex flex-col justify-between relative overflow-hidden"
             >
-              {/* Barra superior de acentuação no hover */}
-              <div className="absolute top-0 left-0 right-0 h-1 bg-transparent group-hover:bg-[#1A56DB] transition-colors" />
+              {/* Barra superior de acentuação no hover com a cor do módulo */}
+              <div className={`absolute top-0 left-0 right-0 h-1 bg-transparent group-hover:${theme.primaryBg} transition-colors`} />
 
               <div>
-                {/* Header do Card */}
+                {/* Header do Card com a cor específica do módulo */}
                 <div className="flex items-start justify-between gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-blue-50 group-hover:bg-[#1A56DB] text-[#1A56DB] group-hover:text-white flex items-center justify-center transition-all flex-shrink-0 shadow-sm">
+                  <div className={`w-12 h-12 rounded-2xl ${theme.lightBg} ${theme.primaryText} flex items-center justify-center transition-all flex-shrink-0 shadow-sm border ${theme.lightBorder}`}>
                     <Icone className="w-6 h-6" />
                   </div>
 
-                  <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded-md uppercase tracking-wider ${modulo.tagColor}`}>
+                  <span className={`text-[9px] font-extrabold px-2.5 py-1 rounded-md uppercase tracking-wider ${theme.lightBg} ${theme.primaryText} border ${theme.lightBorder}`}>
                     {modulo.tag}
                   </span>
                 </div>
 
                 {/* Conteúdo */}
-                <h3 className="font-extrabold text-base text-slate-900 mt-3 group-hover:text-[#1A56DB] transition-colors">
+                <h3 className={`font-extrabold text-base text-slate-900 mt-3 group-hover:${theme.primaryText} transition-colors`}>
                   {modulo.titulo}
                 </h3>
                 <p className="text-xs font-semibold text-slate-400 mt-0.5">
@@ -349,7 +351,7 @@ export default function HubModulosPage() {
                   <span />
                 )}
 
-                <span className="inline-flex items-center gap-1 font-extrabold text-[#1A56DB] group-hover:translate-x-0.5 transition-transform">
+                <span className={`inline-flex items-center gap-1 font-extrabold ${theme.primaryText} group-hover:translate-x-0.5 transition-transform min-h-[44px]`}>
                   <span>Acessar</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </span>

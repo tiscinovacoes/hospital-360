@@ -71,26 +71,27 @@ export default function ExecutiveDashboardPage() {
 
   return (
     <VigiaSidebarLayout
+      moduloId="dashboard-executivo"
       activeTitle="Custo do Paciente (Core Door-to-Door)"
       activeSubtitle="Junção e consolidação unificada de todos os módulos assistenciais, suprimentos e escalas"
       actions={
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowSimModal(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#1A56DB] hover:bg-blue-700 text-white text-xs font-bold shadow-sm transition-all"
+            className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] rounded-xl bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-bold shadow-sm transition-all"
           >
-            <Sliders className="w-3.5 h-3.5" />
+            <Sliders className="w-4 h-4" />
             <span>Simulador de Leitos</span>
           </button>
         </div>
       }
     >
-      {/* Toast Flutuante */}
+      {/* Toast Flutuante Asséptico (Sem preto) */}
       {toastMessage && (
-        <div className="fixed top-20 right-6 z-50 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl border border-blue-400 flex items-center gap-3 animate-fadeIn">
-          <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+        <div className="fixed top-20 right-6 z-50 bg-white text-slate-800 px-5 py-3.5 rounded-xl shadow-xl border border-blue-300 flex items-center gap-3 animate-fadeIn">
+          <CheckCircle2 className="w-5 h-5 text-emerald-600" />
           <span className="text-xs font-semibold">{toastMessage}</span>
-          <button onClick={() => setToastMessage(null)} className="text-slate-400 hover:text-white ml-2">
+          <button onClick={() => setToastMessage(null)} className="text-slate-400 hover:text-slate-700 ml-2 min-w-[36px] min-h-[36px] flex items-center justify-center">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -370,11 +371,11 @@ export default function ExecutiveDashboardPage() {
 
       {/* Modal Simulador de Leitos */}
       {showSimModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white max-w-md w-full rounded-3xl shadow-2xl border border-slate-200 overflow-hidden animate-fadeIn">
-            <div className="px-6 py-4 bg-[#1A56DB] text-white flex items-center justify-between">
+        <div className="fixed inset-0 bg-slate-900/20 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white max-w-md w-full rounded-3xl shadow-xl border border-[#E0E0E0] overflow-hidden animate-fadeIn">
+            <div className="px-6 py-4 bg-[#2563EB] text-white flex items-center justify-between">
               <h3 className="font-extrabold text-base">Simulador de Expansão de Leitos</h3>
-              <button onClick={() => setShowSimModal(false)} className="font-bold text-white/80 hover:text-white">✕</button>
+              <button onClick={() => setShowSimModal(false)} className="min-w-[44px] min-h-[44px] flex items-center justify-center font-bold text-white/80 hover:text-white">✕</button>
             </div>
 
             <div className="p-6 space-y-4 text-xs">
@@ -404,7 +405,7 @@ export default function ExecutiveDashboardPage() {
                 <span className="text-right block font-mono font-bold text-sm text-slate-900">{occupancyAssumption}%</span>
               </div>
 
-              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+              <div className="p-4 bg-blue-50/50 rounded-2xl border border-blue-200/60 space-y-2">
                 <div className="flex justify-between">
                   <span>Receita Adicional Estimada:</span>
                   <strong className="text-slate-900 font-bold">R$ {totalExtraRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}/mês</strong>
@@ -418,7 +419,7 @@ export default function ExecutiveDashboardPage() {
               <div className="flex justify-end pt-2">
                 <button
                   onClick={() => setShowSimModal(false)}
-                  className="px-5 py-2.5 bg-[#1A56DB] hover:bg-blue-700 text-white rounded-xl font-bold shadow-sm"
+                  className="px-5 py-2.5 min-h-[44px] bg-[#2563EB] hover:bg-blue-700 text-white rounded-xl font-bold shadow-sm transition-colors"
                 >
                   Concluir Simulação
                 </button>

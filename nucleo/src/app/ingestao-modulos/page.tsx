@@ -328,15 +328,16 @@ export default function IngestaoModulosPage() {
 
   return (
     <VigiaSidebarLayout
+      moduloId="ingestao-modulos"
       activeTitle="Gestão de Módulos & Ingestão de Dados Legados"
       activeSubtitle="Configure os módulos ativos ou conecte dados via planilhas CSV e webhooks sem retrabalho manual"
       actions={
-        <div className="flex flex-wrap gap-2 bg-slate-100 p-1 rounded-xl border border-slate-200">
+        <div className="flex flex-wrap gap-1.5 bg-white p-1 rounded-xl border border-[#E0E0E0]">
           <button
             onClick={() => handleApplyPreset('FARMACIA_ONLY')}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+            className={`px-3 py-2 min-h-[44px] text-xs font-semibold rounded-lg transition-all ${
               activePlan === 'FARMACIA_ONLY'
-                ? 'bg-white text-[#1A56DB] shadow-sm'
+                ? 'bg-orange-50 text-[#EA580C] border border-orange-200 font-bold'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -344,9 +345,9 @@ export default function IngestaoModulosPage() {
           </button>
           <button
             onClick={() => handleApplyPreset('ASSISTENCIAL')}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+            className={`px-3 py-2 min-h-[44px] text-xs font-semibold rounded-lg transition-all ${
               activePlan === 'ASSISTENCIAL'
-                ? 'bg-white text-[#1A56DB] shadow-sm'
+                ? 'bg-orange-50 text-[#EA580C] border border-orange-200 font-bold'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -354,9 +355,9 @@ export default function IngestaoModulosPage() {
           </button>
           <button
             onClick={() => handleApplyPreset('SUITE_360')}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+            className={`px-3 py-2 min-h-[44px] text-xs font-semibold rounded-lg transition-all ${
               activePlan === 'SUITE_360'
-                ? 'bg-[#1A56DB] text-white shadow-sm'
+                ? 'bg-[#EA580C] text-white shadow-sm font-bold'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -368,10 +369,10 @@ export default function IngestaoModulosPage() {
 
       {/* Banner de Feedback de Upload */}
       {uploadStatus && (
-        <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-4">
-          <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl text-xs font-medium text-blue-800 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto w-full pt-2 pb-4">
+          <div className="p-3 bg-orange-50 border border-orange-200 rounded-xl text-xs font-medium text-orange-950 flex items-center justify-between">
             <span>{uploadStatus}</span>
-            <button onClick={() => setUploadStatus(null)} className="text-blue-500 hover:text-blue-800 font-bold">✕</button>
+            <button onClick={() => setUploadStatus(null)} className="text-[#EA580C] hover:text-orange-900 font-bold min-w-[36px] min-h-[36px] flex items-center justify-center">✕</button>
           </div>
         </div>
       )}

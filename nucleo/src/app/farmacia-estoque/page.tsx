@@ -148,22 +148,23 @@ export default function FarmaciaEstoquePage() {
 
   return (
     <VigiaSidebarLayout
+      moduloId="farmacia-estoque"
       activeTitle="Farmácia Hospitalar & Estoque Inteligente (FEFO)"
       activeSubtitle="Dispensação beira-leito com rastreabilidade por lote e integração de custos"
       actions={
         <div className="flex items-center gap-2.5">
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all shadow-sm"
+            className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] text-xs font-bold text-slate-700 bg-white border border-[#E0E0E0] rounded-xl hover:bg-slate-50 transition-all shadow-sm"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Hub Central</span>
           </Link>
           <button
             onClick={() => handleSimulateFefoDispensation(selectedLot || mockLots[0])}
-            className="inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold text-white bg-[#1A56DB] hover:bg-blue-700 rounded-xl transition-all shadow-md shadow-blue-500/20"
+            className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] text-xs font-bold text-white bg-[#0E9F6E] hover:bg-emerald-700 rounded-xl transition-all shadow-sm"
           >
-            <QrCode className="w-3.5 h-3.5" />
+            <QrCode className="w-4 h-4" />
             <span>Simular Baixa FEFO</span>
           </button>
         </div>
@@ -171,8 +172,8 @@ export default function FarmaciaEstoquePage() {
     >
       {/* Feedback de Notificação */}
       {dispensationSuccess && (
-        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-xl flex items-center gap-3 text-slate-800 text-sm font-medium animate-fadeIn">
-          <CheckCircle2 className="w-5 h-5 text-[#1A56DB] flex-shrink-0" />
+        <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-3 text-emerald-950 text-sm font-medium animate-fadeIn">
+          <CheckCircle2 className="w-5 h-5 text-[#0E9F6E] flex-shrink-0" />
           <span>{dispensationSuccess}</span>
         </div>
       )}
@@ -219,7 +220,7 @@ export default function FarmaciaEstoquePage() {
       {/* Conteúdo Principal: Tabela de Lotes FEFO e Detalhe Lateral */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Tabela de Lotes com Filtros */}
-        <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5">
+        <div className="lg:col-span-2 bg-white rounded-2xl border border-[#E0E0E0] shadow-sm p-5">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-5">
             <div className="relative w-full sm:w-72">
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -228,7 +229,7 @@ export default function FarmaciaEstoquePage() {
                 placeholder="Buscar medicamento, lote ou código..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1A56DB]"
+                className="w-full pl-9 pr-4 py-2.5 min-h-[44px] text-xs border border-[#E0E0E0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0E9F6E]"
               />
             </div>
 
@@ -237,7 +238,7 @@ export default function FarmaciaEstoquePage() {
               <select
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
-                className="text-xs border border-slate-200 rounded-xl px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#1A56DB]"
+                className="text-xs border border-[#E0E0E0] rounded-xl px-3 py-2.5 min-h-[44px] bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0E9F6E]"
               >
                 <option value="Todos">Todas as Categorias</option>
                 <option value="Antibiótico">Antibiótico</option>
@@ -268,7 +269,7 @@ export default function FarmaciaEstoquePage() {
                       key={lot.id}
                       onClick={() => setSelectedLot(lot)}
                       className={`hover:bg-slate-50 cursor-pointer transition-colors ${
-                        isSelected ? 'bg-blue-50/60' : ''
+                        isSelected ? 'bg-emerald-50/70 border-l-2 border-[#0E9F6E]' : ''
                       }`}
                     >
                       <td className="px-4 py-3.5">
@@ -283,11 +284,11 @@ export default function FarmaciaEstoquePage() {
                       <td className="px-4 py-3.5">
                         <div className="flex items-center gap-1.5">
                           {lot.daysToExpiry <= 15 ? (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700 border border-rose-200">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
                               {lot.daysToExpiry} dias (Crítico)
                             </span>
                           ) : lot.daysToExpiry <= 35 ? (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
                               {lot.daysToExpiry} dias (Prioritário)
                             </span>
                           ) : (
@@ -309,7 +310,7 @@ export default function FarmaciaEstoquePage() {
                             e.stopPropagation();
                             handleSimulateFefoDispensation(lot);
                           }}
-                          className="text-xs font-bold text-[#1A56DB] hover:text-blue-800 hover:underline"
+                          className="min-h-[44px] px-2 text-xs font-bold text-[#0E9F6E] hover:text-emerald-800 hover:underline"
                         >
                           Dispensar
                         </button>
@@ -323,14 +324,14 @@ export default function FarmaciaEstoquePage() {
         </div>
 
         {/* Painel Lateral: Detalhes do Lote Selecionado & Algoritmo FEFO */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 flex flex-col justify-between">
+        <div className="bg-white rounded-2xl border border-[#E0E0E0] shadow-sm p-5 flex flex-col justify-between">
           {selectedLot ? (
             <div>
               <div className="flex items-center justify-between mb-4">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
                   Detalhes do Lote
                 </span>
-                <span className="text-xs font-mono font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded">
+                <span className="text-xs font-mono font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
                   {selectedLot.code}
                 </span>
               </div>
@@ -361,15 +362,15 @@ export default function FarmaciaEstoquePage() {
                 </div>
                 <div className="flex justify-between py-1.5 border-b border-slate-100">
                   <span className="text-slate-500">Margem sob o Teto</span>
-                  <span className="font-bold text-emerald-600">
+                  <span className="font-bold text-[#0E9F6E]">
                     -{Math.round((1 - selectedLot.unitCost / selectedLot.cmedCeilingPrice) * 100)}% mais barato
                   </span>
                 </div>
               </div>
 
-              <div className="mt-5 p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
+              <div className="mt-5 p-3.5 rounded-xl bg-emerald-50/50 border border-emerald-200/60">
                 <h4 className="text-xs font-bold text-slate-800 mb-1 flex items-center gap-1.5">
-                  <Layers className="w-3.5 h-3.5 text-[#1A56DB]" />
+                  <Layers className="w-3.5 h-3.5 text-[#0E9F6E]" />
                   Regra FEFO Ativa:
                 </h4>
                 <p className="text-[11px] text-slate-600 leading-relaxed">
@@ -385,7 +386,7 @@ export default function FarmaciaEstoquePage() {
 
           <button
             onClick={() => selectedLot && handleSimulateFefoDispensation(selectedLot)}
-            className="mt-6 w-full py-2.5 bg-[#1A56DB] hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-blue-600/20 flex items-center justify-center gap-2"
+            className="mt-6 w-full py-3 min-h-[44px] bg-[#0E9F6E] hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-2"
           >
             <CheckCircle2 className="w-4 h-4" />
             Dispensar Este Lote para Paciente

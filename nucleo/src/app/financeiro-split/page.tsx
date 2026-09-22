@@ -126,22 +126,23 @@ export default function FinanceiroSplitPage() {
 
   return (
     <VigiaSidebarLayout
+      moduloId="financeiro-split"
       activeTitle="Fintech Split de Pagamentos & NFS-e"
       activeSubtitle="Divisão instantânea de recebíveis entre cooperados (85%) e condomínio hospitalar (15%)"
       actions={
         <div className="flex items-center gap-2.5">
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all shadow-sm"
+            className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] text-xs font-bold text-slate-700 bg-white border border-[#E0E0E0] rounded-xl hover:bg-slate-50 transition-all shadow-sm"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Hub Central</span>
           </Link>
           <button
             onClick={handleSimulateSplitPayment}
-            className="inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold text-white bg-[#1A56DB] hover:bg-blue-700 rounded-xl transition-all shadow-md shadow-blue-500/20"
+            className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] text-xs font-bold text-white bg-[#16A34A] hover:bg-green-700 rounded-xl transition-all shadow-sm"
           >
-            <Split className="w-3.5 h-3.5" />
+            <Split className="w-4 h-4" />
             <span>Simular Consulta c/ Split</span>
           </button>
         </div>
@@ -149,8 +150,8 @@ export default function FinanceiroSplitPage() {
     >
       {/* Feedback de Notificação */}
       {successNotice && (
-        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-xl flex items-center gap-3 text-slate-800 text-sm font-medium animate-fadeIn">
-          <CheckCircle2 className="w-5 h-5 text-[#1A56DB] flex-shrink-0" />
+        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl flex items-center gap-3 text-green-950 text-sm font-medium animate-fadeIn">
+          <CheckCircle2 className="w-5 h-5 text-[#16A34A] flex-shrink-0" />
           <span>{successNotice}</span>
         </div>
       )}

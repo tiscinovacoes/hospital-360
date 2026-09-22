@@ -95,13 +95,14 @@ export default function AutomacaoMensageriaPage() {
 
   return (
     <VigiaSidebarLayout
+      moduloId="automacao-mensageria"
       activeTitle="Central n8n & Mensageria WhatsApp Poli"
       activeSubtitle="Barramento de interoperabilidade, mensageria assíncrona e notificações ao paciente"
       actions={
         <div className="flex items-center gap-2.5">
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all shadow-sm"
+            className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] text-xs font-bold text-slate-700 bg-white border border-[#E0E0E0] rounded-xl hover:bg-slate-50 transition-all shadow-sm"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Hub Central</span>
@@ -111,8 +112,8 @@ export default function AutomacaoMensageriaPage() {
     >
       {/* Feedback de Notificação */}
       {whatsappSent && (
-        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-xl flex items-center gap-3 text-slate-800 text-sm font-medium animate-fadeIn">
-          <CheckCheck className="w-5 h-5 text-[#1A56DB] flex-shrink-0" />
+        <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-3 text-emerald-950 text-sm font-medium animate-fadeIn">
+          <CheckCheck className="w-5 h-5 text-[#059669] flex-shrink-0" />
           <span>{whatsappSent}</span>
         </div>
       )}

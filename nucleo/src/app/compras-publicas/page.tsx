@@ -856,15 +856,26 @@ export default function VigiaComprasPage() {
         </div>
       </header>
 
+      {/* Backdrop Mobile Transparente com Blur */}
+      {sidebarAberta && (
+        <div
+          onClick={() => setSidebarAberta(false)}
+          className="fixed inset-0 bg-slate-900/20 backdrop-blur-xs z-40 lg:hidden transition-opacity"
+          aria-hidden="true"
+        />
+      )}
+
       {/* ========================================================================= */}
-      {/* 2. CORPO PRINCIPAL COM SIDEBAR RETRÁTIL */}
+      {/* 2. CORPO PRINCIPAL COM SIDEBAR RETRÁTIL & MOBILE DRAWER */}
       {/* ========================================================================= */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Menu Lateral Retrátil */}
+      <div className="flex flex-1 overflow-hidden relative">
+        {/* Menu Lateral Retrátil (Mobile Drawer / Desktop Sidebar) */}
         <aside
-          className={`${
-            sidebarAberta ? 'w-64' : 'w-0 hidden'
-          } shrink-0 bg-white border-r border-[#E0E0E0] flex flex-col justify-between transition-all duration-200 ease-in-out z-30`}
+          className={`
+            fixed lg:static inset-y-0 left-0 z-50 lg:z-30
+            ${sidebarAberta ? 'translate-x-0 w-72 lg:w-64 shadow-xl lg:shadow-none' : '-translate-x-full lg:translate-x-0 lg:w-0 lg:hidden'}
+            shrink-0 bg-white border-r border-[#E0E0E0] flex flex-col justify-between transition-all duration-200 ease-in-out
+          `}
         >
           <nav className="p-3 space-y-1.5 flex-1 overflow-y-auto">
             {menuItens.map((item) => {
@@ -873,8 +884,13 @@ export default function VigiaComprasPage() {
               return (
                 <button
                   key={item.id}
-                  onClick={() => setSecaoAtiva(item.id as SecaoModulo)}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium transition-all text-left cursor-pointer focus:ring-2 focus:ring-blue-600 focus:outline-none ${
+                  onClick={() => {
+                    setSecaoAtiva(item.id as SecaoModulo);
+                    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+                      setSidebarAberta(false);
+                    }
+                  }}
+                  className={`w-full min-h-[44px] sm:min-h-[38px] flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all text-left cursor-pointer focus:ring-2 focus:ring-blue-600 focus:outline-none ${
                     ativo
                       ? 'bg-[#F0F4FF] text-[#1A56DB] font-bold border border-[#E0E0E0] shadow-2xs'
                       : 'text-slate-700 hover:bg-[#F5F5F5] hover:text-slate-900 border border-transparent'

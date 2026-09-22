@@ -127,15 +127,16 @@ export default function LeitosCensoPage() {
 
   return (
     <VigiaSidebarLayout
+      moduloId="leitos-censo"
       activeTitle="Censo Hospitalar, Mapa de Leitos & Internação"
       activeSubtitle="Visualização em tempo real da ocupação e acionamento de higienização via QR Code"
       actions={
         <div className="flex items-center gap-2.5">
           <Link
             href="/tarefas"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-[#1A56DB] hover:bg-blue-700 rounded-xl transition-all shadow-sm"
+            className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] text-xs font-bold text-white bg-[#0284C7] hover:bg-sky-700 rounded-xl transition-all shadow-sm"
           >
-            <QrCode className="w-3.5 h-3.5" />
+            <QrCode className="w-4 h-4" />
             <span>App de Tarefas</span>
           </Link>
         </div>

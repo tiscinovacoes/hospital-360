@@ -342,29 +342,30 @@ export default function ClinicManagementPage() {
 
   return (
     <VigiaSidebarLayout
+      moduloId="gestao-clinica"
       activeTitle="Consultório & Clínica Médica (OpenEMR)"
       activeSubtitle="Prontuário Eletrônico do Paciente (PEP) • Especialidade: Cardiologia (Sala 204)"
       actions={
         <div className="flex items-center gap-2">
-          <span className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-blue-50 border border-blue-200 text-[#1A56DB] flex items-center gap-1.5 shadow-sm">
-            <Lock className="w-3.5 h-3.5 text-[#1A56DB]" />
-            RN-IND: Isolamento Multi-Tenant
+          <span className="px-3 py-2 min-h-[44px] rounded-xl text-xs font-semibold bg-cyan-50 border border-cyan-200 text-[#0891B2] flex items-center gap-1.5 shadow-sm">
+            <Lock className="w-3.5 h-3.5 text-[#0891B2]" />
+            RN-IND: Multi-Tenant
           </span>
         </div>
       }
     >
-      {/* Toast Flutuante */}
+      {/* Toast Flutuante Asséptico (Sem preto/escuro) */}
       {toastMessage && (
-        <div className="fixed top-20 right-6 z-50 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl border border-blue-500 flex items-center gap-3 animate-in slide-in-from-top-4 duration-300">
-          <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+        <div className="fixed top-20 right-6 z-50 bg-white text-slate-800 px-5 py-3.5 rounded-xl shadow-xl border border-cyan-300 flex items-center gap-3 animate-in slide-in-from-top-4 duration-300">
+          <CheckCircle2 className="w-5 h-5 text-[#0891B2]" />
           <span className="text-xs font-semibold">{toastMessage}</span>
-          <button onClick={() => setToastMessage(null)} className="text-slate-400 hover:text-white ml-2">
+          <button onClick={() => setToastMessage(null)} className="text-slate-400 hover:text-slate-700 ml-2 min-w-[36px] min-h-[36px] flex items-center justify-center">
             <X className="w-4 h-4" />
           </button>
         </div>
       )}
 
-      {/* Abas Superiores Padronizadas */}
+      {/* Abas Superiores Padronizadas com Touch Target HIG >= 44px */}
       <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-1 custom-scrollbar">
         {[
           { id: 'painel', label: 'Visão Geral & DRE', icon: DollarSign },
@@ -377,10 +378,10 @@ export default function ClinicManagementPage() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap ${
+              className={`px-4 py-2.5 min-h-[44px] rounded-xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap ${
                 activeTab === tab.id
-                  ? 'bg-[#1A56DB] text-white shadow-sm'
-                  : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+                  ? 'bg-[#0891B2] text-white shadow-sm'
+                  : 'bg-white text-slate-700 border border-[#E0E0E0] hover:bg-slate-50'
               }`}
             >
               <Icon className="w-4 h-4" />
