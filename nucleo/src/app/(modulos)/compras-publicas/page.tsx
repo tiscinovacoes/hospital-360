@@ -2,7 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { KpiCard, IconBadge } from '../../components/KpiCard';
+import { KpiCard, IconBadge } from '@/components/KpiCard';
+import { ModuloRbacBar } from '@/components/ModuloRbacBar';
+import { PageHeader } from '@/components/PageHeader';
+import { ModuloRole, MODULO_ROLES_CATALOG, hasPermission } from '@/types/rbac';
 import {
   FileText,
   ShoppingCart,
@@ -64,6 +67,7 @@ type SecaoModulo =
   | 'chamados'
   | 'ocorrencias'
   | 'logs'
+  | 'despesas_hub'
   | 'parametros';
 
 const SEED_PDC_PADRAO = {
@@ -189,6 +193,9 @@ export default function VigiaComprasPage() {
   const [tempAferida, setTempAferida] = useState('21.4ºC');
   const [confirmandoEntrega, setConfirmandoEntrega] = useState(false);
   const [reciboCascata, setReciboCascata] = useState<any | null>(null);
+
+  const rolesCompras = MODULO_ROLES_CATALOG['compras-publicas'];
+  const [activeRoleCompras, setActiveRoleCompras] = useState<ModuloRole>(rolesCompras[0]);
 
   // Checklist de Conferência do PdC
   const [checklist, setChecklist] = useState({
@@ -780,81 +787,49 @@ export default function VigiaComprasPage() {
       label: 'Trilha de Auditoria (Logs WORM)',
       icon: History,
       badge: null
+    },
+    {
+      id: 'despesas_hub',
+      label: 'Exportar Despesas ao Hub',
+      icon: FileSpreadsheet,
+      badge: 'Hub 360',
+      badgeCor: 'bg-emerald-100 text-emerald-800 border border-emerald-200'
     }
   ];
 
   const pdcAtivo = pedidosCompra.find(p => p.id === pdcSelecionadoId || p.numero_pdc === pdcSelecionadoId) || pedidosCompra[0] || SEED_PDC_PADRAO;
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex flex-col font-sans">
-      {/* ========================================================================= */}
-      {/* 1. CABEÇALHO DO PRODUTO ÚNICO */}
-      {/* ========================================================================= */}
-      <header className="sticky top-0 z-40 bg-white border-b border-[#E0E0E0] px-4 lg:px-6 h-16 flex items-center justify-between shadow-xs">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setSidebarAberta(!sidebarAberta)}
-            className="p-2 rounded-xl text-slate-600 hover:bg-[#F5F5F5] hover:text-slate-900 transition-all cursor-pointer focus:ring-2 focus:ring-blue-600 focus:outline-none"
-            title={sidebarAberta ? 'Recolher Menu' : 'Expandir Menu'}
-          >
-            {sidebarAberta ? <X className="w-5 h-5 text-slate-800" /> : <Menu className="w-5 h-5 text-slate-800" />}
-          </button>
-
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-[#1A56DB] flex items-center justify-center text-white shadow-xs">
-              <Scale className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-bold text-slate-900 tracking-tight">Vigia Saúde</span>
-                <span className="text-xs text-slate-500 font-medium hidden sm:inline">| Gerente de Compras</span>
-                <span className="text-[10px] font-mono font-bold bg-blue-50 text-[#1A56DB] px-2 py-0.5 rounded-full border border-blue-200">
-                  Lei 14.133/21
-                </span>
-              </div>
-              <p className="text-[11px] text-slate-500 hidden md:block">
-                Fluxo Orçamentário em Cascata: Ata → Contrato (50%) → Empenho → PdC → NF-e
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Lado Direito: Ações Rápidas + Seletor de Perfil */}
-        <div className="flex items-center gap-2.5">
-          <button
-            onClick={() => setSecaoAtiva('pedidos_compra')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#1A56DB] text-white hover:bg-blue-700 transition-all shadow-xs cursor-pointer focus:ring-2 focus:ring-blue-500 focus:outline-none"
-          >
-            <ShoppingCart className="w-3.5 h-3.5" />
-            <span>Novo Pedido (PdC)</span>
-          </button>
-
-          <button
-            onClick={() => setSecaoAtiva('confirmar_entrega')}
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition-all shadow-xs cursor-pointer focus:ring-2 focus:ring-emerald-500 focus:outline-none"
-          >
-            <PackageCheck className="w-3.5 h-3.5" />
-            <span>Confirmar Entrega</span>
-          </button>
-
-          <div className="flex items-center gap-1.5 bg-[#F5F5F5] px-2.5 py-1.5 rounded-xl border border-[#E0E0E0] text-xs">
-            <UserCheck className="w-3.5 h-3.5 text-slate-600" />
-            <select
-              value={perfilAtivo}
-              onChange={(e) => setPerfilAtivo(e.target.value as PerfilCompras)}
-              className="bg-transparent text-xs font-bold text-slate-800 outline-none cursor-pointer"
+    <>
+      <PageHeader
+        actions={
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setSidebarAberta(!sidebarAberta)}
+              className="lg:hidden p-2 min-h-[44px] min-w-[44px] rounded-xl text-slate-600 hover:bg-slate-100 transition-all cursor-pointer flex items-center justify-center"
+              title={sidebarAberta ? 'Recolher menu de seções' : 'Expandir menu de seções'}
             >
-              <option value="compras_operador">Operador de Compras</option>
-              <option value="compras_auditor_cmed">Auditor CMED / BPS</option>
-              <option value="compras_admin">Administrador Geral</option>
-            </select>
-          </div>
+              {sidebarAberta ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            </button>
 
-          <div className="w-8 h-8 rounded-xl bg-[#1A56DB] text-white flex items-center justify-center text-xs font-bold shadow-xs">
-            JS
+            <button
+              onClick={() => setSecaoAtiva('pedidos_compra')}
+              className="flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl text-xs font-bold bg-[#1A56DB] text-white hover:bg-blue-700 transition-all shadow-xs cursor-pointer"
+            >
+              <ShoppingCart className="w-3.5 h-3.5" />
+              <span>Novo Pedido (PdC)</span>
+            </button>
+
+            <button
+              onClick={() => setSecaoAtiva('confirmar_entrega')}
+              className="hidden sm:flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition-all shadow-xs cursor-pointer"
+            >
+              <PackageCheck className="w-3.5 h-3.5" />
+              <span>Confirmar Entrega</span>
+            </button>
           </div>
-        </div>
-      </header>
+        }
+      />
 
       {/* Backdrop Mobile Transparente com Blur */}
       {sidebarAberta && (
@@ -946,6 +921,16 @@ export default function VigiaComprasPage() {
               {menuItens.find((m) => m.id === secaoAtiva)?.label || 'Painel'}
             </span>
           </div>
+
+          {/* BARRA DE RBAC & CONTROLE DE PERFIS DO MÓDULO */}
+          <ModuloRbacBar
+            moduloId="compras-publicas"
+            activeRole={activeRoleCompras}
+            onRoleChange={setActiveRoleCompras}
+            accentColor="#1A56DB"
+            lightBg="bg-blue-50"
+            lightBorder="border-blue-200"
+          />
 
           {/* ========================================================================= */}
           {/* SEÇÃO 1: NOVO PEDIDO DE COMPRA (PdC) - FIEL À IMAGEM DO USUÁRIO */}
@@ -2437,6 +2422,187 @@ export default function VigiaComprasPage() {
               </div>
             </div>
           )}
+
+          {secaoAtiva === 'despesas_hub' && (
+            <div className="space-y-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div>
+                  <h1 className="text-xl font-bold text-slate-900">Relatório de Despesas &amp; Injeção no Hub</h1>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Exportação de empenhos liquidados, notas fiscais e insumos adquiridos para consolidação do Custo do Paciente no Hub 360
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const payload = {
+                        origem_modulo: 'COMPRAS_PUBLICAS',
+                        cliente_id: 'HOSPITAL_360_MATRIZ',
+                        lote_exportacao_id: `EXP-CMP-${Date.now()}`,
+                        data_geracao: new Date().toISOString(),
+                        despesas: [
+                          {
+                            id_transacao: 'DSP-CMP-001',
+                            paciente_cpf: '123.456.789-00',
+                            paciente_nome: 'Carlos Eduardo Silveira',
+                            prontuario_episodio: 'EPIS-2026-8841',
+                            centro_custo: 'CENTRO_CIRURGICO',
+                            leito_identificador: 'Leito 204 UTI',
+                            item_codigo: 'OPME-901',
+                            item_descricao: 'Kit Prótese Fixação Ortopédica Titânio',
+                            lote_fabricante: 'LOT-TIT-881',
+                            quantidade: 1,
+                            unidade_medida: 'Kit Estéril',
+                            valor_unitario_medio: 3420.00,
+                            valor_total_imputado: 3420.00,
+                            data_consumo: '2026-09-21 14:00:00'
+                          }
+                        ]
+                      };
+                      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(payload, null, 2));
+                      const a = document.createElement('a');
+                      a.href = dataStr;
+                      a.download = `despesas_compras_hospital360_${new Date().toISOString().slice(0, 10)}.json`;
+                      document.body.appendChild(a);
+                      a.click();
+                      a.remove();
+                    }}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-white text-slate-700 border border-[#E0E0E0] hover:bg-slate-50 shadow-2xs transition-all cursor-pointer"
+                  >
+                    <Download className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Exportar JSON (Hub Contract)</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        const payload = {
+                          origem_modulo: 'COMPRAS_PUBLICAS',
+                          cliente_id: 'HOSPITAL_360_MATRIZ',
+                          lote_exportacao_id: `API-SYNC-CMP-${Date.now()}`,
+                          data_geracao: new Date().toISOString(),
+                          despesas: [
+                            {
+                              id_transacao: 'DSP-CMP-001',
+                              paciente_cpf: '123.456.789-00',
+                              paciente_nome: 'Carlos Eduardo Silveira',
+                              prontuario_episodio: 'EPIS-2026-8841',
+                              centro_custo: 'CENTRO_CIRURGICO',
+                              leito_identificador: 'Leito 204 UTI',
+                              item_codigo: 'OPME-901',
+                              item_descricao: 'Kit Prótese Fixação Ortopédica Titânio',
+                              lote_fabricante: 'LOT-TIT-881',
+                              quantidade: 1,
+                              unidade_medida: 'Kit Estéril',
+                              valor_unitario_medio: 3420.00,
+                              valor_total_imputado: 3420.00,
+                              data_consumo: '2026-09-21 14:00:00'
+                            }
+                          ]
+                        };
+                        const res = await fetch('/api/hub/despesas/ingestao', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify(payload)
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                          alert(`Sucesso! Despesas de Compras sincronizadas com o Hub (Protocolo ${data.protocolo}).`);
+                        }
+                      } catch (e) {
+                        alert('Erro ao sincronizar com o Hub.');
+                      }
+                    }}
+                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition-all cursor-pointer"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    <span>Sincronizar com Hub 360</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Cards de Resumo */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="bg-white border border-[#E0E0E0] rounded-2xl p-4 shadow-xs">
+                  <div className="text-xs font-bold text-slate-500 mb-1">Empenhos Liquidados no Mês</div>
+                  <div className="text-2xl font-bold text-slate-900">R$ 161.000,00</div>
+                  <div className="text-[11px] text-emerald-600 font-semibold mt-1">2 Pedidos de Compra Entregues</div>
+                </div>
+                <div className="bg-white border border-[#E0E0E0] rounded-2xl p-4 shadow-xs">
+                  <div className="text-xs font-bold text-slate-500 mb-1">Economia Apurada vs CMED Teto</div>
+                  <div className="text-2xl font-bold text-[#1A56DB]">R$ 41.200,00</div>
+                  <div className="text-[11px] text-slate-500 mt-1">Redução de custo imputado aos pacientes</div>
+                </div>
+                <div className="bg-white border border-[#E0E0E0] rounded-2xl p-4 shadow-xs">
+                  <div className="text-xs font-bold text-slate-500 mb-1">Conexão com Hub 360</div>
+                  <div className="text-2xl font-bold text-emerald-600">Ativa (REST/Event)</div>
+                  <div className="text-[11px] text-slate-500 mt-1">Alimentando Custo do Paciente Door-to-Door</div>
+                </div>
+              </div>
+
+              {/* Tabela de Insumos e Empenhos vinculados */}
+              <div className="bg-white border border-[#E0E0E0] rounded-2xl p-4 shadow-xs space-y-3">
+                <h3 className="text-sm font-bold text-slate-900">Itens Adquiridos com Imputação a Pacientes e Centros de Custo</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead>
+                      <tr className="border-b border-slate-200 text-slate-600 bg-slate-50/50">
+                        <th className="p-3 font-bold">Documento / PdC</th>
+                        <th className="p-3 font-bold">Insumo / Descrição</th>
+                        <th className="p-3 font-bold">Fornecedor Homologado</th>
+                        <th className="p-3 font-bold">Centro de Custo</th>
+                        <th className="p-3 font-bold text-right">Valor Total</th>
+                        <th className="p-3 font-bold text-center">Status Hub</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      <tr className="hover:bg-blue-50/20">
+                        <td className="p-3 font-mono font-bold text-[#1A56DB]">PdC-2026-0001</td>
+                        <td className="p-3">
+                          <div className="font-bold text-slate-900">Meropenem 1g Pó Liofilizado Injetável (2.000 un)</div>
+                          <div className="text-[11px] text-slate-500">CATMAT: BR0284729 • NF-e 004.891.201</div>
+                        </td>
+                        <td className="p-3 text-slate-700">Distribuidora Farmacêutica Nacional S/A</td>
+                        <td className="p-3">
+                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-800 border border-blue-200">
+                            CD Almoxarifado / Farmácia FEFO
+                          </span>
+                        </td>
+                        <td className="p-3 text-right font-mono font-bold text-slate-900">R$ 97.000,00</td>
+                        <td className="p-3 text-center">
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            Sincronizado Hub
+                          </span>
+                        </td>
+                      </tr>
+                      <tr className="hover:bg-blue-50/20">
+                        <td className="p-3 font-mono font-bold text-[#1A56DB]">PdC-2026-0002</td>
+                        <td className="p-3">
+                          <div className="font-bold text-slate-900">Kit Prótese Fixação Ortopédica Titânio (OPME)</div>
+                          <div className="text-[11px] text-slate-500">Paciente: Carlos Eduardo Silveira • Prontuário #8841</div>
+                        </td>
+                        <td className="p-3 text-slate-700">Distribuidora Farmacêutica Nacional S/A</td>
+                        <td className="p-3">
+                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-800 border border-blue-200">
+                            Centro Cirúrgico (Imputação Direta)
+                          </span>
+                        </td>
+                        <td className="p-3 text-right font-mono font-bold text-slate-900">R$ 64.000,00</td>
+                        <td className="p-3 text-center">
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            Sincronizado Hub
+                          </span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
         </main>
       </div>
 
@@ -2989,6 +3155,6 @@ export default function VigiaComprasPage() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

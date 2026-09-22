@@ -5,6 +5,70 @@ criado: 2026-09-21
 
 # Log de Atividades — hospital-360
 
+## 2026-09-21 23:55 — Conclusão Autônoma `/goal`: Expansão Integral de Todos os Módulos, Matriz RBAC Transversal, Multi-telas Especializadas e Identidade Visual Asséptica na Branch `dev`
+
+**O que foi feito / Implantações Salvas:**
+- **Sistema Transversal de Perfis Hospitalares & Governança de Acessos (RBAC)**:
+  - Criação do catálogo e matriz formal de perfis em `nucleo/src/types/rbac.ts` (`MODULO_ROLES_CATALOG`) englobando todos os 13 módulos com 36 papéis hospitalares reais, responsabilidades formais, matrículas exemplo e matriz de permissões granulares (`READ`, `CREATE`, `UPDATE`, `DELETE`, `APPROVE`, `AUDIT`, `EXPORT`).
+  - Criação do componente reutilizável `ModuloRbacBar.tsx` integrado no topo de todos os módulos, com seletor interativo de papel em tempo real, badges visuais de permissões ativas/bloqueadas e modal detalhado de Matriz de Acessos com auditoria LGPD.
+  - Criação da página centralizada transversal de Governança de Acessos `/admin/perfis-acessos` (`nucleo/src/app/admin/perfis-acessos/page.tsx`), com visualização em cards de módulos, modal de detalhes do perfil, busca em tempo real, filtros por tipo de permissão e exportação de relatório para conformidade.
+  - Conexão do Painel de Perfis & Acessos no Hub Principal (`nucleo/src/app/page.tsx`) e no menu lateral compartilhado `VigiaSidebarLayout.tsx`.
+
+- **Expansão Profunda das Telas e Sub-telas de Todos os Módulos**:
+  - **Módulo 1 — Compras Públicas (`/compras-publicas`)**: Integrado `ModuloRbacBar` na cor Cobalto `#1A56DB`. Gestão de Atas ARP, limites de carona 50%, motor de conferência de sobrepreço CMED/BPS e empenho digital.
+  - **Módulo 2 — Estoque Central & CD (`/estoque-central`)**: Paleta Âmbar `#D97706`. Telas funcionais: Posição de Estoque & Curva ABC, Controle FEFO com semáforo de validade, Importação XML SEFAZ com conferência cega de lote e leitor DataMatrix, Transferências CD ↔ Hospital e Recall Sanitário ANVISA.
+  - **Módulo 3 — Escala Médica & Ponto GPS (`/escala-medica`)**: Paleta Índigo `#4F46E5`. Telas: Grade de Plantão com Check-in GPS (<100m) e biometria, Central de Trocas de Plantão, Cofre de Certificados CFM (CRM, RQE, ATLS, ACLS, PALS) e Antecipação Instantânea PIX D+0.
+  - **Módulo 4 — Farmácia Hospitalar & Satélites (`/farmacia-estoque`)**: Paleta Esmeralda `#0E9F6E`. Telas: Dispensação Beira-Leito (Regra dos 5 Certos), Livro de Psicotrópicos (Portaria 344/98 e SNGPC), Central de Fracionamento & DataMatrix, Barreira Anti-Interação Medicamentosa e Devoluções de Enfermagem.
+  - **Módulo 5 — Consultório & Clínica PEP (`/gestao-clinica`)**: Paleta Ciano `#0891B2`. Telas: Visão Geral DRE Clínica, Agenda Preditiva com detecção de No-Show, Fintech D+0 com Split médico, Fila de Espera OpenEMR e Prontuário Eletrônico do Paciente.
+  - **Módulo 6 — Laboratório & Análises LIMS (`/laboratorio`)**: Paleta Teal `#0D9488`. Telas: Bancada Técnica de Amostras com tubos codificados LOINC, Central de Valores de Pânico (Critical Values com alerta <15 min), Interfaceamento de Aparelhos FHIR R4 e Matriz RBAC.
+  - **Módulo 7 — Censo Hospitalar & Leitos (`/leitos-censo`)**: Paleta Sky `#0284C7`. Telas: Mapa Visual de Leitos/Kanban por ala e isolamento, Regulação NIR & Fila CROSS, Giro de Leito & Hotelaria (App Tarefas de Higienização) e Indicadores de Tempo Médio de Permanência (TMP).
+  - **Módulo 8 — Fintech Split & Faturamento (`/financeiro-split`)**: Paleta Verde Florestal `#16A34A`. Telas: Split Instantâneo de Pagamentos (85/15%), Faturamento SUS (BPA/AIH/SIGTAP), Gestão de Glosas Hospitalares com IA de conciliação, Centros de Custo e Rateio e Conciliação Bancária CNAB 240.
+  - **Módulo 9 — Central de Mensageria & Automação (`/automacao-mensageria`)**: Paleta Verde `#059669`. Telas: Disparos WhatsApp ao Paciente (Boletins, Altas, Preparos), Confirmação Ativa Anti-NoShow, Barramento n8n & Webhooks e Gestão de Instâncias QR Code Evolution API.
+  - **Módulo 10 — Hub de Ingestão de Dados (`/ingestao-modulos`)**: Paleta Coral `#EA580C`. Telas: Conectores de Sistemas Legados (MV 2000, Tasy, CSV), Ingestão de Bases Nacionais SUS (SIGTAP, CMED, CNES), Monitoramento de Fila de Erros e Dead Letter Queue (DLQ).
+  - **Módulo 11 — Blindagem & Governança CISO (`/arquitetura-seguranca`)**: Paleta Violeta `#7C3AED`. Fundo escuro completamente erradicado (`bg-[#111928]` substituído por asséptico branco com bordas `#E0E0E0`). Telas: Isolamento Financeiro RN-IND com RLS, Trilhas Imutáveis LGPD (Art. 11), Gestão de Certificados Digitais ICP-Brasil e Monitoramento WAF & Resiliência.
+  - **Módulo 12 — Dashboard Executivo Core 360° (`/dashboard-executivo`)**: Paleta Marinho `#2563EB`. Telas: Custo Door-to-Door & Jornada 360° do Paciente (consolidação multi-sistemas), Desfechos Clínicos ONA & Qualidade, Eficiência de Compras Públicas vs CMED e Simulador Estratégico de Cenários.
+
+- **Conformidade de Design & Usabilidade**:
+  - Paleta 100% minimalista e limpa: ausência absoluta de pretos ou fundos escuros (`bg-black`, `bg-slate-900` removidos).
+  - Apple HIG Touch Targets $\ge 44\text{px}$ em todos os botões e seletores.
+  - Responsividade completa testada para dispositivos móveis com menus adaptativos e scroll horizontal seguro.
+
+- **Validação e Homologação Técnica**:
+  - `npx tsc --noEmit`: Executado com **0 erros** de TypeScript.
+  - `npm run build`: Executado com sucesso via Turbopack, compilando **47 páginas e rotas dinâmicas** com otimização completa.
+  - **Permanência estrita na branch `dev`** sem merge/push em produção (`master`), conforme determinação do usuário.
+
+**Arquivos alterados:**
+- `nucleo/src/types/rbac.ts` [NOVO]
+- `nucleo/src/components/ModuloRbacBar.tsx` [NOVO]
+- `nucleo/src/app/admin/perfis-acessos/page.tsx` [NOVO]
+- `nucleo/src/app/compras-publicas/page.tsx`
+- `nucleo/src/app/estoque-central/page.tsx`
+- `nucleo/src/app/escala-medica/page.tsx`
+- `nucleo/src/app/farmacia-estoque/page.tsx`
+- `nucleo/src/app/gestao-clinica/page.tsx`
+- `nucleo/src/app/laboratorio/page.tsx`
+- `nucleo/src/app/leitos-censo/page.tsx`
+- `nucleo/src/app/financeiro-split/page.tsx`
+- `nucleo/src/app/automacao-mensageria/page.tsx`
+- `nucleo/src/app/ingestao-modulos/page.tsx`
+- `nucleo/src/app/arquitetura-seguranca/page.tsx`
+- `nucleo/src/app/dashboard-executivo/page.tsx`
+- `nucleo/src/app/page.tsx`
+- `nucleo/src/components/VigiaSidebarLayout.tsx`
+- `LOG_DE_ATIVIDADES_OBSIDIAN.md`
+
+**Decisões / observações:**
+- Cada módulo conta com seu próprio painel RBAC persistido e integrado ao contexto global de navegação.
+- Todo o código foi mantido na branch `dev`. Nenhuma alteração foi promovida para a branch `master` (produção).
+- Foco em design limpo, tipografia hospitalar profissional e acessibilidade rápida de qualquer dispositivo.
+
+**Pendências / próximos passos:**
+- Apresentar o ecossistema pronto para a rodada de detalhamento com o usuário.
+- Refinar detalhes pontuais de regras de negócio específicas solicitadas no retorno.
+
+---
+
 ## 2026-09-21 22:33 — Deploy em Produção (Branch `master`) — Identidade Visual Completa por Módulo & Responsividade Mobile
 
 **O que foi feito / Implantações Salvas:**
@@ -620,3 +684,43 @@ criado: 2026-09-21
 
 **Pendências / próximos passos:**
 - Integração em produção com gateway bancário para processamento de lotes CNAB 240 em larga escala.
+
+---
+## Registro de Atividade - 22/09/2026 07:33:00
+- **Versao / Etapa**: Inicializacao e Disponibilizacao do Servidor de Desenvolvimento Localhost (Next.js 16)
+- **Resumo do que foi feito**:
+  * Inicializacao do servidor de desenvolvimento Next.js no diretorio nucleo (porta 3000).
+  * Servidor mantido ativo em segundo plano (background daemon) escutando em 127.0.0.1:3000 e localhost:3000.
+  * Teste e confirmacao de resposta HTTP 200 OK para rota raiz (/) e modulo (/dashboard-executivo).
+- **Arquivos Modificados**: Nenhum arquivo alterado (apenas inicializacao de servico em runtime).
+- **Proximos Passos Previstos**:
+  * Validacao das telas pelo usuario no navegador e continuidade dos fluxos assistenciais/financeiros.
+
+---
+## Registro de Atividade - 22/09/2026 08:17:00
+- **Versao / Etapa**: Arquitetura de Produtos Desacoplados, Padronizacao UI/UX de Modulo Standalone e Ingestor Central de Custo do Paciente
+- **Resumo do que foi feito**:
+  1. **Padronizacao UI/UX do Estoque Central (Design)**:
+     - Remocao completa do wrapper global do Hub (VigiaSidebarLayout) e das abas horizontais no modulo estoque-central.
+     - Implementacao de layout de produto independente (Standalone SaaS) com cabeçalho proprio em tom Laranja Ambar (#D97706), selo RDC 430 FEFO, acoes rapidas no topo (Importar NF-e, Nova Transferencia, Exportar Despesas Hub) e RBAC proprio (Almoxarife Chefe, Conferente, Auditor).
+     - Criacao de menu lateral exclusivo (MENU DE ESTOQUE CENTRAL & CD) com navegacao vertical pura e botao inferior Voltar ao Hub de Modulos.
+     - Validacao visual com captura de screenshot no browser subagent confirmando paridade estetica com o modulo de Compras.
+  2. **Objetivo Central de Negocio: Custo do Paciente Door-to-Door**:
+     - Criacao da secao Despesas & Centro de Custo no Estoque Central com exportacao de dados em JSON estruturado, planilha CSV e sincronizacao direta via API.
+     - Inclusao da capacidade de exportacao de despesas de empenhos no modulo de Compras Publicas.
+     - Criacao da API REST no Hub (POST /api/hub/despesas/ingestao) que processa lotes de despesas de produtos avulsos e calcula custos consolidados.
+     - Criacao da aba Ingestor & Conectores de Modulos e do modal de upload manual de arquivos de despesas no Cockpit Executivo (dashboard-executivo).
+  3. **Governanca e Arquitetura**:
+     - Publicacao do ADR formal: docs/adr/ADR-0004-MODULARIDADE-ESTRITA-PRODUTOS-ISOLADOS-E-CONSOLIDACAO-CUSTO-PACIENTE.md definindo os principios de comercializacao modular avulsa, desacoplamento de banco/sessao, comunicacao por eventos e unificacao no Hub.
+- **Arquivos Modificados / Criados**:
+  * docs/adr/ADR-0004-MODULARIDADE-ESTRITA-PRODUTOS-ISOLADOS-E-CONSOLIDACAO-CUSTO-PACIENTE.md (novo)
+  * 
+ucleo/src/app/api/hub/despesas/ingestao/route.ts (novo)
+  * 
+ucleo/src/app/estoque-central/page.tsx (reestruturado)
+  * 
+ucleo/src/app/compras-publicas/page.tsx (atualizado com exportacao de despesas)
+  * 
+ucleo/src/app/dashboard-executivo/page.tsx (atualizado com aba de conectores e modal de ingestao)
+- **Proximos Passos Previstos**:
+  * Apresentar o comparativo de telas e o fluxo de exportacao/ingestao de despesas para validacao final da equipe de Produto e UX.

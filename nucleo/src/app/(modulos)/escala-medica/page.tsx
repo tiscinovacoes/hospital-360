@@ -1,8 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { VigiaSidebarLayout } from '../../components/VigiaSidebarLayout';
-import { KpiCard } from '../../components/KpiCard';
+import { PageHeader } from '@/components/PageHeader';
+import { ModuloRbacBar } from '@/components/ModuloRbacBar';
+import { KpiCard } from '@/components/KpiCard';
+import { ModuloRole, MODULO_ROLES_CATALOG, hasPermission } from '@/types/rbac';
 import {
   UserCheck,
   Calendar,
@@ -76,6 +78,9 @@ interface Plantao {
 }
 
 export default function EscalaMedicaPage() {
+  const roles = MODULO_ROLES_CATALOG['escala-medica'];
+  const [activeRole, setActiveRole] = useState<ModuloRole>(roles[0]);
+  const [abaAtiva, setAbaAtiva] = useState<'grade' | 'cofre' | 'perfis'>('grade');
   const [plantoes, setPlantoes] = useState<Plantao[]>([]);
   const [corpoClinico, setCorpoClinico] = useState<MedicoPlantonista[]>([]);
   const [metricas, setMetricas] = useState<any>(null);
@@ -213,11 +218,11 @@ export default function EscalaMedicaPage() {
   };
 
   return (
-    <VigiaSidebarLayout
-      moduloId="escala-medica"
-      activeTitle="Escala Médica & Plantonistas"
-      activeSubtitle="Ponto eletrônico por geofencing (<100m), guarda de documentações (CFM) e antecipação PIX"
-    >
+    <>
+      <PageHeader
+        activeTitle="Escala Médica & Plantonistas"
+        activeSubtitle="Ponto eletrônico por geofencing (<100m), guarda de documentações (CFM) e antecipação PIX"
+      />
         {/* Cabeçalho */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#E0E0E0] pb-6">
           <div className="flex items-center gap-3">
@@ -243,6 +248,80 @@ export default function EscalaMedicaPage() {
             </button>
           </div>
         </div>
+
+        {/* BARRA DE RBAC & CONTROLE DE PERFIS DO MÓDULO */}
+        <div className="mt-6">
+          <ModuloRbacBar
+            moduloId="escala-medica"
+            activeRole={activeRole}
+            onRoleChange={setActiveRole}
+            accentColor="#4F46E5"
+            lightBg="bg-indigo-50"
+            lightBorder="border-indigo-200"
+          />
+        </div>
+
+        {/* SUB-NAVEGAÇÃO POR ABAS */}
+        <div className="bg-white border border-[#E0E0E0] rounded-2xl p-1.5 mb-6 shadow-xs flex items-center gap-1 overflow-x-auto">
+          {[
+            { id: 'grade', label: '1. Grade de Plantões & Check-in GPS', icon: Calendar },
+            { id: 'cofre', label: '2. Cofre CFM & Certificações', icon: FileBadge },
+            { id: 'perfis', label: '3. Matriz de Perfis & Acessos', icon: ShieldCheck }
+          ].map(tab => {
+            const Icon = tab.icon;
+            const isActive = abaAtiva === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setAbaAtiva(tab.id as any)}
+                className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap min-h-[44px] touch-manipulation ${
+                  isActive
+                    ? 'bg-[#4F46E5] text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                }`}
+              >
+                <Icon className="w-4 h-4 shrink-0" />
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Conteúdo Aba Perfis */}
+        {abaAtiva === 'perfis' && (
+          <div className="bg-white border border-[#E0E0E0] rounded-2xl p-6 shadow-xs mb-6">
+            <h3 className="text-base font-bold text-slate-900 mb-1">
+              Perfis de Acesso do Módulo Escala Médica & Plantões
+            </h3>
+            <p className="text-xs text-slate-500 mb-6">
+              Controle de atribuições clínicas, aprovação de escalas e liberação de honorários médicos.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {roles.map(role => (
+                <div key={role.id} className="p-4 rounded-2xl border border-[#E0E0E0] bg-white">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200">
+                      {role.level}
+                    </span>
+                    {role.id === activeRole.id && (
+                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                        Perfil Ativo
+                      </span>
+                    )}
+                  </div>
+                  <h4 className="text-sm font-bold text-slate-900 mb-1">{role.name}</h4>
+                  <p className="text-xs text-slate-600 mb-3">{role.description}</p>
+                  
+                  <div className="text-[11px] text-slate-500 pt-2 border-t border-slate-100">
+                    Responsável: <strong>{role.responsavelPadrao}</strong>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Métricas Executivas Minimalistas (Máximo 3 linhas + Tooltip informativo) */}
         {metricas && (
@@ -691,6 +770,6 @@ export default function EscalaMedicaPage() {
             </div>
           </div>
         )}
-    </VigiaSidebarLayout>
+    </>
   );
 }

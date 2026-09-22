@@ -2,8 +2,8 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { VigiaSidebarLayout } from '../components/VigiaSidebarLayout';
-import { MODULO_THEMES, ModuloId } from '../components/ModuloLayoutShell';
+import { PageHeader } from '@/components/PageHeader';
+import { MODULO_THEMES, ModuloId } from '@/components/ModuloLayoutShell';
 import {
   LayoutDashboard,
   ShoppingCart,
@@ -209,10 +209,11 @@ export default function HubModulosPage() {
   const moduloCentral = MODULOS_CATALOGO.find(m => m.id === 'custo-paciente')!;
 
   return (
-    <VigiaSidebarLayout
-      activeTitle="Hub de Módulos & Catálogo de Soluções"
-      activeSubtitle="Acesso centralizado a todas as capacidades do ecossistema hospitalar"
-    >
+    <>
+      <PageHeader
+        activeTitle="Hub de Módulos & Catálogo de Soluções"
+        activeSubtitle="Acesso centralizado a todas as capacidades do ecossistema hospitalar"
+      />
       {/* BANNER CENTRAL EXECUTIVO: O CUSTO DO PACIENTE (A JUNÇÃO DE TUDO) - DESIGN MINIMALISTA CLEAN */}
       <div className="bg-white rounded-3xl p-6 sm:p-8 border border-blue-200/80 shadow-sm mb-8">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
@@ -243,13 +244,21 @@ export default function HubModulosPage() {
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row lg:flex-col gap-3 flex-shrink-0">
+            <div className="flex flex-col sm:flex-row lg:flex-col gap-3 flex-shrink-0">
             <Link
               href="/dashboard-executivo"
               className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-[#1A56DB] hover:bg-blue-700 text-white font-black text-sm shadow-md shadow-blue-600/20 transition-all hover:scale-[1.01]"
             >
               <span>Abrir Custo do Paciente</span>
               <ArrowRight className="w-4 h-4" />
+            </Link>
+
+            <Link
+              href="/admin/perfis-acessos"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs border border-indigo-200 transition-all"
+            >
+              <ShieldCheck className="w-4 h-4 text-indigo-600" />
+              <span>Gestão de Perfis &amp; Acessos (RBAC)</span>
             </Link>
 
             <Link
@@ -377,6 +386,6 @@ export default function HubModulosPage() {
           <span className="font-semibold">Versão 360 Enterprise • Release 2026.09</span>
         </div>
       </div>
-    </VigiaSidebarLayout>
+    </>
   );
 }

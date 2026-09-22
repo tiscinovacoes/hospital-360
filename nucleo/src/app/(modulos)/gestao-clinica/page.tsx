@@ -2,8 +2,10 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { VigiaSidebarLayout } from '../../components/VigiaSidebarLayout';
-import { KpiCard } from '../../components/KpiCard';
+import { PageHeader } from '@/components/PageHeader';
+import { ModuloRbacBar } from '@/components/ModuloRbacBar';
+import { KpiCard } from '@/components/KpiCard';
+import { ModuloRole, MODULO_ROLES_CATALOG, hasPermission } from '@/types/rbac';
 import {
   TrendingUp,
   DollarSign,
@@ -54,7 +56,9 @@ const initialMarketplaceItems: MarketplaceItem[] = [
 ];
 
 export default function ClinicManagementPage() {
-  const [activeTab, setActiveTab] = useState<'painel' | 'agenda' | 'financeiro' | 'fila-openemr'>('painel');
+  const roles = MODULO_ROLES_CATALOG['gestao-clinica'];
+  const [activeRole, setActiveRole] = useState<ModuloRole>(roles[0]);
+  const [activeTab, setActiveTab] = useState<'painel' | 'agenda' | 'financeiro' | 'fila-openemr' | 'perfis'>('painel');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Estados da Fila & Atendimento OpenEMR (n8n)
@@ -341,19 +345,19 @@ export default function ClinicManagementPage() {
   };
 
   return (
-    <VigiaSidebarLayout
-      moduloId="gestao-clinica"
-      activeTitle="Consultório & Clínica Médica (OpenEMR)"
-      activeSubtitle="Prontuário Eletrônico do Paciente (PEP) • Especialidade: Cardiologia (Sala 204)"
-      actions={
-        <div className="flex items-center gap-2">
-          <span className="px-3 py-2 min-h-[44px] rounded-xl text-xs font-semibold bg-cyan-50 border border-cyan-200 text-[#0891B2] flex items-center gap-1.5 shadow-sm">
-            <Lock className="w-3.5 h-3.5 text-[#0891B2]" />
-            RN-IND: Multi-Tenant
-          </span>
-        </div>
-      }
-    >
+    <>
+      <PageHeader
+        activeTitle="Consultório & Clínica Médica (OpenEMR)"
+        activeSubtitle="Prontuário Eletrônico do Paciente (PEP) • Especialidade: Cardiologia (Sala 204)"
+        actions={
+          <div className="flex items-center gap-2">
+            <span className="px-3 py-2 min-h-[44px] rounded-xl text-xs font-semibold bg-cyan-50 border border-cyan-200 text-[#0891B2] flex items-center gap-1.5 shadow-sm">
+              <Lock className="w-3.5 h-3.5 text-[#0891B2]" />
+              RN-IND: Multi-Tenant
+            </span>
+          </div>
+        }
+      />
       {/* Toast Flutuante Asséptico (Sem preto/escuro) */}
       {toastMessage && (
         <div className="fixed top-20 right-6 z-50 bg-white text-slate-800 px-5 py-3.5 rounded-xl shadow-xl border border-cyan-300 flex items-center gap-3 animate-in slide-in-from-top-4 duration-300">
@@ -365,6 +369,16 @@ export default function ClinicManagementPage() {
         </div>
       )}
 
+      {/* BARRA DE RBAC & CONTROLE DE PERFIS DO MÓDULO */}
+      <ModuloRbacBar
+        moduloId="gestao-clinica"
+        activeRole={activeRole}
+        onRoleChange={setActiveRole}
+        accentColor="#0891B2"
+        lightBg="bg-cyan-50"
+        lightBorder="border-cyan-200"
+      />
+
       {/* Abas Superiores Padronizadas com Touch Target HIG >= 44px */}
       <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-1 custom-scrollbar">
         {[
@@ -372,6 +386,7 @@ export default function ClinicManagementPage() {
           { id: 'agenda', label: 'Agenda Preditiva & No-Show (IA)', icon: Calendar },
           { id: 'financeiro', label: 'Fintech 360 & Antecipação D+0', icon: CreditCard },
           { id: 'fila-openemr', label: 'Fila da Clínica & OpenEMR (n8n)', icon: Users },
+          { id: 'perfis', label: 'Perfis & Matriz RBAC', icon: ShieldCheck },
         ].map((tab) => {
           const Icon = tab.icon;
           return (
@@ -1574,7 +1589,41 @@ export default function ClinicManagementPage() {
         </div>
       )}
 
+        {/* ABA PERFIS & MATRIZ RBAC */}
+        {activeTab === 'perfis' && (
+          <div className="bg-white border border-[#E0E0E0] rounded-2xl p-6 shadow-xs animate-in fade-in duration-200">
+            <h3 className="text-base font-bold text-slate-900 mb-1">
+              Perfis de Acesso do Módulo Gestão Clínica & Prontuário Eletrônico (OpenEMR)
+            </h3>
+            <p className="text-xs text-slate-500 mb-6">
+              Privilégios de prescrição médica, evolução de enfermagem e auditoria de prontuário conforme normas CFM e LGPD.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {roles.map((role) => (
+                <div key={role.id} className="p-4 rounded-2xl border border-[#E0E0E0] bg-white">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-cyan-50 text-cyan-800 border border-cyan-200">
+                      {role.level}
+                    </span>
+                    {role.id === activeRole.id && (
+                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                        Perfil Ativo
+                      </span>
+                    )}
+                  </div>
+                  <h4 className="text-sm font-bold text-slate-900 mb-1">{role.name}</h4>
+                  <p className="text-xs text-slate-600 mb-3">{role.description}</p>
+                  
+                  <div className="text-[11px] text-slate-500 pt-2 border-t border-slate-100">
+                    Responsável: <strong>{role.responsavelPadrao}</strong>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
-    </VigiaSidebarLayout>
+    </>
   );
 }
