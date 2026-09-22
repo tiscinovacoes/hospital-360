@@ -88,7 +88,7 @@ export async function POST(request: Request) {
     // Tenta despachar para o barramento n8n se disponível
     let webhookStatus = 'SIMULADO_LOCAL_BUFFER';
     try {
-      const webhookUrl = process.env.N8N_WEBHOOK_URL || 'http://localhost:5678/webhook/hospital360/atendimento-clinico';
+      const webhookUrl = process.env.N8N_WEBHOOK_BASE_URL || 'http://localhost:5678/webhook/hospital360/atendimento-clinico';
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 1500);
 
