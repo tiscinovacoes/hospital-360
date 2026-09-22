@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { KpiCard, IconBadge } from '../../components/KpiCard';
-import { ModuloRbacBar } from '../../components/ModuloRbacBar';
+import { KpiCard, IconBadge } from '@/components/KpiCard';
+import { ModuloRbacBar } from '@/components/ModuloRbacBar';
+import { PageHeader } from '@/components/PageHeader';
 import { ModuloRole, MODULO_ROLES_CATALOG, hasPermission } from '@/types/rbac';
 import {
   FileText,
@@ -799,75 +800,36 @@ export default function VigiaComprasPage() {
   const pdcAtivo = pedidosCompra.find(p => p.id === pdcSelecionadoId || p.numero_pdc === pdcSelecionadoId) || pedidosCompra[0] || SEED_PDC_PADRAO;
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex flex-col font-sans">
-      {/* ========================================================================= */}
-      {/* 1. CABEÇALHO DO PRODUTO ÚNICO */}
-      {/* ========================================================================= */}
-      <header className="sticky top-0 z-40 bg-white border-b border-[#E0E0E0] px-4 lg:px-6 h-16 flex items-center justify-between shadow-xs">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setSidebarAberta(!sidebarAberta)}
-            className="p-2 rounded-xl text-slate-600 hover:bg-[#F5F5F5] hover:text-slate-900 transition-all cursor-pointer focus:ring-2 focus:ring-blue-600 focus:outline-none"
-            title={sidebarAberta ? 'Recolher Menu' : 'Expandir Menu'}
-          >
-            {sidebarAberta ? <X className="w-5 h-5 text-slate-800" /> : <Menu className="w-5 h-5 text-slate-800" />}
-          </button>
-
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-[#1A56DB] flex items-center justify-center text-white shadow-xs">
-              <Scale className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-bold text-slate-900 tracking-tight">Vigia Saúde</span>
-                <span className="text-xs text-slate-500 font-medium hidden sm:inline">| Gerente de Compras</span>
-                <span className="text-[10px] font-mono font-bold bg-blue-50 text-[#1A56DB] px-2 py-0.5 rounded-full border border-blue-200">
-                  Lei 14.133/21
-                </span>
-              </div>
-              <p className="text-[11px] text-slate-500 hidden md:block">
-                Fluxo Orçamentário em Cascata: Ata → Contrato (50%) → Empenho → PdC → NF-e
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Lado Direito: Ações Rápidas + Seletor de Perfil */}
-        <div className="flex items-center gap-2.5">
-          <button
-            onClick={() => setSecaoAtiva('pedidos_compra')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#1A56DB] text-white hover:bg-blue-700 transition-all shadow-xs cursor-pointer focus:ring-2 focus:ring-blue-500 focus:outline-none"
-          >
-            <ShoppingCart className="w-3.5 h-3.5" />
-            <span>Novo Pedido (PdC)</span>
-          </button>
-
-          <button
-            onClick={() => setSecaoAtiva('confirmar_entrega')}
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition-all shadow-xs cursor-pointer focus:ring-2 focus:ring-emerald-500 focus:outline-none"
-          >
-            <PackageCheck className="w-3.5 h-3.5" />
-            <span>Confirmar Entrega</span>
-          </button>
-
-          <div className="flex items-center gap-1.5 bg-[#F5F5F5] px-2.5 py-1.5 rounded-xl border border-[#E0E0E0] text-xs">
-            <UserCheck className="w-3.5 h-3.5 text-slate-600" />
-            <select
-              value={perfilAtivo}
-              onChange={(e) => setPerfilAtivo(e.target.value as PerfilCompras)}
-              className="bg-transparent text-xs font-bold text-slate-800 outline-none cursor-pointer"
+    <>
+      <PageHeader
+        actions={
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setSidebarAberta(!sidebarAberta)}
+              className="lg:hidden p-2 min-h-[44px] min-w-[44px] rounded-xl text-slate-600 hover:bg-slate-100 transition-all cursor-pointer flex items-center justify-center"
+              title={sidebarAberta ? 'Recolher menu de seções' : 'Expandir menu de seções'}
             >
-              <option value="compras_operador">Operador de Compras</option>
-              <option value="compras_auditor_cmed">Auditor CMED / BPS</option>
-              <option value="compras_admin">Administrador Geral</option>
-            </select>
-          </div>
+              {sidebarAberta ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            </button>
 
-          <div className="w-8 h-8 rounded-xl bg-[#1A56DB] text-white flex items-center justify-center text-xs font-bold shadow-xs">
-            JS
+            <button
+              onClick={() => setSecaoAtiva('pedidos_compra')}
+              className="flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl text-xs font-bold bg-[#1A56DB] text-white hover:bg-blue-700 transition-all shadow-xs cursor-pointer"
+            >
+              <ShoppingCart className="w-3.5 h-3.5" />
+              <span>Novo Pedido (PdC)</span>
+            </button>
+
+            <button
+              onClick={() => setSecaoAtiva('confirmar_entrega')}
+              className="hidden sm:flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition-all shadow-xs cursor-pointer"
+            >
+              <PackageCheck className="w-3.5 h-3.5" />
+              <span>Confirmar Entrega</span>
+            </button>
           </div>
-        </div>
-      </header>
+        }
+      />
 
       {/* Backdrop Mobile Transparente com Blur */}
       {sidebarAberta && (
