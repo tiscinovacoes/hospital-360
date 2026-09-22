@@ -5,6 +5,25 @@ criado: 2026-09-21
 
 # Log de Atividades — hospital-360
 
+## 2026-09-21 22:33 — Deploy em Produção (Branch `master`) — Identidade Visual Completa por Módulo & Responsividade Mobile
+
+**O que foi feito / Implantações Salvas:**
+- **Build de Produção Executado e Validado com Sucesso**:
+  - Compilação completa via Turbopack (`next build` / `npm run build`).
+  - Geração estática e otimização de todas as **46 rotas/páginas sem nenhum erro**.
+  - TypeScript validado com **0 erros** em tempo de compilação.
+- **Promoção para a Branch `master` (Produção)**:
+  - Commit `5db3b6a` incorporado via merge fast-forward em `master`.
+  - Push concluído com sucesso para o repositório remoto (`origin master`).
+  - Ambiente local mantido na branch de desenvolvimento (`dev`).
+- **Escopo Publicado em Produção**:
+  - Paleta minimalista e asséptica de 13 cores sem nenhum tom escuro ou preto.
+  - Chassi `ModuloLayoutShell` e `VigiaSidebarLayout` com detecção dinâmica de tema por módulo.
+  - Menu lateral interno colorido na tonalidade proprietária de cada módulo.
+  - Responsividade touch-first (Apple HIG $\ge 44\text{px}$) e gavetas mobile fluidas sem overflow.
+
+---
+
 ## 2026-09-21 22:30 — Refinamento Visual: Menu Lateral Colorido com a Cor do Módulo
 
 **O que foi feito / Implantações Salvas:**
