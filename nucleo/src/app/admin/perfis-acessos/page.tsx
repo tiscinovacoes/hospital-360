@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { VigiaSidebarLayout } from '../../../components/VigiaSidebarLayout';
+import { PageHeader } from '@/components/PageHeader';
 import {
   ShieldCheck,
   Lock,
@@ -87,31 +87,31 @@ export default function CentralPerfisAcessosPage() {
   });
 
   return (
-    <VigiaSidebarLayout
-      moduloId="arquitetura-seguranca"
-      activeTitle="Matriz Geral de Perfis & Controle de Acesso (RBAC 360°)"
-      activeSubtitle="Governança de privilégios hospitalares em todos os 13 módulos conforme ISO 27001, CFM e LGPD"
-      actions={
-        <div className="flex items-center gap-2">
-          <Link
-            href="/admin"
-            className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 border border-[#E0E0E0] transition-colors"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Voltar ao Admin</span>
-          </Link>
+    <>
+      <PageHeader
+        activeTitle="Matriz Geral de Perfis & Controle de Acesso (RBAC 360°)"
+        activeSubtitle="Governança de privilégios hospitalares em todos os 13 módulos conforme ISO 27001, CFM e LGPD"
+        actions={
+          <div className="flex items-center gap-2">
+            <Link
+              href="/admin"
+              className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 border border-[#E0E0E0] transition-colors"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Voltar ao Admin</span>
+            </Link>
 
-          <button
-            type="button"
-            onClick={() => triggerToast('Matriz Geral de Acessos exportada em planilha auditada para o comitê de compliance.')}
-            className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] rounded-xl bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition-colors"
-          >
-            <Download className="w-4 h-4" />
-            <span>Exportar Matriz RBAC</span>
-          </button>
-        </div>
-      }
-    >
+            <button
+              type="button"
+              onClick={() => triggerToast('Matriz Geral de Acessos exportada em planilha auditada para o comitê de compliance.')}
+              className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] rounded-xl bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition-colors"
+            >
+              <Download className="w-4 h-4" />
+              <span>Exportar Matriz RBAC</span>
+            </button>
+          </div>
+        }
+      />
       {/* Toast Feedback */}
       {toast && (
         <div className="mb-4 p-3.5 bg-blue-50 border border-blue-200 rounded-2xl flex items-center justify-between text-xs text-blue-950 shadow-sm animate-in fade-in duration-200">
@@ -271,6 +271,6 @@ export default function CentralPerfisAcessosPage() {
           </table>
         </div>
       </div>
-    </VigiaSidebarLayout>
+    </>
   );
 }

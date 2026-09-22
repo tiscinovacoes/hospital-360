@@ -2,8 +2,8 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { VigiaSidebarLayout } from '../components/VigiaSidebarLayout';
-import { MODULO_THEMES, ModuloId } from '../components/ModuloLayoutShell';
+import { PageHeader } from '@/components/PageHeader';
+import { MODULO_THEMES, ModuloId } from '@/components/ModuloLayoutShell';
 import {
   LayoutDashboard,
   ShoppingCart,
@@ -209,10 +209,11 @@ export default function HubModulosPage() {
   const moduloCentral = MODULOS_CATALOGO.find(m => m.id === 'custo-paciente')!;
 
   return (
-    <VigiaSidebarLayout
-      activeTitle="Hub de Módulos & Catálogo de Soluções"
-      activeSubtitle="Acesso centralizado a todas as capacidades do ecossistema hospitalar"
-    >
+    <>
+      <PageHeader
+        activeTitle="Hub de Módulos & Catálogo de Soluções"
+        activeSubtitle="Acesso centralizado a todas as capacidades do ecossistema hospitalar"
+      />
       {/* BANNER CENTRAL EXECUTIVO: O CUSTO DO PACIENTE (A JUNÇÃO DE TUDO) - DESIGN MINIMALISTA CLEAN */}
       <div className="bg-white rounded-3xl p-6 sm:p-8 border border-blue-200/80 shadow-sm mb-8">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
@@ -385,6 +386,6 @@ export default function HubModulosPage() {
           <span className="font-semibold">Versão 360 Enterprise • Release 2026.09</span>
         </div>
       </div>
-    </VigiaSidebarLayout>
+    </>
   );
 }

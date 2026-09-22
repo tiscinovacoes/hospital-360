@@ -684,3 +684,43 @@ criado: 2026-09-21
 
 **Pendências / próximos passos:**
 - Integração em produção com gateway bancário para processamento de lotes CNAB 240 em larga escala.
+
+---
+## Registro de Atividade - 22/09/2026 07:33:00
+- **Versao / Etapa**: Inicializacao e Disponibilizacao do Servidor de Desenvolvimento Localhost (Next.js 16)
+- **Resumo do que foi feito**:
+  * Inicializacao do servidor de desenvolvimento Next.js no diretorio nucleo (porta 3000).
+  * Servidor mantido ativo em segundo plano (background daemon) escutando em 127.0.0.1:3000 e localhost:3000.
+  * Teste e confirmacao de resposta HTTP 200 OK para rota raiz (/) e modulo (/dashboard-executivo).
+- **Arquivos Modificados**: Nenhum arquivo alterado (apenas inicializacao de servico em runtime).
+- **Proximos Passos Previstos**:
+  * Validacao das telas pelo usuario no navegador e continuidade dos fluxos assistenciais/financeiros.
+
+---
+## Registro de Atividade - 22/09/2026 08:17:00
+- **Versao / Etapa**: Arquitetura de Produtos Desacoplados, Padronizacao UI/UX de Modulo Standalone e Ingestor Central de Custo do Paciente
+- **Resumo do que foi feito**:
+  1. **Padronizacao UI/UX do Estoque Central (Design)**:
+     - Remocao completa do wrapper global do Hub (VigiaSidebarLayout) e das abas horizontais no modulo estoque-central.
+     - Implementacao de layout de produto independente (Standalone SaaS) com cabeçalho proprio em tom Laranja Ambar (#D97706), selo RDC 430 FEFO, acoes rapidas no topo (Importar NF-e, Nova Transferencia, Exportar Despesas Hub) e RBAC proprio (Almoxarife Chefe, Conferente, Auditor).
+     - Criacao de menu lateral exclusivo (MENU DE ESTOQUE CENTRAL & CD) com navegacao vertical pura e botao inferior Voltar ao Hub de Modulos.
+     - Validacao visual com captura de screenshot no browser subagent confirmando paridade estetica com o modulo de Compras.
+  2. **Objetivo Central de Negocio: Custo do Paciente Door-to-Door**:
+     - Criacao da secao Despesas & Centro de Custo no Estoque Central com exportacao de dados em JSON estruturado, planilha CSV e sincronizacao direta via API.
+     - Inclusao da capacidade de exportacao de despesas de empenhos no modulo de Compras Publicas.
+     - Criacao da API REST no Hub (POST /api/hub/despesas/ingestao) que processa lotes de despesas de produtos avulsos e calcula custos consolidados.
+     - Criacao da aba Ingestor & Conectores de Modulos e do modal de upload manual de arquivos de despesas no Cockpit Executivo (dashboard-executivo).
+  3. **Governanca e Arquitetura**:
+     - Publicacao do ADR formal: docs/adr/ADR-0004-MODULARIDADE-ESTRITA-PRODUTOS-ISOLADOS-E-CONSOLIDACAO-CUSTO-PACIENTE.md definindo os principios de comercializacao modular avulsa, desacoplamento de banco/sessao, comunicacao por eventos e unificacao no Hub.
+- **Arquivos Modificados / Criados**:
+  * docs/adr/ADR-0004-MODULARIDADE-ESTRITA-PRODUTOS-ISOLADOS-E-CONSOLIDACAO-CUSTO-PACIENTE.md (novo)
+  * 
+ucleo/src/app/api/hub/despesas/ingestao/route.ts (novo)
+  * 
+ucleo/src/app/estoque-central/page.tsx (reestruturado)
+  * 
+ucleo/src/app/compras-publicas/page.tsx (atualizado com exportacao de despesas)
+  * 
+ucleo/src/app/dashboard-executivo/page.tsx (atualizado com aba de conectores e modal de ingestao)
+- **Proximos Passos Previstos**:
+  * Apresentar o comparativo de telas e o fluxo de exportacao/ingestao de despesas para validacao final da equipe de Produto e UX.

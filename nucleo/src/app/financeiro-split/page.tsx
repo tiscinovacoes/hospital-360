@@ -2,9 +2,9 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { VigiaSidebarLayout } from '../../components/VigiaSidebarLayout';
-import { ModuloRbacBar } from '../../components/ModuloRbacBar';
-import { KpiCard } from '../../components/KpiCard';
+import { PageHeader } from '@/components/PageHeader';
+import { ModuloRbacBar } from '@/components/ModuloRbacBar';
+import { KpiCard } from '@/components/KpiCard';
 import { ModuloRole, MODULO_ROLES_CATALOG, hasPermission } from '@/types/rbac';
 import {
   CreditCard,
@@ -210,29 +210,29 @@ export default function FinanceiroSplitPage() {
   const totalHospitalShare = transactions.reduce((acc, curr) => acc + curr.hospitalCondoShare, 0);
 
   return (
-    <VigiaSidebarLayout
-      moduloId="financeiro-split"
-      activeTitle="Financeiro, Faturamento SUS & Split de Custos"
-      activeSubtitle="Split instantâneo Hyperswitch (85/15%), faturamento BPA/AIH SIGTAP e gestão de glosas"
-      actions={
-        <div className="flex items-center gap-2.5">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] text-xs font-bold text-slate-700 bg-white border border-[#E0E0E0] rounded-xl hover:bg-slate-50 transition-all shadow-xs"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Hub Central</span>
-          </Link>
-          <button
-            onClick={handleSimulateSplitPayment}
-            className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] text-xs font-bold text-white bg-[#16A34A] hover:bg-green-700 rounded-xl transition-all shadow-xs touch-manipulation"
-          >
-            <Split className="w-4 h-4" />
-            <span>Simular Consulta c/ Split</span>
-          </button>
-        </div>
-      }
-    >
+    <>
+      <PageHeader
+        activeTitle="Financeiro, Faturamento SUS & Split de Custos"
+        activeSubtitle="Split instantâneo Hyperswitch (85/15%), faturamento BPA/AIH SIGTAP e gestão de glosas"
+        actions={
+          <div className="flex items-center gap-2.5">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] text-xs font-bold text-slate-700 bg-white border border-[#E0E0E0] rounded-xl hover:bg-slate-50 transition-all shadow-xs"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Hub Central</span>
+            </Link>
+            <button
+              onClick={handleSimulateSplitPayment}
+              className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] text-xs font-bold text-white bg-[#16A34A] hover:bg-green-700 rounded-xl transition-all shadow-xs touch-manipulation"
+            >
+              <Split className="w-4 h-4" />
+              <span>Simular Consulta c/ Split</span>
+            </button>
+          </div>
+        }
+      />
       {/* Feedback de Notificação */}
       {successNotice && (
         <div className="mb-4 p-3.5 bg-green-50 border border-green-300 rounded-2xl flex items-center justify-between text-xs text-green-950 shadow-sm animate-in fade-in duration-200">
@@ -579,6 +579,6 @@ export default function FinanceiroSplitPage() {
           </div>
         </div>
       )}
-    </VigiaSidebarLayout>
+    </>
   );
 }

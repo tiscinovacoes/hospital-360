@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { VigiaSidebarLayout } from '../../components/VigiaSidebarLayout';
-import { ModuloRbacBar } from '../../components/ModuloRbacBar';
+import { PageHeader } from '@/components/PageHeader';
+import { ModuloRbacBar } from '@/components/ModuloRbacBar';
 import { ModuloRole, MODULO_ROLES_CATALOG, hasPermission } from '@/types/rbac';
 import {
   Layers,
@@ -332,45 +332,45 @@ export default function IngestaoModulosPage() {
   };
 
   return (
-    <VigiaSidebarLayout
-      moduloId="ingestao-modulos"
-      activeTitle="Gestão de Módulos & Ingestão de Dados Legados"
-      activeSubtitle="Configure os módulos ativos ou conecte dados via planilhas CSV e webhooks sem retrabalho manual"
-      actions={
-        <div className="flex flex-wrap gap-1.5 bg-white p-1 rounded-xl border border-[#E0E0E0]">
-          <button
-            onClick={() => handleApplyPreset('FARMACIA_ONLY')}
-            className={`px-3 py-2 min-h-[44px] text-xs font-semibold rounded-lg transition-all ${
-              activePlan === 'FARMACIA_ONLY'
-                ? 'bg-orange-50 text-[#EA580C] border border-orange-200 font-bold'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            Só Farmácia
-          </button>
-          <button
-            onClick={() => handleApplyPreset('ASSISTENCIAL')}
-            className={`px-3 py-2 min-h-[44px] text-xs font-semibold rounded-lg transition-all ${
-              activePlan === 'ASSISTENCIAL'
-                ? 'bg-orange-50 text-[#EA580C] border border-orange-200 font-bold'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            Assistencial
-          </button>
-          <button
-            onClick={() => handleApplyPreset('SUITE_360')}
-            className={`px-3 py-2 min-h-[44px] text-xs font-semibold rounded-lg transition-all ${
-              activePlan === 'SUITE_360'
-                ? 'bg-[#EA580C] text-white shadow-sm font-bold'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            Suite Completa 360
-          </button>
-        </div>
-      }
-    >
+    <>
+      <PageHeader
+        activeTitle="Gestão de Módulos & Ingestão de Dados Legados"
+        activeSubtitle="Configure os módulos ativos ou conecte dados via planilhas CSV e webhooks sem retrabalho manual"
+        actions={
+          <div className="flex flex-wrap gap-1.5 bg-white p-1 rounded-xl border border-[#E0E0E0]">
+            <button
+              onClick={() => handleApplyPreset('FARMACIA_ONLY')}
+              className={`px-3 py-2 min-h-[44px] text-xs font-semibold rounded-lg transition-all ${
+                activePlan === 'FARMACIA_ONLY'
+                  ? 'bg-orange-50 text-[#EA580C] border border-orange-200 font-bold'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Só Farmácia
+            </button>
+            <button
+              onClick={() => handleApplyPreset('ASSISTENCIAL')}
+              className={`px-3 py-2 min-h-[44px] text-xs font-semibold rounded-lg transition-all ${
+                activePlan === 'ASSISTENCIAL'
+                  ? 'bg-orange-50 text-[#EA580C] border border-orange-200 font-bold'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Assistencial
+            </button>
+            <button
+              onClick={() => handleApplyPreset('SUITE_360')}
+              className={`px-3 py-2 min-h-[44px] text-xs font-semibold rounded-lg transition-all ${
+                activePlan === 'SUITE_360'
+                  ? 'bg-[#EA580C] text-white shadow-sm font-bold'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Suite Completa 360
+            </button>
+          </div>
+        }
+      />
 
       {/* BARRA DE RBAC & CONTROLE DE PERFIS DO MÓDULO */}
       <ModuloRbacBar
@@ -790,6 +790,6 @@ export default function IngestaoModulosPage() {
           </div>
         </div>
       </main>
-    </VigiaSidebarLayout>
+    </>
   );
 }

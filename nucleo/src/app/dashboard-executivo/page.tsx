@@ -2,9 +2,9 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { VigiaSidebarLayout } from '../../components/VigiaSidebarLayout';
-import { ModuloRbacBar } from '../../components/ModuloRbacBar';
-import { KpiCard } from '../../components/KpiCard';
+import { PageHeader } from '@/components/PageHeader';
+import { ModuloRbacBar } from '@/components/ModuloRbacBar';
+import { KpiCard } from '@/components/KpiCard';
 import { ModuloRole, MODULO_ROLES_CATALOG, hasPermission } from '@/types/rbac';
 import {
   BarChart3,
@@ -34,7 +34,9 @@ import {
   AlertTriangle,
   FileText,
   Lock,
-  Layers
+  Layers,
+  Upload,
+  RefreshCw
 } from 'lucide-react';
 
 type AbaExecutiva = 
@@ -42,12 +44,16 @@ type AbaExecutiva =
   | 'desfechos'
   | 'compras'
   | 'simulador'
-  | 'perfis';
+  | 'perfis'
+  | 'conectores_hub';
 
 export default function ExecutiveDashboardPage() {
   const roles = MODULO_ROLES_CATALOG['dashboard-executivo'];
   const [activeRole, setActiveRole] = useState<ModuloRole>(roles[0]);
   const [abaAtiva, setAbaAtiva] = useState<AbaExecutiva>('jornada');
+  const [showModalImportarDespesas, setShowModalImportarDespesas] = useState(false);
+  const [arquivoUploadNome, setArquivoUploadNome] = useState<string | null>(null);
+  const [importando, setImportando] = useState(false);
   const [notifications, setNotifications] = useState([
     { id: '1', title: 'Laudo Crítico no LIS', desc: 'Troponina I da paciente Ana Carolina concluída.', unread: true, time: 'Há 4 min' },
     { id: '2', title: 'Recurso de Glosa Aprovado', desc: 'IA de auditoria reverteu R$ 1.850,00 da Unimed.', unread: true, time: 'Há 18 min' },
@@ -84,22 +90,30 @@ export default function ExecutiveDashboardPage() {
   const hubMargin = totalExtraRevenue * 0.22;
 
   return (
-    <VigiaSidebarLayout
-      moduloId="dashboard-executivo"
-      activeTitle="Custo do Paciente (Core Door-to-Door)"
-      activeSubtitle="Junção e consolidação unificada de todos os módulos assistenciais, suprimentos e escalas"
-      actions={
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setShowSimModal(true)}
-            className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] rounded-xl bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-bold shadow-sm transition-all"
-          >
-            <Sliders className="w-4 h-4" />
-            <span>Simulador de Leitos</span>
-          </button>
-        </div>
-      }
-    >
+    <>
+      <PageHeader
+        activeTitle="Custo do Paciente (Core Door-to-Door)"
+        activeSubtitle="Junção e consolidação unificada de todos os módulos assistenciais, suprimentos e escalas"
+        actions={
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowModalImportarDespesas(true)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[44px] rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm transition-all cursor-pointer"
+            >
+              <Upload className="w-4 h-4" />
+              <span>Importar Despesas (Hub Ingestor)</span>
+            </button>
+
+            <button
+              onClick={() => setShowSimModal(true)}
+              className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] rounded-xl bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-bold shadow-sm transition-all cursor-pointer"
+            >
+              <Sliders className="w-4 h-4" />
+              <span>Simulador de Leitos</span>
+            </button>
+          </div>
+        }
+      />
       {/* Toast Flutuante Asséptico (Sem preto) */}
       {toastMessage && (
         <div className="fixed top-20 right-6 z-50 bg-white text-slate-800 px-5 py-3.5 rounded-xl shadow-xl border border-blue-300 flex items-center gap-3 animate-fadeIn">
@@ -128,7 +142,8 @@ export default function ExecutiveDashboardPage() {
           { id: 'desfechos', label: '2. Desfechos Clínicos & ONA', icon: Stethoscope },
           { id: 'compras', label: '3. Eficiência em Compras vs CMED', icon: TrendingUp },
           { id: 'simulador', label: '4. Simulador Estratégico', icon: Sliders },
-          { id: 'perfis', label: '5. Perfis & Matriz RBAC', icon: Lock }
+          { id: 'conectores_hub', label: '5. Ingestor & Conectores de Módulos', icon: FileSpreadsheet },
+          { id: 'perfis', label: '6. Perfis & Matriz RBAC', icon: Lock }
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = abaAtiva === tab.id;
@@ -180,6 +195,129 @@ export default function ExecutiveDashboardPage() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* ABA CONECTORES & INGESTOR DE DESPESAS */}
+      {abaAtiva === 'conectores_hub' && (
+        <div className="space-y-6 mb-6">
+          <div className="bg-white border border-[#E0E0E0] rounded-2xl p-6 shadow-xs">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
+              <div>
+                <h3 className="text-base font-bold text-slate-900 mb-1">
+                  Ingestor Central de Despesas de Módulos Descentralizados
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Consolidação frouxamente acoplada: cada módulo opera de forma autônoma e injeta despesas via REST API ou upload manual de arquivos padronizados.
+                </p>
+              </div>
+
+              <button
+                onClick={() => setShowModalImportarDespesas(true)}
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer"
+              >
+                <Upload className="w-4 h-4" />
+                <span>Upload de Arquivo (JSON/CSV)</span>
+              </button>
+            </div>
+
+            {/* Status dos Módulos Especializados */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+              <div className="p-4 rounded-2xl border border-amber-200 bg-amber-50/40">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-200">
+                    Estoque Central
+                  </span>
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                </div>
+                <div className="text-lg font-bold text-slate-900">R$ 1.669,00</div>
+                <div className="text-[11px] text-slate-600 mt-1">34 saídas FEFO computadas</div>
+                <div className="text-[10px] text-amber-700 font-semibold mt-2">API: /api/hub/despesas/ingestao</div>
+              </div>
+
+              <div className="p-4 rounded-2xl border border-blue-200 bg-blue-50/40">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-100 text-blue-900 border border-blue-200">
+                    Compras &amp; Atas
+                  </span>
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                </div>
+                <div className="text-lg font-bold text-slate-900">R$ 161.000,00</div>
+                <div className="text-[11px] text-slate-600 mt-1">2 empenhos liquidados</div>
+                <div className="text-[10px] text-blue-700 font-semibold mt-2">API: Webhook de Homologação</div>
+              </div>
+
+              <div className="p-4 rounded-2xl border border-purple-200 bg-purple-50/40">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-purple-100 text-purple-900 border border-purple-200">
+                    Laboratório (LIS)
+                  </span>
+                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                </div>
+                <div className="text-lg font-bold text-slate-900">R$ 420,00</div>
+                <div className="text-[11px] text-slate-600 mt-1">12 exames via FHIR R4</div>
+                <div className="text-[10px] text-purple-700 font-semibold mt-2">API: DiagnosticReport</div>
+              </div>
+
+              <div className="p-4 rounded-2xl border border-emerald-200 bg-emerald-50/40">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-100 text-emerald-900 border border-emerald-200">
+                    Leitos &amp; Hotelaria
+                  </span>
+                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                </div>
+                <div className="text-lg font-bold text-slate-900">R$ 690,00</div>
+                <div className="text-[11px] text-slate-600 mt-1">3 diárias e higienização</div>
+                <div className="text-[10px] text-emerald-700 font-semibold mt-2">API: Evento Censo NIR</div>
+              </div>
+            </div>
+
+            {/* Tabela de Despesas Ingeridas Recentemente */}
+            <div className="border border-slate-200 rounded-xl overflow-hidden">
+              <div className="bg-slate-50 px-4 py-3 border-b border-slate-200 flex justify-between items-center text-xs">
+                <span className="font-bold text-slate-800">Despesas Consolidadas em Tempo Real no Hub</span>
+                <span className="text-slate-500 font-mono">Total de Pacientes: 1 (Carlos Eduardo Silveira)</span>
+              </div>
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-slate-200 text-slate-500 bg-white">
+                    <th className="p-3">Origem</th>
+                    <th className="p-3">Item / Insumo</th>
+                    <th className="p-3">Centro de Custo</th>
+                    <th className="p-3">Paciente / Prontuário</th>
+                    <th className="p-3 text-right">Valor Total</th>
+                    <th className="p-3 text-center">Status Hub</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  <tr className="hover:bg-slate-50/50">
+                    <td className="p-3 font-bold text-amber-700">ESTOQUE FEFO</td>
+                    <td className="p-3 text-slate-900 font-medium">Meropenem 1g Injetável (6 un - Lote LT-2026-MERO-01)</td>
+                    <td className="p-3 text-slate-600">UTI Adulto (Leito 204)</td>
+                    <td className="p-3 text-slate-700 font-mono">Carlos Eduardo Silveira (#8841)</td>
+                    <td className="p-3 text-right font-mono font-bold text-slate-900">R$ 291,00</td>
+                    <td className="p-3 text-center"><span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">Consolidado</span></td>
+                  </tr>
+                  <tr className="hover:bg-slate-50/50">
+                    <td className="p-3 font-bold text-amber-700">ESTOQUE FEFO</td>
+                    <td className="p-3 text-slate-900 font-medium">Noradrenalina 2mg/mL Ampola 4mL (10 un - Lote LT-2026-NORA-04)</td>
+                    <td className="p-3 text-slate-600">UTI Adulto (Leito 204)</td>
+                    <td className="p-3 text-slate-700 font-mono">Carlos Eduardo Silveira (#8841)</td>
+                    <td className="p-3 text-right font-mono font-bold text-slate-900">R$ 128,00</td>
+                    <td className="p-3 text-center"><span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">Consolidado</span></td>
+                  </tr>
+                  <tr className="hover:bg-slate-50/50">
+                    <td className="p-3 font-bold text-blue-700">COMPRAS &amp; ATAS</td>
+                    <td className="p-3 text-slate-900 font-medium">Kit Prótese Fixação Ortopédica Titânio (1 kit)</td>
+                    <td className="p-3 text-slate-600">Centro Cirúrgico</td>
+                    <td className="p-3 text-slate-700 font-mono">Carlos Eduardo Silveira (#8841)</td>
+                    <td className="p-3 text-right font-mono font-bold text-slate-900">R$ 3.420,00</td>
+                    <td className="p-3 text-center"><span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">Consolidado</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
@@ -515,6 +653,141 @@ export default function ExecutiveDashboardPage() {
           </div>
         </div>
       )}
-    </VigiaSidebarLayout>
+
+      {/* Modal de Importação Manual de Despesas de Módulos Descentralizados */}
+      {showModalImportarDespesas && (
+        <div className="fixed inset-0 bg-slate-900/30 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white max-w-lg w-full rounded-3xl shadow-2xl border border-[#E0E0E0] overflow-hidden animate-fadeIn">
+            <div className="px-6 py-4 bg-emerald-600 text-white flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Upload className="w-5 h-5" />
+                <h3 className="font-extrabold text-base">Ingestor Hub 360 — Importar Despesas</h3>
+              </div>
+              <button onClick={() => setShowModalImportarDespesas(false)} className="min-w-[44px] min-h-[44px] flex items-center justify-center font-bold text-white/80 hover:text-white cursor-pointer">✕</button>
+            </div>
+
+            <div className="p-6 space-y-4 text-xs">
+              <p className="text-slate-600 leading-relaxed">
+                Faça o upload do arquivo gerado pelo seu módulo avulso (<strong>Estoque Central</strong>, <strong>Compras Públicas</strong> ou <strong>Sistemas Legados</strong>) no padrão de dados do Hub.
+              </p>
+
+              <div className="border-2 border-dashed border-emerald-300 rounded-2xl p-6 text-center bg-emerald-50/20">
+                <FileSpreadsheet className="w-8 h-8 text-emerald-600 mx-auto mb-2" />
+                <div className="font-bold text-slate-800 mb-1">Selecione o arquivo de despesas (.json ou .csv)</div>
+                <div className="text-[11px] text-slate-500 mb-3">Formatos aceitos: Contrato JSON Hub 360 ou Planilha CSV ponto-e-vírgula</div>
+                
+                <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setImportando(true);
+                      setArquivoUploadNome('despesas_estoque_hospital360_2026-09-22.json');
+                      try {
+                        const res = await fetch('/api/hub/despesas/ingestao', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            origem_modulo: 'ESTOQUE_CENTRAL',
+                            cliente_id: 'HOSPITAL_360_MATRIZ',
+                            despesas: [
+                              {
+                                id_transacao: 'DSP-EST-AUTO-01',
+                                paciente_cpf: '123.456.789-00',
+                                paciente_nome: 'Carlos Eduardo Silveira',
+                                prontuario_episodio: 'EPIS-2026-8841',
+                                centro_custo: 'UTI_ADULTO',
+                                leito_identificador: 'Leito 204',
+                                item_codigo: 'MED-001',
+                                item_descricao: 'Meropenem 1g Injetável',
+                                lote_fabricante: 'LT-2026-MERO-01',
+                                quantidade: 6,
+                                unidade_medida: 'Frasco-Ampola',
+                                valor_unitario_medio: 48.50,
+                                valor_total_imputado: 291.00,
+                                data_consumo: '2026-09-22 10:30:00'
+                              }
+                            ]
+                          })
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                          showToast(`Lote de despesas do Estoque processado com sucesso! Protocolo: ${data.protocolo}`);
+                          setShowModalImportarDespesas(false);
+                        }
+                      } catch (e) {
+                        showToast('Erro ao processar arquivo de despesas.');
+                      } finally {
+                        setImportando(false);
+                      }
+                    }}
+                    className="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-xs transition-colors cursor-pointer"
+                  >
+                    {importando ? 'Processando Lote...' : 'Simular Ingestão de Estoque (.json)'}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setImportando(true);
+                      setArquivoUploadNome('despesas_compras_hospital360_2026-09-22.json');
+                      try {
+                        const res = await fetch('/api/hub/despesas/ingestao', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            origem_modulo: 'COMPRAS_PUBLICAS',
+                            cliente_id: 'HOSPITAL_360_MATRIZ',
+                            despesas: [
+                              {
+                                id_transacao: 'DSP-CMP-AUTO-01',
+                                paciente_cpf: '123.456.789-00',
+                                paciente_nome: 'Carlos Eduardo Silveira',
+                                prontuario_episodio: 'EPIS-2026-8841',
+                                centro_custo: 'CENTRO_CIRURGICO',
+                                leito_identificador: 'Leito 204',
+                                item_codigo: 'OPME-901',
+                                item_descricao: 'Kit Prótese Fixação Ortopédica Titânio',
+                                lote_fabricante: 'LOT-TIT-881',
+                                quantidade: 1,
+                                unidade_medida: 'Kit Estéril',
+                                valor_unitario_medio: 3420.00,
+                                valor_total_imputado: 3420.00,
+                                data_consumo: '2026-09-21 14:00:00'
+                              }
+                            ]
+                          })
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                          showToast(`Lote de despesas de Compras processado com sucesso! Protocolo: ${data.protocolo}`);
+                          setShowModalImportarDespesas(false);
+                        }
+                      } catch (e) {
+                        showToast('Erro ao processar arquivo de despesas.');
+                      } finally {
+                        setImportando(false);
+                      }
+                    }}
+                    className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-xs transition-colors cursor-pointer"
+                  >
+                    {importando ? 'Processando Lote...' : 'Simular Ingestão de Compras (.json)'}
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowModalImportarDespesas(false)}
+                  className="px-4 py-2 border border-[#E0E0E0] text-slate-700 rounded-xl font-bold hover:bg-slate-50 cursor-pointer"
+                >
+                  Fechar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

@@ -2,9 +2,9 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { VigiaSidebarLayout } from '../../components/VigiaSidebarLayout';
-import { ModuloRbacBar } from '../../components/ModuloRbacBar';
-import { KpiCard } from '../../components/KpiCard';
+import { PageHeader } from '@/components/PageHeader';
+import { ModuloRbacBar } from '@/components/ModuloRbacBar';
+import { KpiCard } from '@/components/KpiCard';
 import { ModuloRole, MODULO_ROLES_CATALOG, hasPermission } from '@/types/rbac';
 import {
   Bed,
@@ -204,22 +204,22 @@ export default function LeitosCensoPage() {
   };
 
   return (
-    <VigiaSidebarLayout
-      moduloId="leitos-censo"
-      activeTitle="Censo Hospitalar, Mapa de Leitos & Regulação NIR"
-      activeSubtitle="Ocupação em tempo real, regulação de vagas hospitalares e giro de leitos com hotelaria"
-      actions={
-        <div className="flex items-center gap-2.5">
-          <Link
-            href="/tarefas"
-            className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] text-xs font-bold text-white bg-[#0284C7] hover:bg-sky-700 rounded-xl transition-all shadow-xs touch-manipulation"
-          >
-            <QrCode className="w-4 h-4" />
-            <span>App de Tarefas (Hotelaria)</span>
-          </Link>
-        </div>
-      }
-    >
+    <>
+      <PageHeader
+        activeTitle="Censo Hospitalar, Mapa de Leitos & Regulação NIR"
+        activeSubtitle="Ocupação em tempo real, regulação de vagas hospitalares e giro de leitos com hotelaria"
+        actions={
+          <div className="flex items-center gap-2.5">
+            <Link
+              href="/tarefas"
+              className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] text-xs font-bold text-white bg-[#0284C7] hover:bg-sky-700 rounded-xl transition-all shadow-xs touch-manipulation"
+            >
+              <QrCode className="w-4 h-4" />
+              <span>App de Tarefas (Hotelaria)</span>
+            </Link>
+          </div>
+        }
+      />
       {/* Toast Feedback */}
       {feedbackMessage && (
         <div className="mb-4 p-3.5 bg-sky-50 border border-sky-300 rounded-2xl flex items-center justify-between text-xs text-sky-950 shadow-sm animate-in fade-in duration-200">
@@ -619,6 +619,6 @@ export default function LeitosCensoPage() {
           </div>
         </div>
       )}
-    </VigiaSidebarLayout>
+    </>
   );
 }

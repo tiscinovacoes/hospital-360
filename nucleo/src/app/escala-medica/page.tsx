@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { VigiaSidebarLayout } from '../../components/VigiaSidebarLayout';
-import { ModuloRbacBar } from '../../components/ModuloRbacBar';
-import { KpiCard } from '../../components/KpiCard';
+import { PageHeader } from '@/components/PageHeader';
+import { ModuloRbacBar } from '@/components/ModuloRbacBar';
+import { KpiCard } from '@/components/KpiCard';
 import { ModuloRole, MODULO_ROLES_CATALOG, hasPermission } from '@/types/rbac';
 import {
   UserCheck,
@@ -218,11 +218,11 @@ export default function EscalaMedicaPage() {
   };
 
   return (
-    <VigiaSidebarLayout
-      moduloId="escala-medica"
-      activeTitle="Escala Médica & Plantonistas"
-      activeSubtitle="Ponto eletrônico por geofencing (<100m), guarda de documentações (CFM) e antecipação PIX"
-    >
+    <>
+      <PageHeader
+        activeTitle="Escala Médica & Plantonistas"
+        activeSubtitle="Ponto eletrônico por geofencing (<100m), guarda de documentações (CFM) e antecipação PIX"
+      />
         {/* Cabeçalho */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#E0E0E0] pb-6">
           <div className="flex items-center gap-3">
@@ -770,6 +770,6 @@ export default function EscalaMedicaPage() {
             </div>
           </div>
         )}
-    </VigiaSidebarLayout>
+    </>
   );
 }

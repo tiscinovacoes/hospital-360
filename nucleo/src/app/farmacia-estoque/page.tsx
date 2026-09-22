@@ -2,9 +2,9 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { VigiaSidebarLayout } from '../../components/VigiaSidebarLayout';
-import { ModuloRbacBar } from '../../components/ModuloRbacBar';
-import { KpiCard } from '../../components/KpiCard';
+import { PageHeader } from '@/components/PageHeader';
+import { ModuloRbacBar } from '@/components/ModuloRbacBar';
+import { KpiCard } from '@/components/KpiCard';
 import { ModuloRole, MODULO_ROLES_CATALOG, hasPermission } from '@/types/rbac';
 import {
   Pill,
@@ -169,31 +169,31 @@ export default function VigiaFarmaciaEstoquePage() {
   };
 
   return (
-    <VigiaSidebarLayout
-      moduloId="farmacia-estoque"
-      activeTitle="Farmácia Hospitalar & Estoque Clínico"
-      activeSubtitle="Dispensação beira-leito, dose unitária com DataMatrix e livro de psicotrópicos (Portaria 344)"
-      actions={
-        <div className="flex items-center gap-2">
-          <Link
-            href="/"
-            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 border border-[#E0E0E0] transition-colors"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Hub 360</span>
-          </Link>
+    <>
+      <PageHeader
+        activeTitle="Farmácia Hospitalar & Estoque Clínico"
+        activeSubtitle="Dispensação beira-leito, dose unitária com DataMatrix e livro de psicotrópicos (Portaria 344)"
+        actions={
+          <div className="flex items-center gap-2">
+            <Link
+              href="/"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 border border-[#E0E0E0] transition-colors"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Hub 360</span>
+            </Link>
 
-          <button
-            type="button"
-            onClick={() => triggerNotificacao('Leitor de Código de Barras DataMatrix conectado e pronto para bipagem.')}
-            className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] rounded-xl bg-[#0E9F6E] hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition-colors touch-manipulation"
-          >
-            <QrCode className="w-4 h-4" />
-            <span>Bipar Dose Unitária</span>
-          </button>
-        </div>
-      }
-    >
+            <button
+              type="button"
+              onClick={() => triggerNotificacao('Leitor de Código de Barras DataMatrix conectado e pronto para bipagem.')}
+              className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] rounded-xl bg-[#0E9F6E] hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition-colors touch-manipulation"
+            >
+              <QrCode className="w-4 h-4" />
+              <span>Bipar Dose Unitária</span>
+            </button>
+          </div>
+        }
+      />
       {/* Toast Notification */}
       {notificacao && (
         <div className="mb-4 p-3.5 bg-emerald-50 border border-emerald-300 rounded-2xl flex items-center justify-between shadow-sm animate-in fade-in duration-200">
@@ -586,6 +586,6 @@ export default function VigiaFarmaciaEstoquePage() {
           </div>
         </div>
       )}
-    </VigiaSidebarLayout>
+    </>
   );
 }

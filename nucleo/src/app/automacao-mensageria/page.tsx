@@ -2,9 +2,9 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { VigiaSidebarLayout } from '../../components/VigiaSidebarLayout';
-import { ModuloRbacBar } from '../../components/ModuloRbacBar';
-import { KpiCard } from '../../components/KpiCard';
+import { PageHeader } from '@/components/PageHeader';
+import { ModuloRbacBar } from '@/components/ModuloRbacBar';
+import { KpiCard } from '@/components/KpiCard';
 import { ModuloRole, MODULO_ROLES_CATALOG, hasPermission } from '@/types/rbac';
 import {
   Zap,
@@ -158,22 +158,22 @@ export default function AutomacaoMensageriaPage() {
   };
 
   return (
-    <VigiaSidebarLayout
-      moduloId="automacao-mensageria"
-      activeTitle="Automação, Mensageria & Notificações"
-      activeSubtitle="Disparos humanizados via WhatsApp / SMS, barramento n8n e comunicação com paciente"
-      actions={
-        <div className="flex items-center gap-2.5">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] text-xs font-bold text-slate-700 bg-white border border-[#E0E0E0] rounded-xl hover:bg-slate-50 transition-all shadow-xs"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Hub Central</span>
-          </Link>
-        </div>
-      }
-    >
+    <>
+      <PageHeader
+        activeTitle="Automação, Mensageria & Notificações"
+        activeSubtitle="Disparos humanizados via WhatsApp / SMS, barramento n8n e comunicação com paciente"
+        actions={
+          <div className="flex items-center gap-2.5">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] text-xs font-bold text-slate-700 bg-white border border-[#E0E0E0] rounded-xl hover:bg-slate-50 transition-all shadow-xs"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Hub Central</span>
+            </Link>
+          </div>
+        }
+      />
       {/* Feedback de Notificação */}
       {whatsappSent && (
         <div className="mb-4 p-3.5 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center justify-between text-xs text-emerald-950 shadow-sm animate-in fade-in duration-200">
@@ -468,6 +468,6 @@ export default function AutomacaoMensageriaPage() {
           </div>
         </div>
       )}
-    </VigiaSidebarLayout>
+    </>
   );
 }

@@ -66,6 +66,7 @@ type SecaoModulo =
   | 'chamados'
   | 'ocorrencias'
   | 'logs'
+  | 'despesas_hub'
   | 'parametros';
 
 const SEED_PDC_PADRAO = {
@@ -785,6 +786,13 @@ export default function VigiaComprasPage() {
       label: 'Trilha de Auditoria (Logs WORM)',
       icon: History,
       badge: null
+    },
+    {
+      id: 'despesas_hub',
+      label: 'Exportar Despesas ao Hub',
+      icon: FileSpreadsheet,
+      badge: 'Hub 360',
+      badgeCor: 'bg-emerald-100 text-emerald-800 border border-emerald-200'
     }
   ];
 
@@ -2449,6 +2457,187 @@ export default function VigiaComprasPage() {
                     </span>
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {secaoAtiva === 'despesas_hub' && (
+            <div className="space-y-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div>
+                  <h1 className="text-xl font-bold text-slate-900">Relatório de Despesas &amp; Injeção no Hub</h1>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Exportação de empenhos liquidados, notas fiscais e insumos adquiridos para consolidação do Custo do Paciente no Hub 360
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const payload = {
+                        origem_modulo: 'COMPRAS_PUBLICAS',
+                        cliente_id: 'HOSPITAL_360_MATRIZ',
+                        lote_exportacao_id: `EXP-CMP-${Date.now()}`,
+                        data_geracao: new Date().toISOString(),
+                        despesas: [
+                          {
+                            id_transacao: 'DSP-CMP-001',
+                            paciente_cpf: '123.456.789-00',
+                            paciente_nome: 'Carlos Eduardo Silveira',
+                            prontuario_episodio: 'EPIS-2026-8841',
+                            centro_custo: 'CENTRO_CIRURGICO',
+                            leito_identificador: 'Leito 204 UTI',
+                            item_codigo: 'OPME-901',
+                            item_descricao: 'Kit Prótese Fixação Ortopédica Titânio',
+                            lote_fabricante: 'LOT-TIT-881',
+                            quantidade: 1,
+                            unidade_medida: 'Kit Estéril',
+                            valor_unitario_medio: 3420.00,
+                            valor_total_imputado: 3420.00,
+                            data_consumo: '2026-09-21 14:00:00'
+                          }
+                        ]
+                      };
+                      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(payload, null, 2));
+                      const a = document.createElement('a');
+                      a.href = dataStr;
+                      a.download = `despesas_compras_hospital360_${new Date().toISOString().slice(0, 10)}.json`;
+                      document.body.appendChild(a);
+                      a.click();
+                      a.remove();
+                    }}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-white text-slate-700 border border-[#E0E0E0] hover:bg-slate-50 shadow-2xs transition-all cursor-pointer"
+                  >
+                    <Download className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Exportar JSON (Hub Contract)</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        const payload = {
+                          origem_modulo: 'COMPRAS_PUBLICAS',
+                          cliente_id: 'HOSPITAL_360_MATRIZ',
+                          lote_exportacao_id: `API-SYNC-CMP-${Date.now()}`,
+                          data_geracao: new Date().toISOString(),
+                          despesas: [
+                            {
+                              id_transacao: 'DSP-CMP-001',
+                              paciente_cpf: '123.456.789-00',
+                              paciente_nome: 'Carlos Eduardo Silveira',
+                              prontuario_episodio: 'EPIS-2026-8841',
+                              centro_custo: 'CENTRO_CIRURGICO',
+                              leito_identificador: 'Leito 204 UTI',
+                              item_codigo: 'OPME-901',
+                              item_descricao: 'Kit Prótese Fixação Ortopédica Titânio',
+                              lote_fabricante: 'LOT-TIT-881',
+                              quantidade: 1,
+                              unidade_medida: 'Kit Estéril',
+                              valor_unitario_medio: 3420.00,
+                              valor_total_imputado: 3420.00,
+                              data_consumo: '2026-09-21 14:00:00'
+                            }
+                          ]
+                        };
+                        const res = await fetch('/api/hub/despesas/ingestao', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify(payload)
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                          alert(`Sucesso! Despesas de Compras sincronizadas com o Hub (Protocolo ${data.protocolo}).`);
+                        }
+                      } catch (e) {
+                        alert('Erro ao sincronizar com o Hub.');
+                      }
+                    }}
+                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition-all cursor-pointer"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    <span>Sincronizar com Hub 360</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Cards de Resumo */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="bg-white border border-[#E0E0E0] rounded-2xl p-4 shadow-xs">
+                  <div className="text-xs font-bold text-slate-500 mb-1">Empenhos Liquidados no Mês</div>
+                  <div className="text-2xl font-bold text-slate-900">R$ 161.000,00</div>
+                  <div className="text-[11px] text-emerald-600 font-semibold mt-1">2 Pedidos de Compra Entregues</div>
+                </div>
+                <div className="bg-white border border-[#E0E0E0] rounded-2xl p-4 shadow-xs">
+                  <div className="text-xs font-bold text-slate-500 mb-1">Economia Apurada vs CMED Teto</div>
+                  <div className="text-2xl font-bold text-[#1A56DB]">R$ 41.200,00</div>
+                  <div className="text-[11px] text-slate-500 mt-1">Redução de custo imputado aos pacientes</div>
+                </div>
+                <div className="bg-white border border-[#E0E0E0] rounded-2xl p-4 shadow-xs">
+                  <div className="text-xs font-bold text-slate-500 mb-1">Conexão com Hub 360</div>
+                  <div className="text-2xl font-bold text-emerald-600">Ativa (REST/Event)</div>
+                  <div className="text-[11px] text-slate-500 mt-1">Alimentando Custo do Paciente Door-to-Door</div>
+                </div>
+              </div>
+
+              {/* Tabela de Insumos e Empenhos vinculados */}
+              <div className="bg-white border border-[#E0E0E0] rounded-2xl p-4 shadow-xs space-y-3">
+                <h3 className="text-sm font-bold text-slate-900">Itens Adquiridos com Imputação a Pacientes e Centros de Custo</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead>
+                      <tr className="border-b border-slate-200 text-slate-600 bg-slate-50/50">
+                        <th className="p-3 font-bold">Documento / PdC</th>
+                        <th className="p-3 font-bold">Insumo / Descrição</th>
+                        <th className="p-3 font-bold">Fornecedor Homologado</th>
+                        <th className="p-3 font-bold">Centro de Custo</th>
+                        <th className="p-3 font-bold text-right">Valor Total</th>
+                        <th className="p-3 font-bold text-center">Status Hub</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      <tr className="hover:bg-blue-50/20">
+                        <td className="p-3 font-mono font-bold text-[#1A56DB]">PdC-2026-0001</td>
+                        <td className="p-3">
+                          <div className="font-bold text-slate-900">Meropenem 1g Pó Liofilizado Injetável (2.000 un)</div>
+                          <div className="text-[11px] text-slate-500">CATMAT: BR0284729 • NF-e 004.891.201</div>
+                        </td>
+                        <td className="p-3 text-slate-700">Distribuidora Farmacêutica Nacional S/A</td>
+                        <td className="p-3">
+                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-800 border border-blue-200">
+                            CD Almoxarifado / Farmácia FEFO
+                          </span>
+                        </td>
+                        <td className="p-3 text-right font-mono font-bold text-slate-900">R$ 97.000,00</td>
+                        <td className="p-3 text-center">
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            Sincronizado Hub
+                          </span>
+                        </td>
+                      </tr>
+                      <tr className="hover:bg-blue-50/20">
+                        <td className="p-3 font-mono font-bold text-[#1A56DB]">PdC-2026-0002</td>
+                        <td className="p-3">
+                          <div className="font-bold text-slate-900">Kit Prótese Fixação Ortopédica Titânio (OPME)</div>
+                          <div className="text-[11px] text-slate-500">Paciente: Carlos Eduardo Silveira • Prontuário #8841</div>
+                        </td>
+                        <td className="p-3 text-slate-700">Distribuidora Farmacêutica Nacional S/A</td>
+                        <td className="p-3">
+                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-800 border border-blue-200">
+                            Centro Cirúrgico (Imputação Direta)
+                          </span>
+                        </td>
+                        <td className="p-3 text-right font-mono font-bold text-slate-900">R$ 64.000,00</td>
+                        <td className="p-3 text-center">
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            Sincronizado Hub
+                          </span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           )}

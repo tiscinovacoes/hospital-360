@@ -2,8 +2,8 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { VigiaSidebarLayout } from '../../components/VigiaSidebarLayout';
-import { ModuloRbacBar } from '../../components/ModuloRbacBar';
+import { PageHeader } from '@/components/PageHeader';
+import { ModuloRbacBar } from '@/components/ModuloRbacBar';
 import { ModuloRole, MODULO_ROLES_CATALOG, hasPermission } from '@/types/rbac';
 import {
   FlaskConical,
@@ -170,22 +170,22 @@ export default function LabHubPage() {
   };
 
   return (
-    <VigiaSidebarLayout
-      moduloId="laboratorio"
-      activeTitle="Laboratório Central & LIS do Hub (FHIR R4)"
-      activeSubtitle="Bancada técnica automatizada com protocolo HL7 / FHIR R4 e DiagnosticReport"
-      actions={
-        <div className="flex items-center gap-2.5">
-          <button
-            onClick={() => setShowFhirJsonModal(true)}
-            className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] text-xs font-bold text-slate-700 bg-white border border-[#E0E0E0] rounded-xl hover:bg-slate-50 transition-all shadow-sm"
-          >
-            <Sparkles className="w-4 h-4 text-[#0D9488]" />
-            <span>Ver Payload FHIR R4</span>
-          </button>
-        </div>
-      }
-    >
+    <>
+      <PageHeader
+        activeTitle="Laboratório Central & LIS do Hub (FHIR R4)"
+        activeSubtitle="Bancada técnica automatizada com protocolo HL7 / FHIR R4 e DiagnosticReport"
+        actions={
+          <div className="flex items-center gap-2.5">
+            <button
+              onClick={() => setShowFhirJsonModal(true)}
+              className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] text-xs font-bold text-slate-700 bg-white border border-[#E0E0E0] rounded-xl hover:bg-slate-50 transition-all shadow-sm"
+            >
+              <Sparkles className="w-4 h-4 text-[#0D9488]" />
+              <span>Ver Payload FHIR R4</span>
+            </button>
+          </div>
+        }
+      />
       {/* BARRA DE RBAC & CONTROLE DE PERFIS DO MÓDULO */}
       <ModuloRbacBar
         moduloId="laboratorio"
@@ -654,6 +654,6 @@ export default function LabHubPage() {
           </div>
         </div>
       )}
-    </VigiaSidebarLayout>
+    </>
   );
 }

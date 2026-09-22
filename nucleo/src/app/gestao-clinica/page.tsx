@@ -2,9 +2,9 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { VigiaSidebarLayout } from '../../components/VigiaSidebarLayout';
-import { ModuloRbacBar } from '../../components/ModuloRbacBar';
-import { KpiCard } from '../../components/KpiCard';
+import { PageHeader } from '@/components/PageHeader';
+import { ModuloRbacBar } from '@/components/ModuloRbacBar';
+import { KpiCard } from '@/components/KpiCard';
 import { ModuloRole, MODULO_ROLES_CATALOG, hasPermission } from '@/types/rbac';
 import {
   TrendingUp,
@@ -345,19 +345,19 @@ export default function ClinicManagementPage() {
   };
 
   return (
-    <VigiaSidebarLayout
-      moduloId="gestao-clinica"
-      activeTitle="Consultório & Clínica Médica (OpenEMR)"
-      activeSubtitle="Prontuário Eletrônico do Paciente (PEP) • Especialidade: Cardiologia (Sala 204)"
-      actions={
-        <div className="flex items-center gap-2">
-          <span className="px-3 py-2 min-h-[44px] rounded-xl text-xs font-semibold bg-cyan-50 border border-cyan-200 text-[#0891B2] flex items-center gap-1.5 shadow-sm">
-            <Lock className="w-3.5 h-3.5 text-[#0891B2]" />
-            RN-IND: Multi-Tenant
-          </span>
-        </div>
-      }
-    >
+    <>
+      <PageHeader
+        activeTitle="Consultório & Clínica Médica (OpenEMR)"
+        activeSubtitle="Prontuário Eletrônico do Paciente (PEP) • Especialidade: Cardiologia (Sala 204)"
+        actions={
+          <div className="flex items-center gap-2">
+            <span className="px-3 py-2 min-h-[44px] rounded-xl text-xs font-semibold bg-cyan-50 border border-cyan-200 text-[#0891B2] flex items-center gap-1.5 shadow-sm">
+              <Lock className="w-3.5 h-3.5 text-[#0891B2]" />
+              RN-IND: Multi-Tenant
+            </span>
+          </div>
+        }
+      />
       {/* Toast Flutuante Asséptico (Sem preto/escuro) */}
       {toastMessage && (
         <div className="fixed top-20 right-6 z-50 bg-white text-slate-800 px-5 py-3.5 rounded-xl shadow-xl border border-cyan-300 flex items-center gap-3 animate-in slide-in-from-top-4 duration-300">
@@ -1624,6 +1624,6 @@ export default function ClinicManagementPage() {
           </div>
         )}
       </div>
-    </VigiaSidebarLayout>
+    </>
   );
 }

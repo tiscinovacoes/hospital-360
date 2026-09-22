@@ -2,9 +2,9 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { VigiaSidebarLayout } from '../../components/VigiaSidebarLayout';
-import { ModuloRbacBar } from '../../components/ModuloRbacBar';
-import { KpiCard } from '../../components/KpiCard';
+import { PageHeader } from '@/components/PageHeader';
+import { ModuloRbacBar } from '@/components/ModuloRbacBar';
+import { KpiCard } from '@/components/KpiCard';
 import { ModuloRole, MODULO_ROLES_CATALOG, hasPermission } from '@/types/rbac';
 import {
   Shield,
@@ -126,19 +126,19 @@ export default function ArchitectureSecurityPage() {
   };
 
   return (
-    <VigiaSidebarLayout
-      moduloId="arquitetura-seguranca"
-      activeTitle="Governança, Arquitetura & Segurança (CISO)"
-      activeSubtitle="Auditoria LGPD em prontuários, isolamento de dados RN-IND e certificados ICP-Brasil"
-      actions={
-        <div className="flex items-center gap-2">
-          <span className="px-3 py-2 min-h-[44px] rounded-xl text-xs font-mono font-medium bg-violet-50 border border-violet-200 text-[#7C3AED] flex items-center gap-1.5 shadow-xs">
-            <CheckCircle2 className="w-3.5 h-3.5 text-[#7C3AED]" />
-            TLS 1.3 • AES-256-GCM
-          </span>
-        </div>
-      }
-    >
+    <>
+      <PageHeader
+        activeTitle="Governança, Arquitetura & Segurança (CISO)"
+        activeSubtitle="Auditoria LGPD em prontuários, isolamento de dados RN-IND e certificados ICP-Brasil"
+        actions={
+          <div className="flex items-center gap-2">
+            <span className="px-3 py-2 min-h-[44px] rounded-xl text-xs font-mono font-medium bg-violet-50 border border-violet-200 text-[#7C3AED] flex items-center gap-1.5 shadow-xs">
+              <CheckCircle2 className="w-3.5 h-3.5 text-[#7C3AED]" />
+              TLS 1.3 • AES-256-GCM
+            </span>
+          </div>
+        }
+      />
       {/* Toast Notice */}
       {notice && (
         <div className="mb-4 p-3.5 bg-violet-50 border border-violet-200 rounded-2xl flex items-center justify-between text-xs text-violet-950 shadow-sm animate-in fade-in duration-200">
@@ -458,6 +458,6 @@ export default function ArchitectureSecurityPage() {
           </div>
         </div>
       )}
-    </VigiaSidebarLayout>
+    </>
   );
 }
