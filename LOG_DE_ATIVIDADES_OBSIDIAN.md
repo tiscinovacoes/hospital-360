@@ -5,6 +5,28 @@ criado: 2026-09-21
 
 # Log de Atividades — hospital-360
 
+## 2026-09-21 22:12 — Deploy em Produção (Branch `master`) — Fluxo de Compras & Banco de Preços CMED
+
+**O que foi feito / Implantações Salvas:**
+- **Build de Produção Validado com Sucesso**:
+  - Execução de checagem estrita de tipos (`npx tsc --noEmit`) e build de produção do Next.js (`npm run build` com Turbopack).
+  - Correção de tipagens de `KpiCardProps` em [`nucleo/src/app/compras-publicas/page.tsx`](file:///d:/Projetos/360/nucleo/src/app/compras-publicas/page.tsx) (`tooltipInfo`, `subtitle`, `variant`).
+  - Resultado do build: **46 páginas/rotas geradas com sucesso em 3.1s sem erros ou avisos**.
+- **Publicação e Sincronização nos Ambientes Git**:
+  - Commit consolidado na branch `dev`: `e85905e`.
+  - Push efetuado para o repositório remoto: `origin dev`.
+  - Checkout na branch `master` (produção), merge consolidado de `dev` para `master`.
+  - Push de produção efetuado com sucesso: `origin master` (`fac605c..e85905e`).
+  - Retorno do ambiente local de trabalho para a branch `dev`.
+- **Status do Sistema**:
+  - Aplicação 100% em produção, com o fluxo de compras públicas, contratos fracionados 50%, notas de empenho, PdC com governança de saldo e banco oficial de preços conectado.
+
+**Arquivos alterados:**
+- `nucleo/src/app/compras-publicas/page.tsx`
+- `LOG_DE_ATIVIDADES_OBSIDIAN.md`
+
+---
+
 ## 2026-09-21 22:07 — Conexão Direta do Banco de Dados com os Preços dos Medicamentos (Supabase / CMED / BPS)
 
 **O que foi feito / Implantações Salvas:**
