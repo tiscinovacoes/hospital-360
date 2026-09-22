@@ -7,8 +7,19 @@ import {
   ItemComparativoLote,
   CestaLoteComparativo
 } from '../../../lib/compras/comparativoLoteEngine';
+import {
+  BANCO_PRECOS_MEDICAMENTOS_OFICIAL,
+  buscarMedicamentoNoBanco,
+  obterReferenciaPorCatmat,
+  obterBancoPrecosDoBanco,
+  semearBancoPrecosMedicamentosSupabase,
+  MedicamentoPrecoReferencia
+} from '../../../lib/compras/bancoPrecosMedicamentos';
 
-// Tipagens do Módulo Compras
+// =====================================================================
+// TIPAGENS DDD DO MÓDULO DE COMPRAS PÚBLICAS
+// =====================================================================
+
 export interface AtaItem {
   id: string;
   item_numero: number;
@@ -37,9 +48,69 @@ export interface AtaRegistroPreco {
   vigencia_inicio: string;
   vigencia_fim: string;
   valor_total: number;
+  saldo_disponivel: number;
   status: 'VIGENTE' | 'ESGOTADA' | 'VENCIDA' | 'CANCELADA';
   limite_carona_orgao_pct: number;
   itens: AtaItem[];
+}
+
+export interface ContratoItem {
+  id: string;
+  ata_item_id: string;
+  codigo_catmat: string;
+  descricao_medicamento: string;
+  unidade_fornecimento: string;
+  quantidade_contratada: number;
+  quantidade_empenhada: number;
+  saldo_item_contrato: number;
+  preco_unitario: number;
+  valor_total: number;
+}
+
+export interface ContratoAdministrativo {
+  id: string;
+  numero_contrato: string;
+  ata_id: string;
+  numero_ata: string;
+  tipo_fracionamento: 'INTEGRAL' | 'FRACIONADO';
+  percentual_fracionamento: number; // Padrão: 50% da Ata
+  fornecedor_cnpj: string;
+  fornecedor_razao_social: string;
+  data_assinatura: string;
+  vigencia_inicio: string;
+  vigencia_fim: string;
+  valor_total_contrato: number;
+  saldo_contrato_remanescente: number;
+  status: 'ATIVO' | 'FINALIZADO' | 'CANCELADO';
+  itens: ContratoItem[];
+}
+
+export interface EmpenhoItem {
+  id: string;
+  contrato_item_id: string;
+  codigo_catmat: string;
+  descricao_medicamento: string;
+  quantidade_empenhada: number;
+  quantidade_entregue_nf: number;
+  saldo_item_empenho: number;
+  preco_unitario: number;
+  valor_total: number;
+}
+
+export interface NotaEmpenho {
+  id: string;
+  numero_empenho: string;
+  contrato_id: string;
+  numero_contrato: string;
+  ata_id: string;
+  numero_ata: string;
+  dotacao_orcamentaria: string;
+  orgao_demandante: string;
+  valor_total_empenhado: number;
+  saldo_empenho_remanescente: number;
+  status: 'EMITIDO' | 'PARCIALMENTE_LIQUIDADO' | 'TOTALMENTE_LIQUIDADO' | 'ANULADO';
+  criado_em: string;
+  itens: EmpenhoItem[];
 }
 
 export interface ItemPedidoCompra {
@@ -51,26 +122,40 @@ export interface ItemPedidoCompra {
   unidade: string;
   preco_unitario: number;
   valor_total: number;
-  lote: string;
-  validade: string;
-  temperatura_exigida: string;
+  lote?: string;
+  validade?: string;
+  temperatura_exigida?: string;
   temperatura_aferida?: string;
-  laudo_fabricante_anexo: boolean;
-  status_conferencia: 'PENDENTE' | 'CONFORME' | 'DIVERGENTE' | 'REJEITADO';
+  laudo_fabricante_anexo?: boolean;
+  status_conferencia?: 'PENDENTE' | 'CONFORME' | 'DIVERGENTE' | 'REJEITADO';
 }
 
 export interface PedidoCompra {
   id: string;
   numero_pdc: string;
-  numero_empenho: string;
-  numero_ata: string;
-  fornecedor_razao_social: string;
-  fornecedor_cnpj: string;
   data_emissao: string;
   prazo_entrega: string;
+  vinculado_ata: boolean;
+  ata_id?: string;
+  numero_ata?: string;
+  contrato_id?: string;
+  numero_contrato?: string;
+  empenho_id?: string;
+  numero_empenho?: string;
+  fornecedor_razao_social: string;
+  fornecedor_cnpj: string;
   valor_total: number;
-  status: 'AGUARDANDO_RECEBIMENTO' | 'RECEBIDO_PROVISORIO' | 'RECEBIDO_DEFINITIVO' | 'RECUSADO';
-  nota_fiscal: {
+  status: 'AGUARDANDO_RECEBIMENTO' | 'RECEBIDO_PROVISORIO' | 'RECEBIDO_DEFINITIVO' | 'RECUSADO' | 'CANCELADO';
+  
+  // Governança de Exceção e Travas de Saldo
+  tem_excecao_saldo_empenho?: boolean;
+  tem_excecao_saldo_contrato?: boolean;
+  justificativa_excecao?: string;
+  aprovador_nome?: string;
+  aprovador_cargo?: string;
+  aprovado_em?: string;
+
+  nota_fiscal?: {
     numero: string;
     serie: string;
     chave_acesso: string;
@@ -87,6 +172,58 @@ export interface PedidoCompra {
     encaminhado_wms: boolean;
   };
   itens: ItemPedidoCompra[];
+}
+
+// Cotação Multipolar & Comparativo de Preços
+export interface CotacaoPropostaFornecedor {
+  id: string;
+  cotacao_item_id: string;
+  fornecedor_id: string;
+  razao_social: string;
+  cnpj: string;
+  preco_unitario: number;
+  preco_total: number;
+  lote_fabricante: string;
+  data_validade: string;
+  fabricante_marca: string;
+  prazo_entrega_dias: number;
+  aceito_responsavel: boolean;
+  excluido_acima_media: boolean;
+  motivo_descarte?: string;
+  data_envio: string;
+}
+
+export interface CotacaoItem {
+  id: string;
+  item_numero: number;
+  codigo_catmat: string;
+  descricao_medicamento: string;
+  principio_ativo: string;
+  unidade_fornecimento: string;
+  quantidade: number;
+  preco_cmed_teto: number;
+  preco_bps_mediana: number;
+  preco_medio_calculado?: number;
+  propostas: CotacaoPropostaFornecedor[];
+}
+
+export interface CotacaoPreco {
+  id: string;
+  codigo_cotacao: string;
+  titulo: string;
+  origem_importacao: 'MANUAL' | 'LOTE_PDF' | 'LOTE_CSV';
+  status: 'ABERTA' | 'DISPARADA_FORNECEDORES' | 'EM_ANALISE' | 'HOMOLOGADA';
+  responsavel_abertura: string;
+  data_abertura: string;
+  data_limite_proposta: string;
+  itens: CotacaoItem[];
+  homologacao?: {
+    data_homologacao: string;
+    responsavel_nome: string;
+    total_itens_homologados: number;
+    valor_total_homologado: number;
+    economia_cmed_total: number;
+  };
 }
 
 export interface ChamadoModulo {
@@ -128,7 +265,10 @@ export interface LogInteracao {
   data_hora: string;
 }
 
-// Armazenamento em memória com sementes reais
+// =====================================================================
+// BANCO DE DADOS EM MEMÓRIA (PERSISTÊNCIA OPERACIONAL)
+// =====================================================================
+
 let atasDB: AtaRegistroPreco[] = [
   {
     id: 'ata-001',
@@ -141,6 +281,7 @@ let atasDB: AtaRegistroPreco[] = [
     vigencia_inicio: '2026-01-15',
     vigencia_fim: '2027-01-14',
     valor_total: 4850000.00,
+    saldo_disponivel: 2425000.00, // Após fracionamento inicial de 50%
     status: 'VIGENTE',
     limite_carona_orgao_pct: 50.0,
     itens: [
@@ -152,8 +293,8 @@ let atasDB: AtaRegistroPreco[] = [
         principio_ativo: 'Meropenem Tri-hidratado',
         unidade_fornecimento: 'Frasco-Ampola',
         quantidade_total: 20000,
-        quantidade_consumida: 6500,
-        quantidade_saldo: 13500,
+        quantidade_consumida: 10000,
+        quantidade_saldo: 10000, // 10.000 consumidas no contrato de 50%
         preco_homologado: 48.50,
         preco_teto_cmed: 68.20,
         preco_referencia_bps: 52.10,
@@ -168,8 +309,8 @@ let atasDB: AtaRegistroPreco[] = [
         principio_ativo: 'Hemitartarato de Norepinefrina',
         unidade_fornecimento: 'Ampola',
         quantidade_total: 50000,
-        quantidade_consumida: 21000,
-        quantidade_saldo: 29000,
+        quantidade_consumida: 25000,
+        quantidade_saldo: 25000,
         preco_homologado: 12.80,
         preco_teto_cmed: 18.50,
         preco_referencia_bps: 14.20,
@@ -184,8 +325,8 @@ let atasDB: AtaRegistroPreco[] = [
         principio_ativo: 'Citrato de Fentanila (Portaria 344/98)',
         unidade_fornecimento: 'Ampola',
         quantidade_total: 15000,
-        quantidade_consumida: 4800,
-        quantidade_saldo: 10200,
+        quantidade_consumida: 7500,
+        quantidade_saldo: 7500,
         preco_homologado: 16.90,
         preco_teto_cmed: 22.40,
         preco_referencia_bps: 17.50,
@@ -205,6 +346,7 @@ let atasDB: AtaRegistroPreco[] = [
     vigencia_inicio: '2026-03-01',
     vigencia_fim: '2027-02-28',
     valor_total: 8200000.00,
+    saldo_disponivel: 8200000.00,
     status: 'VIGENTE',
     limite_carona_orgao_pct: 50.0,
     itens: [
@@ -216,45 +358,138 @@ let atasDB: AtaRegistroPreco[] = [
         principio_ativo: 'Enoxaparina Sódica',
         unidade_fornecimento: 'Seringa Preenchida',
         quantidade_total: 40000,
-        quantidade_consumida: 12500,
-        quantidade_saldo: 27500,
+        quantidade_consumida: 0,
+        quantidade_saldo: 40000,
         preco_homologado: 23.40,
         preco_teto_cmed: 34.00,
         preco_referencia_bps: 25.80,
         economia_cmed_pct: 31.17,
-        trava_sobrepreco: false
-      },
-      {
-        id: 'item-005',
-        item_numero: 2,
-        codigo_catmat: 'BR0401928',
-        descricao_medicamento: 'Imunoglobulina Humana 5g Frasco 100mL',
-        principio_ativo: 'Imunoglobulina Humana Endovenosa',
-        unidade_fornecimento: 'Frasco',
-        quantidade_total: 1200,
-        quantidade_consumida: 980,
-        quantidade_saldo: 220,
-        preco_homologado: 1250.00,
-        preco_teto_cmed: 1580.00,
-        preco_referencia_bps: 1320.00,
-        economia_cmed_pct: 20.88,
         trava_sobrepreco: false
       }
     ]
   }
 ];
 
-// Pedidos de Compra (PdC) para confirmação de entrega física/fiscal
+// Contratos Administrativos (Padrão: 50% do valor da Ata)
+let contratosDB: ContratoAdministrativo[] = [
+  {
+    id: 'cont-001',
+    numero_contrato: 'CONT-2026/042-A',
+    ata_id: 'ata-001',
+    numero_ata: 'ARP-2026/042-SMS',
+    tipo_fracionamento: 'FRACIONADO',
+    percentual_fracionamento: 50.0,
+    fornecedor_cnpj: '12.345.678/0001-90',
+    fornecedor_razao_social: 'Distribuidora Farmacêutica Nacional S/A',
+    data_assinatura: '2026-01-20',
+    vigencia_inicio: '2026-01-20',
+    vigencia_fim: '2027-01-19',
+    valor_total_contrato: 2425000.00,
+    saldo_contrato_remanescente: 1940000.00, // Após empenho emitido
+    status: 'ATIVO',
+    itens: [
+      {
+        id: 'citem-001',
+        ata_item_id: 'item-001',
+        codigo_catmat: 'BR0284729',
+        descricao_medicamento: 'Meropenem 1g Pó Liofilizado Injetável',
+        unidade_fornecimento: 'Frasco-Ampola',
+        quantidade_contratada: 10000, // 50% de 20.000
+        quantidade_empenhada: 3000,
+        saldo_item_contrato: 7000,
+        preco_unitario: 48.50,
+        valor_total: 485000.00
+      },
+      {
+        id: 'citem-002',
+        ata_item_id: 'item-002',
+        codigo_catmat: 'BR0194851',
+        descricao_medicamento: 'Noradrenalina 2mg/mL Ampola 4mL',
+        unidade_fornecimento: 'Ampola',
+        quantidade_contratada: 25000, // 50% de 50.000
+        quantidade_empenhada: 10000,
+        saldo_item_contrato: 15000,
+        preco_unitario: 12.80,
+        valor_total: 320000.00
+      }
+    ]
+  }
+];
+
+// Notas de Empenho (emitidas do Contrato)
+let empenhosDB: NotaEmpenho[] = [
+  {
+    id: 'emp-001',
+    numero_empenho: 'EMP-2026/894120',
+    contrato_id: 'cont-001',
+    numero_contrato: 'CONT-2026/042-A',
+    ata_id: 'ata-001',
+    numero_ata: 'ARP-2026/042-SMS',
+    dotacao_orcamentaria: '10.302.0042.2045.339030 (Medicamentos e Insumos Hospitalares)',
+    orgao_demandante: 'Hospital Central 360 / UTI Adulto & Farmácia',
+    valor_total_empenhado: 145500.00,
+    saldo_empenho_remanescente: 48500.00, // 3000 Meropenem total -> 2000 no PdC-0001 -> saldo 1000 un (R$ 48.500)
+    status: 'EMITIDO',
+    criado_em: '2026-09-15 10:00',
+    itens: [
+      {
+        id: 'eitem-001',
+        contrato_item_id: 'citem-001',
+        codigo_catmat: 'BR0284729',
+        descricao_medicamento: 'Meropenem 1g Pó Liofilizado Injetável',
+        quantidade_empenhada: 3000,
+        quantidade_entregue_nf: 2000,
+        saldo_item_empenho: 1000,
+        preco_unitario: 48.50,
+        valor_total: 145500.00
+      }
+    ]
+  },
+  {
+    id: 'emp-002',
+    numero_empenho: 'EMP-2026/512903',
+    contrato_id: 'cont-001',
+    numero_contrato: 'CONT-2026/042-A',
+    ata_id: 'ata-001',
+    numero_ata: 'ARP-2026/042-SMS',
+    dotacao_orcamentaria: '10.302.0042.2045.339030 (Urgência e Emergência)',
+    orgao_demandante: 'Hospital Central 360 / Pronto Socorro',
+    valor_total_empenhado: 128000.00,
+    saldo_empenho_remanescente: 64000.00,
+    status: 'EMITIDO',
+    criado_em: '2026-09-16 11:30',
+    itens: [
+      {
+        id: 'eitem-002',
+        contrato_item_id: 'citem-002',
+        codigo_catmat: 'BR0194851',
+        descricao_medicamento: 'Noradrenalina 2mg/mL Ampola 4mL',
+        quantidade_empenhada: 10000,
+        quantidade_entregue_nf: 5000,
+        saldo_item_empenho: 5000,
+        preco_unitario: 12.80,
+        valor_total: 128000.00
+      }
+    ]
+  }
+];
+
+// Pedidos de Compra (PdC)
 let pedidosCompraDB: PedidoCompra[] = [
   {
     id: 'pdc-001',
     numero_pdc: 'PdC-2026-0001',
-    numero_empenho: 'EMP-2026/894120',
-    numero_ata: 'ARP-2026/042-SMS',
-    fornecedor_razao_social: 'Distribuidora Farmacêutica Nacional S/A',
-    fornecedor_cnpj: '12.345.678/0001-90',
     data_emissao: '2026-09-18',
     prazo_entrega: '2026-09-23',
+    vinculado_ata: true,
+    ata_id: 'ata-001',
+    numero_ata: 'ARP-2026/042-SMS',
+    contrato_id: 'cont-001',
+    numero_contrato: 'CONT-2026/042-A',
+    empenho_id: 'emp-001',
+    numero_empenho: 'EMP-2026/894120',
+    fornecedor_razao_social: 'Distribuidora Farmacêutica Nacional S/A',
+    fornecedor_cnpj: '12.345.678/0001-90',
     valor_total: 97000.00,
     status: 'AGUARDANDO_RECEBIMENTO',
     nota_fiscal: {
@@ -286,12 +521,17 @@ let pedidosCompraDB: PedidoCompra[] = [
   {
     id: 'pdc-002',
     numero_pdc: 'PdC-2026-0002',
-    numero_empenho: 'EMP-2026/512903',
-    numero_ata: 'ARP-2026/042-SMS',
-    fornecedor_razao_social: 'Distribuidora Farmacêutica Nacional S/A',
-    fornecedor_cnpj: '12.345.678/0001-90',
     data_emissao: '2026-09-19',
     prazo_entrega: '2026-09-25',
+    vinculado_ata: true,
+    ata_id: 'ata-001',
+    numero_ata: 'ARP-2026/042-SMS',
+    contrato_id: 'cont-001',
+    numero_contrato: 'CONT-2026/042-A',
+    empenho_id: 'emp-002',
+    numero_empenho: 'EMP-2026/512903',
+    fornecedor_razao_social: 'Distribuidora Farmacêutica Nacional S/A',
+    fornecedor_cnpj: '12.345.678/0001-90',
     valor_total: 64000.00,
     status: 'AGUARDANDO_RECEBIMENTO',
     nota_fiscal: {
@@ -322,6 +562,131 @@ let pedidosCompraDB: PedidoCompra[] = [
   }
 ];
 
+// Cotações de Preço & Comparativos Multipolares
+let cotacoesDB: CotacaoPreco[] = [
+  {
+    id: 'cot-001',
+    codigo_cotacao: 'COT-2026-089',
+    titulo: 'Cotação Emergencial de Antibióticos e Anestésicos Hospitalares',
+    origem_importacao: 'MANUAL',
+    status: 'EM_ANALISE',
+    responsavel_abertura: 'Carlos Eduardo (Gerente de Compras)',
+    data_abertura: '2026-09-18',
+    data_limite_proposta: '2026-09-25',
+    itens: [
+      {
+        id: 'coti-001',
+        item_numero: 1,
+        codigo_catmat: 'BR0284729',
+        descricao_medicamento: 'Meropenem 1g Pó Liofilizado Injetável',
+        principio_ativo: 'Meropenem Tri-hidratado',
+        unidade_fornecimento: 'Frasco-Ampola',
+        quantidade: 10000,
+        preco_cmed_teto: 68.20,
+        preco_bps_mediana: 52.10,
+        preco_medio_calculado: 49.30,
+        propostas: [
+          {
+            id: 'prop-001',
+            cotacao_item_id: 'coti-001',
+            fornecedor_id: 'forn-01',
+            razao_social: 'Distribuidora Farmacêutica Nacional S/A',
+            cnpj: '12.345.678/0001-90',
+            preco_unitario: 47.90,
+            preco_total: 479000.00,
+            lote_fabricante: 'LT-MER-9941',
+            data_validade: '2028-02-28',
+            fabricante_marca: 'Eurofarma Laboratórios',
+            prazo_entrega_dias: 5,
+            aceito_responsavel: true,
+            excluido_acima_media: false,
+            data_envio: '2026-09-20 14:30'
+          },
+          {
+            id: 'prop-002',
+            cotacao_item_id: 'coti-001',
+            fornecedor_id: 'forn-02',
+            razao_social: 'BioGenética Hospitalar Comércio Ltda',
+            cnpj: '98.765.432/0001-11',
+            preco_unitario: 49.20,
+            preco_total: 492000.00,
+            lote_fabricante: 'BG-MP-2026',
+            data_validade: '2027-11-30',
+            fabricante_marca: 'Blau Farmacêutica',
+            prazo_entrega_dias: 4,
+            aceito_responsavel: false,
+            excluido_acima_media: false,
+            data_envio: '2026-09-20 16:15'
+          },
+          {
+            id: 'prop-003',
+            cotacao_item_id: 'coti-001',
+            fornecedor_id: 'forn-03',
+            razao_social: 'MedFarma Express Distribuição Eireli',
+            cnpj: '44.555.666/0001-22',
+            preco_unitario: 72.50, // Ultrapassa média e CMED
+            preco_total: 725000.00,
+            lote_fabricante: 'MF-8812',
+            data_validade: '2027-06-30',
+            fabricante_marca: 'União Química',
+            prazo_entrega_dias: 7,
+            aceito_responsavel: false,
+            excluido_acima_media: true,
+            motivo_descarte: 'Preço acima do teto regulatório CMED (R$ 68,20) e superior à média das propostas.',
+            data_envio: '2026-09-21 09:10'
+          }
+        ]
+      },
+      {
+        id: 'coti-002',
+        item_numero: 2,
+        codigo_catmat: 'BR0194851',
+        descricao_medicamento: 'Noradrenalina 2mg/mL Ampola 4mL',
+        principio_ativo: 'Hemitartarato de Norepinefrina',
+        unidade_fornecimento: 'Ampola',
+        quantidade: 20000,
+        preco_cmed_teto: 18.50,
+        preco_bps_mediana: 14.20,
+        preco_medio_calculado: 12.90,
+        propostas: [
+          {
+            id: 'prop-004',
+            cotacao_item_id: 'coti-002',
+            fornecedor_id: 'forn-01',
+            razao_social: 'Distribuidora Farmacêutica Nacional S/A',
+            cnpj: '12.345.678/0001-90',
+            preco_unitario: 12.50,
+            preco_total: 250000.00,
+            lote_fabricante: 'NA-4001',
+            data_validade: '2028-05-31',
+            fabricante_marca: 'Hipolabor Farmacêutica',
+            prazo_entrega_dias: 3,
+            aceito_responsavel: true,
+            excluido_acima_media: false,
+            data_envio: '2026-09-20 14:32'
+          },
+          {
+            id: 'prop-005',
+            cotacao_item_id: 'coti-002',
+            fornecedor_id: 'forn-02',
+            razao_social: 'BioGenética Hospitalar Comércio Ltda',
+            cnpj: '98.765.432/0001-11',
+            preco_unitario: 13.30,
+            preco_total: 266000.00,
+            lote_fabricante: 'BG-NA-88',
+            data_validade: '2027-12-15',
+            fabricante_marca: 'Cristália Produtos Químicos',
+            prazo_entrega_dias: 5,
+            aceito_responsavel: false,
+            excluido_acima_media: false,
+            data_envio: '2026-09-20 16:20'
+          }
+        ]
+      }
+    ]
+  }
+];
+
 let chamadosDB: ChamadoModulo[] = [
   {
     id: 'chm-001',
@@ -335,19 +700,6 @@ let chamadosDB: ChamadoModulo[] = [
     autor_nome: 'Carlos Eduardo (Operador)',
     autor_perfil: 'compras_operador',
     criado_em: '2026-09-21 14:15'
-  },
-  {
-    id: 'chm-002',
-    protocolo: 'CHM-COMPRAS-2026-003',
-    modulo_origem: 'compras-publicas',
-    setor: 'Auditoria de Custos',
-    titulo: 'Atualização periódica da tabela CMED de setembro',
-    descricao: 'Executada carga de atualização do PMVG da ANVISA com novos tetos de medicamentos biológicos.',
-    prioridade: 'media',
-    status: 'resolvido',
-    autor_nome: 'Dra. Marina Santos (Auditora)',
-    autor_perfil: 'compras_auditor_cmed',
-    criado_em: '2026-09-21 09:30'
   }
 ];
 
@@ -371,29 +723,45 @@ let logsDB: LogInteracao[] = [
   {
     id: 'log-001',
     modulo: 'compras-publicas',
-    usuario_email: 'auditor.cmed@hospital360.com.br',
-    perfil_ativo: 'compras_auditor_cmed',
-    acao: 'validacao_preco_cmed',
-    entidade: 'item_da_receita_anvisa',
-    descricao: 'Auditoria preventiva executada: Meropenem 1g validado com status OK (Economia de 28.88% frente ao teto CMED).',
-    data_hora: '2026-09-21 18:10:05'
-  },
-  {
-    id: 'log-002',
-    modulo: 'compras-publicas',
-    usuario_email: 'admin.compras@hospital360.com.br',
+    usuario_email: 'gerente.compras@hospital360.com.br',
     perfil_ativo: 'compras_admin',
-    acao: 'aprovacao_homologacao',
-    entidade: 'atas_registro_precos',
-    descricao: 'Homologação digital da Ata ARP-2026/089-SES confirmada no banco de dados.',
-    data_hora: '2026-09-21 17:42:19'
+    acao: 'alinhamento_arquitetural',
+    entidade: 'modulo_compras_fluxo_completo',
+    descricao: 'Estrutura DDD ativada: Ata -> Contrato (50% fracionado) -> Empenho -> PdC com Cascata de Travas -> NF com Baixa Atômica.',
+    data_hora: '2026-09-21 21:50:00'
   }
 ];
 
-// 1. GET: Retorna dados completos para o módulo compras
+// =====================================================================
+// ROTAS GET
+// =====================================================================
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const tipo = searchParams.get('tipo');
+
+  if (tipo === 'banco_precos') {
+    const busca = searchParams.get('busca') || '';
+    const resultado = await obterBancoPrecosDoBanco(busca);
+    return NextResponse.json({
+      success: true,
+      medicamentos: resultado.medicamentos,
+      origem: resultado.origem,
+      total: resultado.total
+    });
+  }
+
+  if (tipo === 'contratos') {
+    return NextResponse.json({ success: true, contratos: contratosDB });
+  }
+
+  if (tipo === 'empenhos') {
+    return NextResponse.json({ success: true, empenhos: empenhosDB });
+  }
+
+  if (tipo === 'cotacoes') {
+    return NextResponse.json({ success: true, cotacoes: cotacoesDB });
+  }
 
   if (tipo === 'chamados') {
     return NextResponse.json({ success: true, chamados: chamadosDB });
@@ -428,39 +796,43 @@ export async function GET(request: Request) {
     });
   }
 
-  // Métricas Consolidadas
+  // Consulta assíncrona do Banco Oficial de Preços de Medicamentos
+  const dadosBancoPrecos = await obterBancoPrecosDoBanco();
+
+  // Métricas Consolidadas do Módulo
   const totalAtas = atasDB.length;
   const totalItens = atasDB.reduce((acc, a) => acc + a.itens.length, 0);
   const valorTotalAtas = atasDB.reduce((acc, a) => acc + a.valor_total, 0);
-
-  const valorTotalConsumido = atasDB.reduce((acc, a) =>
-    acc + a.itens.reduce((iAcc, item) => iAcc + (item.quantidade_consumida * item.preco_homologado), 0)
-  , 0);
-
-  const economiaGlobalReais = atasDB.reduce((acc, a) =>
-    acc + a.itens.reduce((iAcc, item) =>
-      iAcc + (item.quantidade_consumida * (item.preco_teto_cmed - item.preco_homologado))
-    , 0)
-  , 0);
-
-  const economiaMediaPct = valorTotalConsumido > 0
-    ? Number(((economiaGlobalReais / (valorTotalConsumido + economiaGlobalReais)) * 100).toFixed(2))
-    : 28.5;
+  const saldoTotalAtas = atasDB.reduce((acc, a) => acc + (a.saldo_disponivel || 0), 0);
+  const totalContratos = contratosDB.length;
+  const valorTotalContratos = contratosDB.reduce((acc, c) => acc + c.valor_total_contrato, 0);
+  const saldoTotalContratos = contratosDB.reduce((acc, c) => acc + c.saldo_contrato_remanescente, 0);
+  const totalEmpenhos = empenhosDB.length;
+  const valorTotalEmpenhado = empenhosDB.reduce((acc, e) => acc + e.valor_total_empenhado, 0);
+  const saldoTotalEmpenhos = empenhosDB.reduce((acc, e) => acc + e.saldo_empenho_remanescente, 0);
 
   return NextResponse.json({
     success: true,
     atas: atasDB,
+    contratos: contratosDB,
+    empenhos: empenhosDB,
     pedidos_compra: pedidosCompraDB,
+    cotacoes: cotacoesDB,
+    banco_precos: dadosBancoPrecos.medicamentos,
+    origem_banco_precos: dadosBancoPrecos.origem,
+    total_medicamentos_banco: dadosBancoPrecos.total,
     metricas: {
       total_atas_vigentes: totalAtas,
       total_itens_registrados: totalItens,
       valor_total_atas: valorTotalAtas,
-      valor_executado_empenhos: valorTotalConsumido,
-      economia_gerada_cmed_reais: economiaGlobalReais,
-      economia_media_cmed_pct: economiaMediaPct,
-      pedidos_empenho_totais: 142,
-      pedidos_aguardando_entrega: pedidosCompraDB.filter(p => p.status === 'AGUARDANDO_RECEBIMENTO').length,
-      travas_sobrepreco_evitadas: 6
+      saldo_disponivel_atas: saldoTotalAtas,
+      total_contratos_ativos: totalContratos,
+      valor_total_contratos: valorTotalContratos,
+      saldo_total_contratos: saldoTotalContratos,
+      total_empenhos_emitidos: totalEmpenhos,
+      valor_total_empenhos: valorTotalEmpenhado,
+      saldo_total_empenhos: saldoTotalEmpenhos,
+      pedidos_aguardando_entrega: pedidosCompraDB.filter(p => p.status === 'AGUARDANDO_RECEBIMENTO').length
     },
     chamados_recentes: chamadosDB,
     ocorrencias_recentes: ocorrenciasDB,
@@ -468,13 +840,628 @@ export async function GET(request: Request) {
   });
 }
 
-// 2. POST: Ações do Módulo Compras
+// =====================================================================
+// ROTAS POST (AÇÕES DE DOMÍNIO E TRANSAÇÕES EM CASCATA)
+// =====================================================================
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { acao } = body;
 
-    // Ação 1: Validar Preço CMED
+    // -----------------------------------------------------------------
+    // AÇÃO 1: GERAR CONTRATO A PARTIR DA ATA (INTEGRAL OU FRACIONADO 50%)
+    // -----------------------------------------------------------------
+    if (acao === 'gerar_contrato') {
+      const { ata_id, tipo_fracionamento = 'FRACIONADO', percentual_fracionamento = 50.0 } = body;
+      const ata = atasDB.find(a => a.id === ata_id);
+      if (!ata) {
+        return NextResponse.json({ success: false, error: 'Ata de Registro de Preços não localizada.' }, { status: 404 });
+      }
+
+      const pct = tipo_fracionamento === 'INTEGRAL' ? 100 : Number(percentual_fracionamento);
+      const fator = pct / 100.0;
+
+      // Validação: Ata possui saldo para este fracionamento?
+      const valorDesejado = Number((ata.valor_total * fator).toFixed(2));
+      if (valorDesejado > ata.saldo_disponivel) {
+        return NextResponse.json({
+          success: false,
+          error: `Saldo insuficiente na ATA. Saldo atual disponível: R$ ${ata.saldo_disponivel.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}. Solicitado para o contrato: R$ ${valorDesejado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}.`
+        }, { status: 400 });
+      }
+
+      // Abate saldo da Ata
+      ata.saldo_disponivel -= valorDesejado;
+
+      const numeroContrato = `CONT-2026/${ata.numero_ata.split('/')[1]?.split('-')[0] || '042'}-${String.fromCharCode(65 + contratosDB.length)}`;
+
+      const itensContrato: ContratoItem[] = ata.itens.map((it, idx) => {
+        const qtdContratada = Math.floor(it.quantidade_total * fator);
+        const valorItem = Number((qtdContratada * it.preco_homologado).toFixed(2));
+        it.quantidade_saldo -= qtdContratada;
+        it.quantidade_consumida += qtdContratada;
+
+        return {
+          id: `citem-${Date.now()}-${idx + 1}`,
+          ata_item_id: it.id,
+          codigo_catmat: it.codigo_catmat,
+          descricao_medicamento: it.descricao_medicamento,
+          unidade_fornecimento: it.unidade_fornecimento,
+          quantidade_contratada: qtdContratada,
+          quantidade_empenhada: 0,
+          saldo_item_contrato: qtdContratada,
+          preco_unitario: it.preco_homologado,
+          valor_total: valorItem
+        };
+      });
+
+      const novoContrato: ContratoAdministrativo = {
+        id: `cont-${Date.now()}`,
+        numero_contrato: numeroContrato,
+        ata_id: ata.id,
+        numero_ata: ata.numero_ata,
+        tipo_fracionamento,
+        percentual_fracionamento: pct,
+        fornecedor_cnpj: ata.fornecedor_cnpj,
+        fornecedor_razao_social: ata.fornecedor_razao_social,
+        data_assinatura: new Date().toISOString().substring(0, 10),
+        vigencia_inicio: new Date().toISOString().substring(0, 10),
+        vigencia_fim: ata.vigencia_fim,
+        valor_total_contrato: valorDesejado,
+        saldo_contrato_remanescente: valorDesejado,
+        status: 'ATIVO',
+        itens: itensContrato
+      };
+
+      contratosDB.unshift(novoContrato);
+
+      logsDB.unshift({
+        id: `log-${Date.now()}`,
+        modulo: 'compras-publicas',
+        usuario_email: body.usuario_email || 'compras@hospital360.com.br',
+        perfil_ativo: 'compras_admin',
+        acao: 'geracao_contrato_administrativo',
+        entidade: 'contratos_administrativos',
+        descricao: `Contrato ${novoContrato.numero_contrato} gerado (${pct}% da Ata ${ata.numero_ata}). Valor: R$ ${valorDesejado.toFixed(2)}. Saldo restante na Ata: R$ ${ata.saldo_disponivel.toFixed(2)}.`,
+        data_hora: new Date().toISOString().replace('T', ' ').substring(0, 19)
+      });
+
+      return NextResponse.json({
+        success: true,
+        contrato: novoContrato,
+        saldo_remanescente_ata: ata.saldo_disponivel,
+        mensagem: `Contrato administrativo ${novoContrato.numero_contrato} gerado com sucesso (${pct}% do valor da Ata).`
+      });
+    }
+
+    // -----------------------------------------------------------------
+    // AÇÃO 2: EMITIR NOTA DE EMPENHO A PARTIR DO CONTRATO
+    // -----------------------------------------------------------------
+    if (acao === 'emitir_empenho') {
+      const { contrato_id, dotacao_orcamentaria, orgao_demandante, itens_empenho } = body;
+      const contrato = contratosDB.find(c => c.id === contrato_id);
+      if (!contrato) {
+        return NextResponse.json({ success: false, error: 'Contrato administrativo não localizado.' }, { status: 404 });
+      }
+
+      // Validar se os itens cabem no saldo do contrato
+      let valorTotalEmpenhado = 0;
+      const itensValidados: EmpenhoItem[] = [];
+
+      for (const itemReq of itens_empenho || []) {
+        const cItem = contrato.itens.find(ci => ci.id === itemReq.contrato_item_id || ci.codigo_catmat === itemReq.codigo_catmat);
+        if (!cItem) continue;
+
+        const qtdDesejada = Number(itemReq.quantidade);
+        if (qtdDesejada > cItem.saldo_item_contrato) {
+          return NextResponse.json({
+            success: false,
+            error: `Quantidade solicitada (${qtdDesejada}) excede o saldo contratual disponível (${cItem.saldo_item_contrato}) para o medicamento ${cItem.descricao_medicamento}.`
+          }, { status: 400 });
+        }
+
+        const vTot = Number((qtdDesejada * cItem.preco_unitario).toFixed(2));
+        valorTotalEmpenhado += vTot;
+
+        // Abate saldo do contrato
+        cItem.quantidade_empenhada += qtdDesejada;
+        cItem.saldo_item_contrato -= qtdDesejada;
+
+        itensValidados.push({
+          id: `eitem-${Date.now()}-${itensValidados.length + 1}`,
+          contrato_item_id: cItem.id,
+          codigo_catmat: cItem.codigo_catmat,
+          descricao_medicamento: cItem.descricao_medicamento,
+          quantidade_empenhada: qtdDesejada,
+          quantidade_entregue_nf: 0,
+          saldo_item_empenho: qtdDesejada,
+          preco_unitario: cItem.preco_unitario,
+          valor_total: vTot
+        });
+      }
+
+      if (itensValidados.length === 0) {
+        return NextResponse.json({ success: false, error: 'Nenhum item válido informado para o empenho.' }, { status: 400 });
+      }
+
+      contrato.saldo_contrato_remanescente -= valorTotalEmpenhado;
+
+      const numeroEmpenho = `EMP-2026/${Math.floor(100000 + Math.random() * 900000)}`;
+      const novoEmpenho: NotaEmpenho = {
+        id: `emp-${Date.now()}`,
+        numero_empenho: numeroEmpenho,
+        contrato_id: contrato.id,
+        numero_contrato: contrato.numero_contrato,
+        ata_id: contrato.ata_id,
+        numero_ata: contrato.numero_ata,
+        dotacao_orcamentaria: dotacao_orcamentaria || '10.302.0042.2045.339030 (Medicamentos e Insumos)',
+        orgao_demandante: orgao_demandante || 'Hospital Central 360',
+        valor_total_empenhado: valorTotalEmpenhado,
+        saldo_empenho_remanescente: valorTotalEmpenhado,
+        status: 'EMITIDO',
+        criado_em: new Date().toISOString().replace('T', ' ').substring(0, 16),
+        itens: itensValidados
+      };
+
+      empenhosDB.unshift(novoEmpenho);
+
+      logsDB.unshift({
+        id: `log-${Date.now()}`,
+        modulo: 'compras-publicas',
+        usuario_email: body.usuario_email || 'compras@hospital360.com.br',
+        perfil_ativo: 'compras_operador',
+        acao: 'emissao_nota_empenho',
+        entidade: 'notas_empenho',
+        descricao: `Nota de Empenho ${numeroEmpenho} emitida para o Contrato ${contrato.numero_contrato}. Valor: R$ ${valorTotalEmpenhado.toFixed(2)}.`,
+        data_hora: new Date().toISOString().replace('T', ' ').substring(0, 19)
+      });
+
+      return NextResponse.json({
+        success: true,
+        empenho: novoEmpenho,
+        saldo_remanescente_contrato: contrato.saldo_contrato_remanescente,
+        mensagem: `Nota de Empenho ${numeroEmpenho} emitida com sucesso.`
+      });
+    }
+
+    // -----------------------------------------------------------------
+    // AÇÃO 3: VALIDAÇÃO DE SALDO EM CASCATA & EMISSÃO DE PEDIDO DE COMPRA (PdC)
+    // -----------------------------------------------------------------
+    if (acao === 'emitir_pedido_compra') {
+      const {
+        empenho_id,
+        itens_pedido,
+        data_entrega_prevista,
+        tem_justificativa,
+        justificativa_texto,
+        aprovador_nome,
+        aprovador_cargo
+      } = body;
+
+      const empenho = empenhosDB.find(e => e.id === empenho_id);
+      if (!empenho) {
+        return NextResponse.json({ success: false, error: 'Nota de Empenho não localizada.' }, { status: 404 });
+      }
+
+      const contrato = contratosDB.find(c => c.id === empenho.contrato_id);
+      const ata = atasDB.find(a => a.id === empenho.ata_id);
+
+      if (!contrato || !ata) {
+        return NextResponse.json({ success: false, error: 'Vínculo contratual ou Ata não localizada.' }, { status: 404 });
+      }
+
+      // 1. Checagem de Saldo em Cascata para cada item
+      let faltaSaldoEmpenho = false;
+      let faltaSaldoContrato = false;
+      let faltaSaldoAta = false;
+      let valorTotalPedido = 0;
+
+      const itensFormatados: ItemPedidoCompra[] = [];
+
+      for (const itemReq of itens_pedido || []) {
+        const eItem = empenho.itens.find(ei => ei.id === itemReq.empenho_item_id || ei.codigo_catmat === itemReq.catmat);
+        const qtdPedida = Number(itemReq.quantidade);
+        const precoUnit = eItem ? eItem.preco_unitario : Number(itemReq.preco_unitario || 10.0);
+        const vTot = Number((qtdPedida * precoUnit).toFixed(2));
+        valorTotalPedido += vTot;
+
+        // Checagem 1: Empenho
+        if (!eItem || qtdPedida > eItem.saldo_item_empenho) {
+          faltaSaldoEmpenho = true;
+        }
+
+        // Checagem 2: Contrato
+        const cItem = contrato.itens.find(ci => ci.codigo_catmat === itemReq.catmat || (eItem && ci.id === eItem.contrato_item_id));
+        if (!cItem || qtdPedida > cItem.saldo_item_contrato) {
+          faltaSaldoContrato = true;
+        }
+
+        // Checagem 3: Ata (Hard Stop)
+        const aItem = ata.itens.find(ai => ai.codigo_catmat === itemReq.catmat);
+        if (!aItem || qtdPedida > aItem.quantidade_saldo) {
+          faltaSaldoAta = true;
+        }
+
+        itensFormatados.push({
+          item_id: aItem ? aItem.id : `it-${Date.now()}`,
+          descricao: aItem ? aItem.descricao_medicamento : itemReq.descricao,
+          catmat: itemReq.catmat,
+          quantidade_pedida: qtdPedida,
+          quantidade_entregue: 0,
+          unidade: aItem ? aItem.unidade_fornecimento : 'Unidade',
+          preco_unitario: precoUnit,
+          valor_total: vTot,
+          status_conferencia: 'PENDENTE'
+        });
+      }
+
+      // TRAVA 3: Se não tem saldo na ATA -> BLOQUEIO TOTAL INTRANSPONÍVEL (Lei 14.133/21 Art. 82)
+      if (faltaSaldoAta) {
+        return NextResponse.json({
+          success: false,
+          bloqueio_tipo: 'ATA_INTRANSPONIVEL',
+          error: 'BLOQUEIO LEGAL INTRANSPONÍVEL: O quantitativo solicitado excede o saldo total registrado na Ata de Registro de Preços (ARP). Conforme Art. 82 da Lei 14.133/21, é vedado emitir pedidos além do limite registrado na Ata. Necessário abrir nova cotação/licitação.'
+        }, { status: 422 });
+      }
+
+      // TRAVA 1 & 2: Se falta saldo no Empenho ou Contrato:
+      // Pode fazer o pedido SOMENTE se houver justificativa e aprovação formal
+      if (faltaSaldoEmpenho || faltaSaldoContrato) {
+        if (!tem_justificativa || !justificativa_texto || !aprovador_nome) {
+          return NextResponse.json({
+            success: false,
+            bloqueio_tipo: faltaSaldoEmpenho ? 'SALDO_EMPENHO_INSUFICIENTE' : 'SALDO_CONTRATO_INSUFICIENTE',
+            exige_justificativa: true,
+            error: faltaSaldoEmpenho
+              ? 'Saldo insuficiente na Nota de Empenho. É necessário emitir outro empenho ou prosseguir mediante Justificativa Formal e Aprovação do Ordenador de Despesa.'
+              : 'Saldo insuficiente no Contrato Administrativo. É necessário formalizar termo aditivo/novo contrato ou prosseguir com Justificativa Formal e Aprovação da Gestão Contratual.'
+          }, { status: 400 });
+        }
+      }
+
+      // Emissão do Pedido de Compra
+      const numeroPdc = `PdC-2026-${String(pedidosCompraDB.length + 1).padStart(4, '0')}`;
+      const novoPdc: PedidoCompra = {
+        id: `pdc-${Date.now()}`,
+        numero_pdc: numeroPdc,
+        data_emissao: new Date().toISOString().substring(0, 10),
+        prazo_entrega: data_entrega_prevista || new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString().substring(0, 10),
+        vinculado_ata: true,
+        ata_id: ata.id,
+        numero_ata: ata.numero_ata,
+        contrato_id: contrato.id,
+        numero_contrato: contrato.numero_contrato,
+        empenho_id: empenho.id,
+        numero_empenho: empenho.numero_empenho,
+        fornecedor_razao_social: ata.fornecedor_razao_social,
+        fornecedor_cnpj: ata.fornecedor_cnpj,
+        valor_total: valorTotalPedido,
+        status: 'AGUARDANDO_RECEBIMENTO',
+        tem_excecao_saldo_empenho: faltaSaldoEmpenho,
+        tem_excecao_saldo_contrato: faltaSaldoContrato,
+        justificativa_excecao: justificativa_texto || undefined,
+        aprovador_nome: aprovador_nome || undefined,
+        aprovador_cargo: aprovador_cargo || undefined,
+        aprovado_em: (faltaSaldoEmpenho || faltaSaldoContrato) ? new Date().toISOString() : undefined,
+        itens: itensFormatados
+      };
+
+      pedidosCompraDB.unshift(novoPdc);
+
+      logsDB.unshift({
+        id: `log-${Date.now()}`,
+        modulo: 'compras-publicas',
+        usuario_email: body.usuario_email || 'compras@hospital360.com.br',
+        perfil_ativo: 'compras_operador',
+        acao: 'emissao_pedido_compra',
+        entidade: 'pedidos_compra',
+        descricao: `Pedido de Compra ${numeroPdc} emitido para ${novoPdc.fornecedor_razao_social}. Valor: R$ ${valorTotalPedido.toFixed(2)}. Exceção justificada: ${novoPdc.tem_excecao_saldo_empenho ? 'Sim' : 'Não'}.`,
+        data_hora: new Date().toISOString().replace('T', ' ').substring(0, 19)
+      });
+
+      return NextResponse.json({
+        success: true,
+        pedido: novoPdc,
+        mensagem: `Pedido de Compra ${numeroPdc} emitido com sucesso e transmitido ao fornecedor.`
+      });
+    }
+
+    // -----------------------------------------------------------------
+    // AÇÃO 4: ENTRADA DE NOTA FISCAL (NF-e) COM BAIXA ATÔMICA EM CASCATA
+    // -----------------------------------------------------------------
+    if (acao === 'dar_entrada_nfe_cascata') {
+      const {
+        pdc_id,
+        numero_danfe,
+        serie_danfe,
+        chave_acesso,
+        data_emissao_danfe,
+        valor_danfe,
+        itens_conferencia,
+        fiscal_nome,
+        fiscal_cargo,
+        tipo_recebimento = 'provisorio'
+      } = body;
+
+      const pdc = pedidosCompraDB.find(p => p.id === pdc_id || p.numero_pdc === pdc_id);
+      if (!pdc) {
+        return NextResponse.json({ success: false, error: 'Pedido de Compra não localizado.' }, { status: 404 });
+      }
+
+      const empenho = empenhosDB.find(e => e.id === pdc.empenho_id || e.numero_empenho === pdc.numero_empenho);
+      const contrato = contratosDB.find(c => c.id === pdc.contrato_id || c.numero_contrato === pdc.numero_contrato);
+      const ata = atasDB.find(a => a.id === pdc.ata_id || a.numero_ata === pdc.numero_ata);
+
+      // Executa a baixa atômica nos 3 níveis para cada item faturado
+      for (const itemConf of itens_conferencia || []) {
+        const qtdFaturada = Number(itemConf.quantidade_entregue || itemConf.quantidade_faturada);
+        const valorItem = Number((qtdFaturada * Number(itemConf.preco_unitario)).toFixed(2));
+
+        // 1. Abate no Empenho
+        if (empenho) {
+          const eItem = empenho.itens.find(ei => ei.codigo_catmat === itemConf.catmat);
+          if (eItem) {
+            eItem.quantidade_entregue_nf += qtdFaturada;
+            eItem.saldo_item_empenho = Math.max(0, eItem.saldo_item_empenho - qtdFaturada);
+          }
+          empenho.saldo_empenho_remanescente = Math.max(0, empenho.saldo_empenho_remanescente - valorItem);
+        }
+
+        // 2. Abate no Contrato
+        if (contrato) {
+          const cItem = contrato.itens.find(ci => ci.codigo_catmat === itemConf.catmat);
+          if (cItem) {
+            cItem.saldo_item_contrato = Math.max(0, cItem.saldo_item_contrato - qtdFaturada);
+          }
+          contrato.saldo_contrato_remanescente = Math.max(0, contrato.saldo_contrato_remanescente - valorItem);
+        }
+
+        // 3. Abate na Ata
+        if (ata) {
+          const aItem = ata.itens.find(ai => ai.codigo_catmat === itemConf.catmat);
+          if (aItem) {
+            aItem.quantidade_saldo = Math.max(0, aItem.quantidade_saldo - qtdFaturada);
+          }
+          ata.saldo_disponivel = Math.max(0, ata.saldo_disponivel - valorItem);
+        }
+
+        // Atualiza item do PdC
+        const pItem = pdc.itens.find(pi => pi.catmat === itemConf.catmat);
+        if (pItem) {
+          pItem.quantidade_entregue = qtdFaturada;
+          pItem.lote = itemConf.lote;
+          pItem.validade = itemConf.validade;
+          pItem.temperatura_aferida = itemConf.temperatura_aferida;
+          pItem.status_conferencia = 'CONFORME';
+        }
+      }
+
+      const termoRecebimento = `TRP-2026/${Math.floor(1000 + Math.random() * 9000)}`;
+
+      pdc.status = tipo_recebimento === 'definitivo' ? 'RECEBIDO_DEFINITIVO' : 'RECEBIDO_PROVISORIO';
+      pdc.nota_fiscal = {
+        numero: numero_danfe || '004.891.201',
+        serie: serie_danfe || '1',
+        chave_acesso: chave_acesso || '3526 0912 3456 7800 0190 5500 1004 8912 0110 4918 2741',
+        data_emissao: data_emissao_danfe || new Date().toISOString().substring(0, 10),
+        valor_danfe: valor_danfe || pdc.valor_total
+      };
+      pdc.recebimento = {
+        fiscal_nome: fiscal_nome || 'Fiscal do Contrato',
+        fiscal_cargo: fiscal_cargo || 'Farmacêutico RT',
+        data_recebimento: new Date().toISOString().replace('T', ' ').substring(0, 19),
+        tipo_recebimento: tipo_recebimento as any,
+        termo_recebimento_numero: termoRecebimento,
+        observacoes: 'Entrada física e fiscal realizada com baixa em cascata concluída (Empenho -> Contrato -> Ata). Carga liberada para quarentena WMS.',
+        encaminhado_wms: true
+      };
+
+      logsDB.unshift({
+        id: `log-${Date.now()}`,
+        modulo: 'compras-publicas',
+        usuario_email: body.usuario_email || 'almoxarife@hospital360.com.br',
+        perfil_ativo: 'compras_admin',
+        acao: 'entrada_nfe_baixa_cascata',
+        entidade: 'notas_fiscais_entrada',
+        descricao: `DANFE nº ${pdc.nota_fiscal.numero} registrada para ${pdc.numero_pdc}. Baixa atômica efetuada: Empenho ${pdc.numero_empenho}, Contrato ${pdc.numero_contrato}, Ata ${pdc.numero_ata}. Termo: ${termoRecebimento}.`,
+        data_hora: new Date().toISOString().replace('T', ' ').substring(0, 19)
+      });
+
+      return NextResponse.json({
+        success: true,
+        pdc,
+        saldos_atualizados: {
+          saldo_empenho: empenho ? empenho.saldo_empenho_remanescente : 0,
+          saldo_contrato: contrato ? contrato.saldo_contrato_remanescente : 0,
+          saldo_ata: ata ? ata.saldo_disponivel : 0
+        },
+        termo_recebimento: termoRecebimento,
+        mensagem: 'Nota Fiscal lançada com sucesso! Quantidades abatidas em cascata no Empenho, Contrato e Ata de Registro de Preços.'
+      });
+    }
+
+    // -----------------------------------------------------------------
+    // AÇÃO 5: ABERTURA DE COTAÇÃO DE PREÇO (MANUAL OU LOTE CSV/PDF)
+    // -----------------------------------------------------------------
+    if (acao === 'abrir_cotacao_preco') {
+      const { titulo, origem_importacao = 'MANUAL', data_limite, itens, responsavel } = body;
+
+      const codigoCotacao = `COT-2026-${String(cotacoesDB.length + 1).padStart(3, '0')}`;
+      const novaCotacao: CotacaoPreco = {
+        id: `cot-${Date.now()}`,
+        codigo_cotacao: codigoCotacao,
+        titulo: titulo || 'Cotação de Preços Hospitalares',
+        origem_importacao: origem_importacao as any,
+        status: 'DISPARADA_FORNECEDORES',
+        responsavel_abertura: responsavel || 'Carlos Eduardo (Comprador)',
+        data_abertura: new Date().toISOString().substring(0, 10),
+        data_limite_proposta: data_limite || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().substring(0, 10),
+        itens: (itens || []).map((it: any, index: number) => ({
+          id: `coti-${Date.now()}-${index + 1}`,
+          item_numero: index + 1,
+          codigo_catmat: it.codigo_catmat || `BR0${Math.floor(100000 + Math.random() * 900000)}`,
+          descricao_medicamento: it.descricao_medicamento || 'Medicamento Sob Cotação',
+          principio_ativo: it.principio_ativo || 'Princípio Ativo Padrão',
+          unidade_fornecimento: it.unidade_fornecimento || 'Frasco-Ampola',
+          quantidade: Number(it.quantidade || 1000),
+          preco_cmed_teto: Number(it.preco_cmed_teto || 50.0),
+          preco_bps_mediana: Number(it.preco_bps_mediana || 40.0),
+          preco_medio_calculado: 0,
+          propostas: []
+        }))
+      };
+
+      cotacoesDB.unshift(novaCotacao);
+
+      logsDB.unshift({
+        id: `log-${Date.now()}`,
+        modulo: 'compras-publicas',
+        usuario_email: body.usuario_email || 'compras@hospital360.com.br',
+        perfil_ativo: 'compras_operador',
+        acao: 'abertura_cotacao_precos',
+        entidade: 'cotacoes_precos',
+        descricao: `Cotação ${codigoCotacao} aberta com ${novaCotacao.itens.length} itens via ${origem_importacao}. Disparada para fornecedores.`,
+        data_hora: new Date().toISOString().replace('T', ' ').substring(0, 19)
+      });
+
+      return NextResponse.json({
+        success: true,
+        cotacao: novaCotacao,
+        mensagem: `Cotação ${codigoCotacao} aberta com sucesso e disparada aos fornecedores.`
+      });
+    }
+
+    // -----------------------------------------------------------------
+    // AÇÃO 6: PREENCHIMENTO DE PROPOSTA PELO FORNECEDOR (PREÇO, LOTE, VALIDADE, FABRICANTE)
+    // -----------------------------------------------------------------
+    if (acao === 'lancar_proposta_fornecedor') {
+      const {
+        cotacao_id,
+        cotacao_item_id,
+        razao_social,
+        cnpj,
+        preco_unitario,
+        lote_fabricante,
+        data_validade,
+        fabricante_marca,
+        prazo_entrega_dias = 5
+      } = body;
+
+      const cotacao = cotacoesDB.find(c => c.id === cotacao_id || c.codigo_cotacao === cotacao_id);
+      if (!cotacao) {
+        return NextResponse.json({ success: false, error: 'Cotação não localizada.' }, { status: 404 });
+      }
+
+      const item = cotacao.itens.find(i => i.id === cotacao_item_id || i.item_numero === Number(cotacao_item_id));
+      if (!item) {
+        return NextResponse.json({ success: false, error: 'Item de cotação não localizado.' }, { status: 404 });
+      }
+
+      const pUnit = Number(preco_unitario);
+      const pTot = Number((pUnit * item.quantidade).toFixed(2));
+
+      const novaProp: CotacaoPropostaFornecedor = {
+        id: `prop-${Date.now()}`,
+        cotacao_item_id: item.id,
+        fornecedor_id: `forn-${Date.now()}`,
+        razao_social: razao_social || 'Fornecedor Proponente',
+        cnpj: cnpj || '00.000.000/0001-00',
+        preco_unitario: pUnit,
+        preco_total: pTot,
+        lote_fabricante: lote_fabricante || 'LT-2026/01',
+        data_validade: data_validade || '2028-12-31',
+        fabricante_marca: fabricante_marca || 'Laboratório Farmacêutico',
+        prazo_entrega_dias: Number(prazo_entrega_dias),
+        aceito_responsavel: false,
+        excluido_acima_media: pUnit > item.preco_cmed_teto,
+        motivo_descarte: pUnit > item.preco_cmed_teto ? 'Preço proposto excede o teto CMED.' : undefined,
+        data_envio: new Date().toISOString().replace('T', ' ').substring(0, 16)
+      };
+
+      item.propostas.push(novaProp);
+
+      // Recalcula média do item
+      const propsValidas = item.propostas.filter(p => !p.excluido_acima_media);
+      if (propsValidas.length > 0) {
+        const soma = propsValidas.reduce((a, b) => a + b.preco_unitario, 0);
+        item.preco_medio_calculado = Number((soma / propsValidas.length).toFixed(2));
+      }
+
+      return NextResponse.json({
+        success: true,
+        proposta: novaProp,
+        preco_medio_calculado: item.preco_medio_calculado,
+        mensagem: 'Proposta do fornecedor registrada com sucesso com lote, validade e fabricante.'
+      });
+    }
+
+    // -----------------------------------------------------------------
+    // AÇÃO 7: HOMOLOGAÇÃO DO COMPARATIVO (ACEITAR PREÇOS / EXCLUIR FORA DA MÉDIA)
+    // -----------------------------------------------------------------
+    if (acao === 'homologar_comparativo_precos') {
+      const { cotacao_id, acoes_propostas, responsavel_nome } = body;
+      const cotacao = cotacoesDB.find(c => c.id === cotacao_id || c.codigo_cotacao === cotacao_id);
+      if (!cotacao) {
+        return NextResponse.json({ success: false, error: 'Cotação não localizada.' }, { status: 404 });
+      }
+
+      // Aplica aceites e exclusões
+      for (const item of cotacao.itens) {
+        for (const prop of item.propostas) {
+          const config = (acoes_propostas || []).find((a: any) => a.proposta_id === prop.id);
+          if (config) {
+            prop.aceito_responsavel = !!config.aceito;
+            prop.excluido_acima_media = !!config.excluido;
+            if (config.motivo_descarte) {
+              prop.motivo_descarte = config.motivo_descarte;
+            }
+          }
+        }
+      }
+
+      // Calcula totais homologados
+      let totalItensHomologados = 0;
+      let valorTotalHomologado = 0;
+      let economiaTotal = 0;
+
+      for (const item of cotacao.itens) {
+        const vencedora = item.propostas.find(p => p.aceito_responsavel);
+        if (vencedora) {
+          totalItensHomologados++;
+          valorTotalHomologado += vencedora.preco_total;
+          economiaTotal += (item.preco_cmed_teto - vencedora.preco_unitario) * item.quantidade;
+        }
+      }
+
+      cotacao.status = 'HOMOLOGADA';
+      cotacao.homologacao = {
+        data_homologacao: new Date().toISOString().replace('T', ' ').substring(0, 19),
+        responsavel_nome: responsavel_nome || 'Carlos Eduardo (Gerente de Compras)',
+        total_itens_homologados: totalItensHomologados,
+        valor_total_homologado: Number(valorTotalHomologado.toFixed(2)),
+        economia_cmed_total: Number(economiaTotal.toFixed(2))
+      };
+
+      logsDB.unshift({
+        id: `log-${Date.now()}`,
+        modulo: 'compras-publicas',
+        usuario_email: body.usuario_email || 'compras@hospital360.com.br',
+        perfil_ativo: 'compras_admin',
+        acao: 'homologacao_mapa_precos',
+        entidade: 'cotacoes_precos',
+        descricao: `Cotação ${cotacao.codigo_cotacao} homologada por ${cotacao.homologacao.responsavel_nome}. ${totalItensHomologados} itens homologados. Valor Total: R$ ${valorTotalHomologado.toFixed(2)}.`,
+        data_hora: new Date().toISOString().replace('T', ' ').substring(0, 19)
+      });
+
+      return NextResponse.json({
+        success: true,
+        cotacao,
+        mensagem: 'Mapa de cotação de preços homologado com sucesso! Lista de preços aceitáveis gerada e pronta para impressão/exportação para os autos do processo.'
+      });
+    }
+
+    // Ações complementares existentes (CMED, Chamados, Ocorrências)
     if (acao === 'validar_preco') {
       const input: CmedValidationInput = {
         codigo_catmat: body.codigo_catmat,
@@ -484,294 +1471,10 @@ export async function POST(request: Request) {
         fornecedor_razao_social: body.fornecedor_razao_social,
         quantidade_ofertada: body.quantidade_ofertada || 1000
       };
-
       const resultado = validateMedicinePrice(input);
-
-      logsDB.unshift({
-        id: `log-${Date.now()}`,
-        modulo: 'compras-publicas',
-        usuario_email: body.usuario_email || 'auditor@hospital360.com.br',
-        perfil_ativo: body.perfil_ativo || 'compras_auditor_cmed',
-        acao: 'validacao_preco_cmed',
-        entidade: 'catalogo_medicamentos_cmed',
-        descricao: `Validação executada para ${input.nome_medicamento} (CATMAT: ${input.codigo_catmat}). Status: ${resultado.validation.status} | Proposta: R$ ${input.preco_proposto} vs CMED: R$ ${resultado.prices.cmed_ceiling_price}.`,
-        data_hora: new Date().toISOString().replace('T', ' ').substring(0, 19)
-      });
-
-      return NextResponse.json({
-        success: true,
-        resultado,
-        audit_log: {
-          id: resultado.audit_log_id,
-          timestamp: resultado.timestamp,
-          hash: resultado.audit_hash
-        }
-      });
+      return NextResponse.json({ success: true, resultado });
     }
 
-    // Ação 1.5: Importação e Auditoria de Lote em Larga Escala
-    if (acao === 'comparativo_lote_importar') {
-      const { itens, titulo, orgao_demandante } = body;
-      const itensFormatados: ItemComparativoLote[] = (itens || []).map((it: any, index: number) => {
-        const precoProposto = Number(it.menor_preco || it.preco_proposto || 10.0);
-        const precoCmed = Number(it.preco_cmed_teto || precoProposto * 1.3);
-        const precoBps = Number(it.preco_bps_mediana || precoProposto * 1.08);
-        const qtd = Number(it.quantidade || 1000);
-        const classif = classificarPrecoIA(precoProposto, precoCmed, precoBps);
-        const divBps = Number((((precoProposto - precoBps) / precoBps) * 100).toFixed(2));
-        const divCmed = Number((((precoProposto - precoCmed) / precoCmed) * 100).toFixed(2));
-        const econ = precoProposto < precoBps ? (precoBps - precoProposto) * qtd : 0;
-        const sobrepreco = precoProposto > precoCmed ? (precoProposto - precoCmed) * qtd : 0;
-
-        return {
-          id: `lote-custom-${index + 1}`,
-          numero_item: index + 1,
-          codigo_catmat: it.codigo_catmat || `BR0${Math.floor(100000 + Math.random() * 900000)}`,
-          descricao_medicamento: it.descricao_medicamento || 'Medicamento Sob Análise',
-          principio_ativo: it.principio_ativo || 'Princípio Ativo Não Especificado',
-          concentracao: it.concentracao || 'Padrão Hospitalar',
-          apresentacao: it.apresentacao || 'Frasco-Ampola',
-          unidade_fornecimento: it.unidade_fornecimento || 'Frasco',
-          quantidade: qtd,
-          preco_cmed_teto: precoCmed,
-          preco_bps_mediana: precoBps,
-          preco_bps_media: precoBps * 1.02,
-          menor_preco: precoProposto,
-          fornecedor_lider: it.fornecedor_lider || 'Proponente Comercial Principal',
-          status_ia: classif.classificacao,
-          cor_ia: classif.cor,
-          divergencia_lider_bps_pct: divBps,
-          divergencia_lider_cmed_pct: divCmed,
-          economia_projetada_reais: Number(econ.toFixed(2)),
-          sobrepreco_evitado_reais: Number(sobrepreco.toFixed(2)),
-          trava_obrigatoria: classif.trava,
-          parecer_conclusivo: classif.parecer,
-          propostas: it.propostas || [
-            {
-              fornecedor_id: 'forn-import-01',
-              razao_social: it.fornecedor_lider || 'Proponente Comercial Principal',
-              cnpj: '00.000.000/0001-00',
-              preco_unitario: precoProposto,
-              preco_total: Number((precoProposto * qtd).toFixed(2)),
-              is_vencedor: true,
-              divergencia_bps_pct: divBps,
-              divergencia_cmed_pct: divCmed,
-              classificacao_ia: classif.classificacao,
-              cor_ia: classif.cor,
-              trava_ativa: classif.trava,
-              parecer_individual: classif.parecer
-            }
-          ]
-        };
-      });
-
-      const metricasCustom = consolidarMetricasCesta(itensFormatados);
-      const cestaCustom: CestaLoteComparativo = {
-        id: `cesta-${Date.now()}`,
-        codigo_cotacao: `COT-IMP-${Date.now().toString().slice(-4)}`,
-        titulo: titulo || 'Cesta Importada via Planilha / Lote Especial',
-        categoria: 'Importação em Lote / Auditoria Customizada',
-        modalidade: 'Dispensa / Pregão SRP (Lei 14.133/21)',
-        data_abertura: new Date().toISOString().substring(0, 10),
-        data_apuracao: new Date().toISOString().substring(0, 10),
-        orgao_demandante: orgao_demandante || 'Hospital Central 360',
-        responsavel_auditoria: body.usuario_email || 'auditor@hospital360.com.br',
-        itens: itensFormatados,
-        metricas: metricasCustom
-      };
-
-      logsDB.unshift({
-        id: `log-${Date.now()}`,
-        modulo: 'compras-publicas',
-        usuario_email: body.usuario_email || 'auditor@hospital360.com.br',
-        perfil_ativo: body.perfil_ativo || 'compras_auditor_cmed',
-        acao: 'importacao_lote_comparativo',
-        entidade: 'comparativo_larga_escala',
-        descricao: `Lote "${cestaCustom.titulo}" com ${itensFormatados.length} itens auditado com sucesso. Taxa de conformidade: ${metricasCustom.taxa_conformidade_pct}%.`,
-        data_hora: new Date().toISOString().replace('T', ' ').substring(0, 19)
-      });
-
-      return NextResponse.json({ success: true, cesta: cestaCustom });
-    }
-
-    // Ação 2: Emitir Empenho Digital com Travas
-    if (acao === 'emitir_empenho') {
-      const ata_id = body.ata_id;
-      const item_id = body.item_id;
-      const quantidade_empenho = Number(body.quantidade_empenho);
-      const orgao_demandante = body.orgao_demandante || 'Hospital Central 360';
-      const tipo_adesao = body.tipo_adesao || 'ORGAO_GERENCIADOR';
-
-      const ata = atasDB.find(a => a.id === ata_id || a.itens.some(i => i.id === item_id));
-      if (!ata) {
-        return NextResponse.json({ success: false, error: 'Ata de Registro de Preços não encontrada.' }, { status: 404 });
-      }
-
-      const item = ata.itens.find(i => i.id === item_id);
-      if (!item) {
-        return NextResponse.json({ success: false, error: 'Item de ata não encontrado.' }, { status: 404 });
-      }
-
-      // Trava de Saldo
-      if (quantidade_empenho > item.quantidade_saldo) {
-        return NextResponse.json({
-          success: false,
-          error: `Quantidade solicitada (${quantidade_empenho}) excede o saldo remanescente (${item.quantidade_saldo} ${item.unidade_fornecimento}).`
-        }, { status: 400 });
-      }
-
-      // Trava de Carona (Lei 14.133/21: máx 50% por item)
-      if (tipo_adesao === 'CARONA_ADESAO') {
-        const limiteCaronaItem = Math.floor(item.quantidade_total * 0.50);
-        if (quantidade_empenho > limiteCaronaItem) {
-          return NextResponse.json({
-            success: false,
-            error: `Trava Lei 14.133/21 violada: Órgãos carona não podem solicitar mais de 50% do quantitativo do item (${limiteCaronaItem} ${item.unidade_fornecimento}). Solicitado: ${quantidade_empenho}.`
-          }, { status: 400 });
-        }
-      }
-
-      // Baixa do saldo atômica
-      item.quantidade_consumida += quantidade_empenho;
-      item.quantidade_saldo -= quantidade_empenho;
-
-      const valorEmpenho = Number((quantidade_empenho * item.preco_homologado).toFixed(2));
-      const numeroEmpenho = `EMP-2026/${Math.floor(100000 + Math.random() * 900000)}`;
-      const numeroPdc = `PdC-2026-${String(pedidosCompraDB.length + 1).padStart(4, '0')}`;
-
-      // Criação automática do Pedido de Compra (PdC)
-      const novoPdc: PedidoCompra = {
-        id: `pdc-${Date.now()}`,
-        numero_pdc: numeroPdc,
-        numero_empenho: numeroEmpenho,
-        numero_ata: ata.numero_ata,
-        fornecedor_razao_social: ata.fornecedor_razao_social,
-        fornecedor_cnpj: ata.fornecedor_cnpj,
-        data_emissao: new Date().toISOString().substring(0, 10),
-        prazo_entrega: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString().substring(0, 10),
-        valor_total: valorEmpenho,
-        status: 'AGUARDANDO_RECEBIMENTO',
-        nota_fiscal: {
-          numero: `004.${Math.floor(100 + Math.random() * 900)}.${Math.floor(100 + Math.random() * 900)}`,
-          serie: '1',
-          chave_acesso: `3526 0912 3456 7800 0190 5500 1004 ${Math.floor(1000 + Math.random() * 9000)} ${Math.floor(1000 + Math.random() * 9000)}`,
-          data_emissao: new Date().toISOString().substring(0, 10),
-          valor_danfe: valorEmpenho
-        },
-        itens: [
-          {
-            item_id: item.id,
-            descricao: item.descricao_medicamento,
-            catmat: item.codigo_catmat,
-            quantidade_pedida: quantidade_empenho,
-            quantidade_entregue: quantidade_empenho,
-            unidade: item.unidade_fornecimento,
-            preco_unitario: item.preco_homologado,
-            valor_total: valorEmpenho,
-            lote: `LT-${new Date().getFullYear()}/${Math.floor(100 + Math.random() * 900)}`,
-            validade: '2027-12-31',
-            temperatura_exigida: item.descricao_medicamento.includes('Noradrenalina') ? '2ºC a 8ºC (Cadeia de Frio)' : '15ºC a 30ºC (Ambiente Controlado)',
-            temperatura_aferida: item.descricao_medicamento.includes('Noradrenalina') ? '4.5ºC' : '22.0ºC',
-            laudo_fabricante_anexo: true,
-            status_conferencia: 'CONFORME'
-          }
-        ]
-      };
-
-      pedidosCompraDB.unshift(novoPdc);
-
-      logsDB.unshift({
-        id: `log-${Date.now()}`,
-        modulo: 'compras-publicas',
-        usuario_email: body.usuario_email || 'operador@hospital360.com.br',
-        perfil_ativo: body.perfil_ativo || 'compras_operador',
-        acao: 'emissao_empenho_digital',
-        entidade: 'pedidos_empenho_ata',
-        descricao: `Empenho ${numeroEmpenho} e Pedido ${numeroPdc} emitidos para ${orgao_demandante}: ${quantidade_empenho} ${item.unidade_fornecimento} de ${item.descricao_medicamento} (R$ ${valorEmpenho.toFixed(2)}).`,
-        data_hora: new Date().toISOString().replace('T', ' ').substring(0, 19)
-      });
-
-      return NextResponse.json({
-        success: true,
-        numero_empenho: numeroEmpenho,
-        numero_pdc: numeroPdc,
-        orgao_demandante,
-        tipo_adesao,
-        quantidade_empenhada: quantidade_empenho,
-        valor_total_empenho: valorEmpenho,
-        novo_saldo_item: item.quantidade_saldo,
-        mensagem: 'Empenho digital emitido com sucesso e transmitido ao módulo de Estoque Central WMS.'
-      });
-    }
-
-    // Ação 3: Confirmar Entrega / Recebimento Provisório (Art. 140 Lei 14.133/21)
-    if (acao === 'confirmar_entrega_pdc') {
-      const { pdc_id, fiscal_nome, fiscal_cargo, tipo_recebimento, observacoes } = body;
-      const pdc = pedidosCompraDB.find(p => p.id === pdc_id || p.numero_pdc === pdc_id);
-
-      if (!pdc) {
-        return NextResponse.json({ success: false, error: 'Pedido de Compra não localizado.' }, { status: 404 });
-      }
-
-      pdc.status = tipo_recebimento === 'definitivo' ? 'RECEBIDO_DEFINITIVO' : 'RECEBIDO_PROVISORIO';
-      pdc.recebimento = {
-        fiscal_nome: fiscal_nome || 'Fiscal do Contrato',
-        fiscal_cargo: fiscal_cargo || 'Farmacêutico / Fiscal Técnico',
-        data_recebimento: new Date().toISOString().replace('T', ' ').substring(0, 19),
-        tipo_recebimento: tipo_recebimento || 'provisorio',
-        termo_recebimento_numero: `TRP-2026/${Math.floor(1000 + Math.random() * 9000)}`,
-        observacoes: observacoes || 'Recebimento efetuado em conformidade com as especificações do edital e temperatura adequada.',
-        encaminhado_wms: true
-      };
-
-      logsDB.unshift({
-        id: `log-${Date.now()}`,
-        modulo: 'compras-publicas',
-        usuario_email: body.usuario_email || 'fiscal@hospital360.com.br',
-        perfil_ativo: body.perfil_ativo || 'compras_admin',
-        acao: 'confirmacao_entrega_pdc',
-        entidade: 'pedidos_compra_entrega',
-        descricao: `Recebimento Provisório confirmado para ${pdc.numero_pdc} (DANFE nº ${pdc.nota_fiscal.numero}). Termo gerado: ${pdc.recebimento.termo_recebimento_numero}. Lote encaminhado ao Almoxarifado Central WMS.`,
-        data_hora: new Date().toISOString().replace('T', ' ').substring(0, 19)
-      });
-
-      return NextResponse.json({
-        success: true,
-        pdc,
-        mensagem: `Entrega do ${pdc.numero_pdc} confirmada com sucesso! Lote liberado para quarentena técnica do Farmacêutico RT no Módulo 02 (Estoque Central WMS).`
-      });
-    }
-
-    // Ação 4: Recusar Entrega
-    if (acao === 'recusar_entrega_pdc') {
-      const { pdc_id, motivo_recusa } = body;
-      const pdc = pedidosCompraDB.find(p => p.id === pdc_id || p.numero_pdc === pdc_id);
-
-      if (!pdc) {
-        return NextResponse.json({ success: false, error: 'Pedido de Compra não localizado.' }, { status: 404 });
-      }
-
-      pdc.status = 'RECUSADO';
-
-      logsDB.unshift({
-        id: `log-${Date.now()}`,
-        modulo: 'compras-publicas',
-        usuario_email: body.usuario_email || 'fiscal@hospital360.com.br',
-        perfil_ativo: body.perfil_ativo || 'compras_admin',
-        acao: 'recusa_entrega_pdc',
-        entidade: 'pedidos_compra_entrega',
-        descricao: `Recusa formal de entrega do ${pdc.numero_pdc}. Motivo: ${motivo_recusa || 'Desconformidade física ou excursão térmica'}. Notificação ao fornecedor acionada.`,
-        data_hora: new Date().toISOString().replace('T', ' ').substring(0, 19)
-      });
-
-      return NextResponse.json({
-        success: true,
-        pdc,
-        mensagem: `Carga do ${pdc.numero_pdc} recusada. Notificação formal gerada com registro no livro de ocorrências.`
-      });
-    }
-
-    // Ação 5: Abrir Chamado
     if (acao === 'abrir_chamado') {
       const novoChamado: ChamadoModulo = {
         id: `chm-${Date.now()}`,
@@ -786,24 +1489,10 @@ export async function POST(request: Request) {
         autor_perfil: body.autor_perfil || 'compras_operador',
         criado_em: new Date().toISOString().replace('T', ' ').substring(0, 16)
       };
-
       chamadosDB.unshift(novoChamado);
-
-      logsDB.unshift({
-        id: `log-${Date.now()}`,
-        modulo: 'compras-publicas',
-        usuario_email: body.usuario_email || 'usuario@hospital360.com.br',
-        perfil_ativo: novoChamado.autor_perfil,
-        acao: 'abertura_chamado',
-        entidade: 'chamados_modulos',
-        descricao: `Chamado ${novoChamado.protocolo} aberto: "${novoChamado.titulo}" [${novoChamado.prioridade.toUpperCase()}].`,
-        data_hora: new Date().toISOString().replace('T', ' ').substring(0, 19)
-      });
-
       return NextResponse.json({ success: true, chamado: novoChamado });
     }
 
-    // Ação 6: Registrar Ocorrência
     if (acao === 'registrar_ocorrencia') {
       const novaOcorrencia: OcorrenciaModulo = {
         id: `oco-${Date.now()}`,
@@ -818,21 +1507,33 @@ export async function POST(request: Request) {
         autor_perfil: body.autor_perfil || 'compras_operador',
         criado_em: new Date().toISOString().replace('T', ' ').substring(0, 16)
       };
-
       ocorrenciasDB.unshift(novaOcorrencia);
+      return NextResponse.json({ success: true, ocorrencia: novaOcorrencia });
+    }
 
+    if (acao === 'semear_banco_precos' || acao === 'sincronizar_banco_precos') {
+      const resSemeadura = await semearBancoPrecosMedicamentosSupabase();
       logsDB.unshift({
         id: `log-${Date.now()}`,
         modulo: 'compras-publicas',
-        usuario_email: body.usuario_email || 'operador@hospital360.com.br',
-        perfil_ativo: novaOcorrencia.autor_perfil,
-        acao: 'registro_livro_ocorrencias',
-        entidade: 'livro_ocorrencias_modulos',
-        descricao: `Ocorrência registrada por ${novaOcorrencia.autor_nome}: "${novaOcorrencia.relato.substring(0, 60)}..."`,
+        usuario_email: body.usuario_email || 'admin.cmed@hospital360.com.br',
+        perfil_ativo: 'compras_admin',
+        acao: 'sincronizacao_banco_precos_medicamentos',
+        entidade: 'banco_precos_medicamentos',
+        descricao: resSemeadura.success
+          ? `Banco de Preços de Medicamentos sincronizado com sucesso no Supabase (${resSemeadura.inseridos} itens catalogados).`
+          : `Tentativa de sincronização com Supabase: ${resSemeadura.error}. Sistema em contingência regulatória ativa.`,
         data_hora: new Date().toISOString().replace('T', ' ').substring(0, 19)
       });
 
-      return NextResponse.json({ success: true, ocorrencia: novaOcorrencia });
+      return NextResponse.json({
+        success: resSemeadura.success,
+        inseridos: resSemeadura.inseridos,
+        error: resSemeadura.error,
+        mensagem: resSemeadura.success
+          ? `Tabela public.banco_precos_medicamentos sincronizada no Supabase com ${resSemeadura.inseridos} medicamentos oficiais.`
+          : `Status de sincronização remota: ${resSemeadura.error}. O módulo permanece 100% operacional com o catálogo oficial CMED/BPS.`
+      });
     }
 
     return NextResponse.json({ success: false, error: 'Ação não reconhecida.' }, { status: 400 });

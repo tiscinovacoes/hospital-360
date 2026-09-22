@@ -5,6 +5,157 @@ criado: 2026-09-21
 
 # Log de Atividades — hospital-360
 
+## 2026-09-21 22:07 — Conexão Direta do Banco de Dados com os Preços dos Medicamentos (Supabase / CMED / BPS)
+
+**O que foi feito / Implantações Salvas:**
+- **Migração DDL & DML para Banco de Dados** ([`supabase/migrations/20260921_banco_precos_medicamentos.sql`](file:///d:/Projetos/360/supabase/migrations/20260921_banco_precos_medicamentos.sql)):
+  - Criação da tabela `public.banco_precos_medicamentos` exposta para a API PostgREST do Supabase com tipos estritos de dados, índices por CATMAT, princípio ativo e nome comercial.
+  - Políticas de RLS (`Permitir leitura publica de precos medicamentos`) para consultas anônimas e autenticadas.
+  - Carga oficial completa (seed) de 15 medicamentos essenciais de alta complexidade com teto PMVG/CMED, mediana histórica BPS e cadeia térmica.
+- **Camada de Repositório e Conexão com o Supabase** ([`nucleo/src/lib/compras/bancoPrecosMedicamentos.ts`](file:///d:/Projetos/360/nucleo/src/lib/compras/bancoPrecosMedicamentos.ts)):
+  - Implementação da função assíncrona `obterBancoPrecosDoBanco` que interroga a tabela remota `banco_precos_medicamentos` no Supabase com suporte a filtros dinâmicos e fallback automático de alta disponibilidade para cache local regulatório.
+  - Implementação de `semearBancoPrecosMedicamentosSupabase` para sincronização e upsert idempotente via API.
+- **Backend API Conectado** ([`nucleo/src/app/api/compras-atas/route.ts`](file:///d:/Projetos/360/nucleo/src/app/api/compras-atas/route.ts)):
+  - Endpoint `GET ?tipo=banco_precos` conectado ao banco, retornando metadados de proveniência (`SUPABASE_POSTGRES` ou `CACHE_LOCAL_OFICIAL`).
+  - Inclusão dos preços do banco de dados no payload global de carregamento do módulo.
+  - Ação `POST { acao: 'semear_banco_precos' }` para sincronização remota do catálogo oficial com o banco.
+- **Frontend com Seção e Conexão em Tempo Real** ([`nucleo/src/app/compras-publicas/page.tsx`](file:///d:/Projetos/360/nucleo/src/app/compras-publicas/page.tsx)):
+  - **Nova Seção "Banco de Preços (CMED/BPS)"** no menu lateral com badge dinâmico de quantidade de itens.
+  - Indicador de status em tempo real da conexão: `🟢 Banco de Dados Oficial Conectado`.
+  - Botão de ação "Sincronizar Supabase" com feedback visual de progresso e toast informativo.
+  - Barra de pesquisa instantânea e tabela com teto CMED, mediana BPS, % de economia e botões rápidos para preencher pedidos e auditorias.
+- **Validação Técnica**: Testes de rotas concluídos com **HTTP 200 OK** tanto na interface visual quanto nas rotas de API.
+
+**Arquivos alterados:**
+- `supabase/migrations/20260921_banco_precos_medicamentos.sql` (criado)
+- `nucleo/src/lib/compras/bancoPrecosMedicamentos.ts` (atualizado)
+- `nucleo/src/app/api/compras-atas/route.ts` (atualizado)
+- `nucleo/src/app/compras-publicas/page.tsx` (atualizado)
+- `LOG_DE_ATIVIDADES_OBSIDIAN.md` (atualizado)
+
+---
+
+## 2026-09-21 22:00 — Integração Total com o Banco Oficial de Preços de Medicamentos (CMED / BPS / CATMAT)
+
+**O que foi feito / Implantações Salvas:**
+- Criação da base de referência oficial governamental: [`nucleo/src/lib/compras/bancoPrecosMedicamentos.ts`](file:///d:/Projetos/360/nucleo/src/lib/compras/bancoPrecosMedicamentos.ts) com catálogo completo de medicamentos hospitalares essenciais (Meropenem, Noradrenalina, Fentanila, Enoxaparina, Imunoglobulina, Dipirona, Dobutamina, Levofloxacino, Albumina, Atropina, Caspofungina, Midazolam, Propofol, Vancomicina, Ceftriaxona), contendo:
+  - Código CATMAT oficial
+  - Princípio ativo, concentração, forma farmacêutica e apresentação
+  - Preço Máximo de Venda ao Governo (PMVG/CMED)
+  - Mediana de compras públicas do SUS (BPS)
+  - Tarjas e exigências de cadeia térmica (RDC 430/2020)
+- **Integração no Backend API** ([`nucleo/src/app/api/compras-atas/route.ts`](file:///d:/Projetos/360/nucleo/src/app/api/compras-atas/route.ts)):
+  - Endpoint `GET /api/compras-atas?tipo=banco_precos` para busca instantânea e inclusão do catálogo na resposta geral do módulo.
+  - Atualização do motor [`cmedValidator.ts`](file:///d:/Projetos/360/nucleo/src/lib/compras/cmedValidator.ts) para consultar dinamicamente a base por código CATMAT ou nome.
+- **Integração no Frontend** ([`nucleo/src/app/compras-publicas/page.tsx`](file:///d:/Projetos/360/nucleo/src/app/compras-publicas/page.tsx)):
+  - **Novo Pedido de Compra**: Ao selecionar o medicamento da Ata, exibe card com confronto em tempo real com o Banco Oficial (Teto CMED, Mediana BPS e cálculo da Economia Gerada).
+  - **Validador CMED**: Adicionado seletor dropdown direto para auto-preenchimento imediato de CATMAT, Descrição e Preço de Referência do BPS.
+- **Validação Técnica**: Testado via chamada Node.js e HTTP com resposta **Status 200 OK** retornando 100% dos medicamentos catalogados.
+
+**Arquivos alterados:**
+- `nucleo/src/lib/compras/bancoPrecosMedicamentos.ts` (criado)
+- `nucleo/src/lib/compras/cmedValidator.ts` (atualizado)
+- `nucleo/src/app/api/compras-atas/route.ts` (atualizado)
+- `nucleo/src/app/compras-publicas/page.tsx` (atualizado)
+- `LOG_DE_ATIVIDADES_OBSIDIAN.md`
+
+---
+
+## 2026-09-21 21:58 — Hotfix: Correção de TypeError em resultadoValidacao.metrics.discount_vs_cmed_pct
+
+**O que foi feito:**
+- Correção imediata do `TypeError: Cannot read properties of undefined (reading 'discount_vs_cmed_pct')`:
+  - Aplicado encadeamento opcional defensivo (`optional chaining`) e fallback seguro na exibição do resultado da auditoria CMED.
+  - Adequação aos nomes dos campos retornados pela função `validateMedicinePrice` (`validation.divergence_vs_cmed_percent`, `prices.bps_reference_price` e `validation.parecer_tecnico`).
+- Validação técnica: rota `/compras-publicas` respondendo com **HTTP 200 OK** sem falhas de runtime.
+
+**Arquivos alterados:**
+- `nucleo/src/app/compras-publicas/page.tsx`
+- `LOG_DE_ATIVIDADES_OBSIDIAN.md`
+
+---
+
+## 2026-09-21 21:55 — Conclusão da Produção: Tela Novo Pedido de Compra (PdC), Cascata de Saldos (Ata -> Contrato 50% -> Empenho -> NF) e Cotação Multipolar
+
+**O que foi feito / Implantações Salvas:**
+- Implementação e validação de 100% do fluxo de compras públicas conforme a especificação do usuário e a imagem de referência ("Novo Pedido de Compra"):
+  1. **Tela "Novo Pedido de Compra"**:
+     - Layout idêntico ao modelo: Número do PdC, Data, Toggle `Vinculado à ATA?` (`SIM`/`NÃO`), Dropdown com Card da Ata (escudo, Disponível em verde, Total, Vigência).
+     - Seletores da hierarquia: Contrato Administrativo e Nota de Empenho com exibição de saldos disponíveis em tempo real.
+     - Fornecedor preenchido pela ATA, Data de Entrega Prevista, Detalhes do Item com select de medicamentos da ATA, Quantidade, Preço Unitário e botão largo `+ Adicionar outro medicamento`.
+     - Tabela de Itens Adicionados com lixeira e Total Geral do Pedido em destaque azul royal.
+     - **Banners em Cascata com Travas de Saldo**:
+       * Falta de saldo no Empenho: Card âmbar permitindo continuar mediante Justificativa Formal + Aprovação do Ordenador ou pedir novo empenho.
+       * Falta de saldo no Contrato: Card âmbar permitindo continuar mediante Justificativa Formal + Aprovação da Gestão Contratual ou aditivo.
+       * Falta de saldo na Ata: **Card vermelho idêntico à imagem (`⚠️ AVISO: Saldo Insuficiente na ATA`) com bloqueio absoluto intransponível** (Lei 14.133/21 Art. 82).
+  2. **Gestão de Atas, Contratos & Empenhos**:
+     - Modal para geração de Contrato Administrativo a partir da Ata com **padrão de fracionamento em 50% da Ata**, preservando saldo na Ata para contratações posteriores.
+     - Modal para emissão de Nota de Empenho debitando do saldo disponível do contrato.
+  3. **Entrada de NF-e e Baixa Atômica em Cascata**:
+     - Conferência física/fiscal de DANFE, chave SEFAZ, lote, validade e temperatura na doca.
+     - Baixa atômica reversa: NF abate Empenho $\rightarrow$ Contrato $\rightarrow$ Ata, gerando o Termo de Recebimento Provisório (TRP) e recalculando os 3 saldos simultaneamente.
+  4. **Cotação Multipolar & Comparativo de Preços**:
+     - Abertura de cotação (manual ou lote via PDF/CSV).
+     - Lançamento de propostas por fornecedor com Preço Unitário, Lote (LT), Data de Validade e Fabricante/Marca.
+     - Tabela Comparativa Consolidada com Média, Teto CMED e Mediana BPS.
+     - Homologação interativa: Comprador aceita preços vantajosos e desclassifica/exclui propostas acima da média de mercado.
+     - Geração da Lista Oficial de Preços Aceitáveis e botão para **Impressão Oficial** para os autos processuais.
+- **Validação Técnica Automatizada**:
+  - Suite de testes em Node.js (`scratch/test_fluxo_compras.js`) executada com **100% de aprovação**: criação de contrato 50%, emissão de empenho, teste de bloqueio 422 na Ata esgotada, emissão de PdC, entrada de NF com baixa nos 3 saldos e cotação multipolar com propostas.
+  - Servidor Next.js respondendo com **HTTP 200 OK** em `/compras-publicas` e `/api/compras-atas`.
+
+**Arquivos alterados:**
+- `nucleo/src/app/api/compras-atas/route.ts`
+- `nucleo/src/app/compras-publicas/page.tsx`
+- `supabase/migrations/20260921_compras_fluxo_completo.sql`
+- `walkthrough.md`
+- `LOG_DE_ATIVIDADES_OBSIDIAN.md`
+
+**Decisões / observações:**
+- A identidade visual seguiu rigorosamente a diretriz hospitalar asséptica (zero preto, cinza limite `#E0E0E0`, modais brancos com backdrop translúcido cinza, `IconBadge` e `KpiCard` unificados).
+
+---
+
+## 2026-09-21 21:45 — Arquitetura e Refinamento do Ciclo de Compras Públicas, Gestão de Atas, Contratos, Empenhos, NF-e em Cascata e Cotação Multipolar
+
+**O que foi feito:**
+- Ativação simultânea das 5 skills solicitadas: `/backend-architect`, `/microservices-patterns`, `/ddd-context-mapping`, `/api-patterns` e `/database-design`.
+- Análise aprofundada do código atual (`cmedValidator.ts`, `comparativoLoteEngine.ts`, `compras-atas/route.ts`, `compras-publicas/page.tsx` e DDL de banco).
+- Elaboração da arquitetura técnica completa e refinamento do fluxo no artefato `implementation_plan.md`:
+  1. **DDD & Bounded Contexts**:
+     - Mapeamento de 6 contextos delimitados: Cotação de Preços, Gestão de Atas (ARP), Gestão Contratual, Execução Orçamentária (Empenho), Suprimentos/Pedidos (PdC) e Recebimento Fiscal/WMS.
+  2. **Ciclo Orçamentário e Cascata de Saldos**:
+     - Ata $\rightarrow$ Contrato (Integral ou Fracionado, com padrão default de 50% do valor da Ata), preservando saldo na Ata.
+     - Contrato $\rightarrow$ Nota de Empenho conforme quantidade demandada pelo comprador.
+     - Empenho $\rightarrow$ Pedido de Compra (PdC) com validação de saldo em cascata tripla:
+       * Saldo de Empenho insuficiente: exige novo empenho ou permite emissão mediante Justificativa + Aprovação do Ordenador.
+       * Saldo de Contrato insuficiente: exige novo contrato/aditivo ou permite emissão mediante Justificativa + Aprovação da Gestão Contratual.
+       * Saldo de Ata insuficiente: **Bloqueio total intransponível** (Hard-stop legal da Lei 14.133/21).
+  3. **Entrada de NF-e e Baixa Atômica em Cascata**:
+     - Fornecedor aceita PdC e despacha com NF.
+     - Entrada de NF-e com conferência de lote, validade e temperatura.
+     - Abatimento atômico reverso: NF abate Empenho, que abate Contrato, que abate Ata, recalculando saldos remanescentes em tempo real.
+  4. **Cotação Multipolar & Comparativo de Preços**:
+     - Abertura de cotação (manual ou lote via PDF/CSV).
+     - Disparo aos fornecedores e portal de resposta (Preço Unitário, Lote, Validade, Fabricante).
+     - Tabela Comparativa Consolidada com semáforo de dispersão frente à média/BPS/CMED.
+     - Filtro interativo para o comprador aceitar preços e desclassificar os que ultrapassarem a média/teto.
+     - Geração da Lista Oficial de Preços Aceitáveis, arquivamento e impressão/exportação formatada para os autos licitatórios.
+  5. **Database Schema Design (PostgreSQL / Supabase)**:
+     - Modelagem DDL de `contratos_administrativos`, `contratos_itens`, `notas_empenho`, `empenhos_itens`, `pedidos_compra`, `pedidos_compra_itens`, `notas_fiscais_entrada`, `notas_fiscais_itens`, `cotacoes_precos`, `cotacoes_itens` e `cotacoes_propostas_fornecedor`.
+  6. **API RESTful Contracts**:
+     - Endpoints com envelopes padronizados, idempotência e status codes semânticos.
+
+**Arquivos alterados:**
+- `implementation_plan.md`
+- `LOG_DE_ATIVIDADES_OBSIDIAN.md`
+
+**Decisões / observações:**
+- O padrão de 50% no fracionamento de contratos foi integrado como default configurável.
+- A diferenciação entre travas com justificativa/aprovação (Empenho e Contrato) vs trava absoluta intransponível (Ata de Registro de Preços) reflete com precisão os artigos 82 a 86 e 140 da Lei 14.133/2021.
+
+---
+
 ## 2026-09-21 19:42 — Padrão de Ícones + Escala Cinza Refinada (Max #E0E0E0, Sem Preto) e KPIs Completos
 
 **O que foi feito:**

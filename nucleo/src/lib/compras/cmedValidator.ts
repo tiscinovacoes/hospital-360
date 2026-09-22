@@ -99,9 +99,18 @@ const TABELA_OFICIAL_GOV: Record<string, {
   }
 };
 
+import { BANCO_PRECOS_MEDICAMENTOS_OFICIAL, obterReferenciaPorCatmat, buscarMedicamentoNoBanco } from './bancoPrecosMedicamentos';
+
 export function validateMedicinePrice(input: CmedValidationInput): CmedValidationResult {
   const normalizedCatmat = input.codigo_catmat.trim().toUpperCase();
-  const govData = TABELA_OFICIAL_GOV[normalizedCatmat] || {
+  const refBanco = obterReferenciaPorCatmat(normalizedCatmat) || buscarMedicamentoNoBanco(input.nome_medicamento)[0];
+
+  const govData = refBanco ? {
+    nome_padrao: refBanco.nome_comercial_padrao,
+    principio_ativo: refBanco.principio_ativo,
+    preco_bps: refBanco.preco_referencia_bps,
+    preco_cmed: refBanco.preco_teto_cmed
+  } : {
     nome_padrao: input.nome_medicamento,
     principio_ativo: input.principio_ativo || 'Não especificado',
     preco_bps: input.preco_proposto * 1.05,
