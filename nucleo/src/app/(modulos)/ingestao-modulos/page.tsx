@@ -219,7 +219,8 @@ export default function IngestaoModulosPage() {
   };
 
   useEffect(() => {
-    fetchPatientAnalysis();
+    // Adiado para microtask: fetchPatientAnalysis() seta loading de forma síncrona.
+    void Promise.resolve().then(() => fetchPatientAnalysis());
   }, []);
 
   const handleToggleModule = (id: string) => {
@@ -342,7 +343,7 @@ export default function IngestaoModulosPage() {
               onClick={() => handleApplyPreset('FARMACIA_ONLY')}
               className={`px-3 py-2 min-h-[44px] text-xs font-semibold rounded-lg transition-all ${
                 activePlan === 'FARMACIA_ONLY'
-                  ? 'bg-orange-50 text-[#EA580C] border border-orange-200 font-bold'
+                  ? 'bg-[#8A6A16]/[0.08] text-[#8A6A16] border border-[#8A6A16]/20 font-bold'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -352,7 +353,7 @@ export default function IngestaoModulosPage() {
               onClick={() => handleApplyPreset('ASSISTENCIAL')}
               className={`px-3 py-2 min-h-[44px] text-xs font-semibold rounded-lg transition-all ${
                 activePlan === 'ASSISTENCIAL'
-                  ? 'bg-orange-50 text-[#EA580C] border border-orange-200 font-bold'
+                  ? 'bg-[#8A6A16]/[0.08] text-[#8A6A16] border border-[#8A6A16]/20 font-bold'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -362,7 +363,7 @@ export default function IngestaoModulosPage() {
               onClick={() => handleApplyPreset('SUITE_360')}
               className={`px-3 py-2 min-h-[44px] text-xs font-semibold rounded-lg transition-all ${
                 activePlan === 'SUITE_360'
-                  ? 'bg-[#EA580C] text-white shadow-sm font-bold'
+                  ? 'bg-[#8A6A16] text-white shadow-sm font-bold'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -372,15 +373,17 @@ export default function IngestaoModulosPage() {
         }
       />
 
-      {/* BARRA DE RBAC & CONTROLE DE PERFIS DO MÓDULO */}
-      <ModuloRbacBar
-        moduloId="ingestao-modulos"
-        activeRole={activeRole}
-        onRoleChange={setActiveRole}
-        accentColor="#EA580C"
-        lightBg="bg-orange-50"
-        lightBorder="border-orange-200"
-      />
+      {/* PERFIS & MATRIZ RBAC — só aparece na seção "Perfis" do menu lateral, não em todas as telas */}
+      {abaAtiva === 'perfis' && (
+        <ModuloRbacBar
+          moduloId="ingestao-modulos"
+          activeRole={activeRole}
+          onRoleChange={setActiveRole}
+          accentColor="#8A6A16"
+          lightBg="bg-[#8A6A16]/[0.08]"
+          lightBorder="border-[#8A6A16]/20"
+        />
+      )}
 
       {/* SUB-NAVEGAÇÃO POR ABAS */}
       <div className="bg-white border border-[#E0E0E0] rounded-2xl p-1.5 mb-6 shadow-xs flex items-center gap-1 overflow-x-auto">
@@ -398,7 +401,7 @@ export default function IngestaoModulosPage() {
               onClick={() => setAbaAtiva(tab.id as any)}
               className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap min-h-[44px] touch-manipulation ${
                 isActive
-                  ? 'bg-[#EA580C] text-white shadow-xs'
+                  ? 'bg-[#8A6A16] text-white shadow-xs'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
               }`}
             >
@@ -423,7 +426,7 @@ export default function IngestaoModulosPage() {
             {roles.map((role) => (
               <div key={role.id} className="p-4 rounded-2xl border border-[#E0E0E0] bg-white">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-orange-50 text-orange-800 border border-orange-200">
+                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-[#8A6A16]/[0.08] text-[#8A6A16] border border-[#8A6A16]/20">
                     {role.level}
                   </span>
                   {role.id === activeRole.id && (
@@ -483,7 +486,7 @@ export default function IngestaoModulosPage() {
             Mensagens com falha de schema ou inconsistência de rede retidas para reprocessamento garantido.
           </p>
 
-          <div className="p-4 bg-orange-50 border border-orange-200 rounded-xl text-xs text-orange-950 space-y-1">
+          <div className="p-4 bg-[#8A6A16]/[0.08] border border-[#8A6A16]/20 rounded-xl text-xs text-[#6E5511] space-y-1">
             <strong>Fila Limpa:</strong>
             <p>Nenhum payload retido na Dead Letter Queue. 100% dos eventos integrados com sucesso.</p>
           </div>
@@ -493,9 +496,9 @@ export default function IngestaoModulosPage() {
       {/* Banner de Feedback de Upload */}
       {uploadStatus && (
         <div className="max-w-7xl mx-auto w-full pt-2 pb-4">
-          <div className="p-3 bg-orange-50 border border-orange-200 rounded-xl text-xs font-medium text-orange-950 flex items-center justify-between">
+          <div className="p-3 bg-[#8A6A16]/[0.08] border border-[#8A6A16]/20 rounded-xl text-xs font-medium text-[#6E5511] flex items-center justify-between">
             <span>{uploadStatus}</span>
-            <button onClick={() => setUploadStatus(null)} className="text-[#EA580C] hover:text-orange-900 font-bold min-w-[36px] min-h-[36px] flex items-center justify-center">✕</button>
+            <button onClick={() => setUploadStatus(null)} className="text-[#8A6A16] hover:text-[#8A6A16] font-bold min-w-[36px] min-h-[36px] flex items-center justify-center">✕</button>
           </div>
         </div>
       )}
@@ -506,7 +509,7 @@ export default function IngestaoModulosPage() {
         <div className="lg:col-span-7 space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-bold text-[#0F172A] flex items-center gap-2">
-              <Sliders className="w-5 h-5 text-[#1A56DB]" /> Módulos do Sistema ({modules.filter((m) => m.enabled).length} de {modules.length} Ativos)
+              <Sliders className="w-5 h-5 text-[#8A6A16]" /> Módulos do Sistema ({modules.filter((m) => m.enabled).length} de {modules.length} Ativos)
             </h2>
             <span className="text-xs text-[#64748B]">Clique no switch para alternar modo</span>
           </div>
@@ -517,7 +520,7 @@ export default function IngestaoModulosPage() {
                 key={mod.id}
                 className={`p-4 rounded-2xl border transition-all ${
                   mod.enabled
-                    ? 'bg-white border-[#BFDBFE] shadow-sm hover:border-[#1A56DB]'
+                    ? 'bg-white border-[#BFDBFE] shadow-sm hover:border-[#8A6A16]'
                     : 'bg-[#F8FAFC] border-[#E2E8F0] opacity-90'
                 }`}
               >
@@ -557,7 +560,7 @@ export default function IngestaoModulosPage() {
                     <button
                       onClick={() => handleToggleModule(mod.id)}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        mod.enabled ? 'bg-[#1A56DB]' : 'bg-slate-300'
+                        mod.enabled ? 'bg-[#8A6A16]' : 'bg-slate-300'
                       }`}
                     >
                       <span
@@ -572,7 +575,7 @@ export default function IngestaoModulosPage() {
                       <div className="flex flex-col items-end gap-1.5">
                         <button
                           onClick={() => handleSimulateUpload(mod.name, mod.id)}
-                          className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold text-[#1A56DB] bg-[#EFF6FF] hover:bg-[#DBEAFE] rounded-lg border border-[#BFDBFE] transition-colors"
+                          className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold text-[#8A6A16] bg-[#EFF6FF] hover:bg-[#DBEAFE] rounded-lg border border-[#BFDBFE] transition-colors"
                         >
                           <UploadCloud className="w-3 h-3" /> Ingerir Arquivo
                         </button>
@@ -598,7 +601,7 @@ export default function IngestaoModulosPage() {
           <div className="bg-white rounded-2xl border border-[#E2E8F0] p-6 shadow-sm sticky top-24">
             <div className="flex items-center justify-between pb-4 border-b border-slate-100">
               <div>
-                <span className="text-xs font-bold text-[#1A56DB] uppercase tracking-wider">O Resultado Final</span>
+                <span className="text-xs font-bold text-[#8A6A16] uppercase tracking-wider">O Resultado Final</span>
                 <h3 className="text-lg font-extrabold text-[#0F172A]">Custo Real por Paciente</h3>
               </div>
               
@@ -607,7 +610,7 @@ export default function IngestaoModulosPage() {
                 <button
                   onClick={() => setViewMode('PRIVADO')}
                   className={`px-2.5 py-1 text-xs font-bold rounded-md transition-all ${
-                    viewMode === 'PRIVADO' ? 'bg-[#1A56DB] text-white' : 'text-[#64748B]'
+                    viewMode === 'PRIVADO' ? 'bg-[#8A6A16] text-white' : 'text-[#64748B]'
                   }`}
                 >
                   Hospital Privado
@@ -625,7 +628,7 @@ export default function IngestaoModulosPage() {
 
             {loadingPatient ? (
               <div className="py-12 flex flex-col items-center justify-center text-slate-400 gap-2">
-                <RefreshCw className="w-6 h-6 animate-spin text-[#1A56DB]" />
+                <RefreshCw className="w-6 h-6 animate-spin text-[#8A6A16]" />
                 <span className="text-xs">Consolidando jornada do paciente...</span>
               </div>
             ) : patientData ? (
@@ -746,7 +749,7 @@ export default function IngestaoModulosPage() {
                 <div className="pt-3 border-t border-slate-200 space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                      <Activity className="w-3.5 h-3.5 text-[#1A56DB]" /> Jornada Door-to-Door (n8n Hub)
+                      <Activity className="w-3.5 h-3.5 text-[#8A6A16]" /> Jornada Door-to-Door (n8n Hub)
                     </span>
                     <span className="text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">
                       Entrada 08:00 ➔ Saída 10:00
@@ -755,31 +758,31 @@ export default function IngestaoModulosPage() {
 
                   <div className="relative pl-5 border-l-2 border-blue-200 space-y-3 text-xs">
                     <div className="relative">
-                      <span className="absolute -left-[25px] top-0.5 w-3 h-3 rounded-full bg-[#1A56DB] ring-4 ring-blue-100" />
+                      <span className="absolute -left-[25px] top-0.5 w-3 h-3 rounded-full bg-[#8A6A16] ring-4 ring-blue-100" />
                       <p className="font-bold text-slate-800">1. Porta de Entrada (Check-in &amp; Triagem)</p>
                       <p className="text-[11px] text-slate-500">Recepção 360 • Manchester • Pulseira QR Code • <strong className="text-slate-700">R$ 38,50</strong></p>
                     </div>
 
                     <div className="relative">
-                      <span className="absolute -left-[25px] top-0.5 w-3 h-3 rounded-full bg-[#1A56DB] ring-4 ring-blue-100" />
+                      <span className="absolute -left-[25px] top-0.5 w-3 h-3 rounded-full bg-[#8A6A16] ring-4 ring-blue-100" />
                       <p className="font-bold text-slate-800">2. Consulta Clínica Especializada (OpenEMR)</p>
                       <p className="text-[11px] text-slate-500">Clínica CardioVida • Dr. Ricardo Mendes • <strong className="text-slate-700">R$ 60,00</strong> (0,5h)</p>
                     </div>
 
                     <div className="relative">
-                      <span className="absolute -left-[25px] top-0.5 w-3 h-3 rounded-full bg-[#1A56DB] ring-4 ring-blue-100" />
+                      <span className="absolute -left-[25px] top-0.5 w-3 h-3 rounded-full bg-[#8A6A16] ring-4 ring-blue-100" />
                       <p className="font-bold text-slate-800">3. Baixa Imediata Estoque FEFO (OpenBoxes via n8n)</p>
                       <p className="text-[11px] text-slate-500">Ceftriaxona Lote L-9941 + Insumos • <strong className="text-slate-700">R$ 125,50</strong></p>
                     </div>
 
                     <div className="relative">
-                      <span className="absolute -left-[25px] top-0.5 w-3 h-3 rounded-full bg-[#1A56DB] ring-4 ring-blue-100" />
+                      <span className="absolute -left-[25px] top-0.5 w-3 h-3 rounded-full bg-[#8A6A16] ring-4 ring-blue-100" />
                       <p className="font-bold text-slate-800">4. Laboratório Central LIMS (SENAITE.core)</p>
                       <p className="text-[11px] text-slate-500">Hemograma + Troponina • Laudo FHIR • <strong className="text-slate-700">R$ 145,00</strong></p>
                     </div>
 
                     <div className="relative">
-                      <span className="absolute -left-[25px] top-0.5 w-3 h-3 rounded-full bg-[#1A56DB] ring-4 ring-blue-100" />
+                      <span className="absolute -left-[25px] top-0.5 w-3 h-3 rounded-full bg-[#8A6A16] ring-4 ring-blue-100" />
                       <p className="font-bold text-slate-800">5. Porta de Saída: Cobrança &amp; Split (Hyperswitch)</p>
                       <p className="text-[11px] text-slate-500">Split condomínio vs clínica médica • NF no Contábil • <strong className="text-slate-700">R$ 42,00</strong></p>
                     </div>

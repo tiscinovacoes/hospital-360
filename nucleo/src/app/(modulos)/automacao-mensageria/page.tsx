@@ -176,30 +176,32 @@ export default function AutomacaoMensageriaPage() {
       />
       {/* Feedback de Notificação */}
       {whatsappSent && (
-        <div className="mb-4 p-3.5 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center justify-between text-xs text-emerald-950 shadow-sm animate-in fade-in duration-200">
+        <div className="mb-4 p-3.5 bg-[#8A6A16]/[0.08] border border-[#8A6A16]/20 rounded-2xl flex items-center justify-between text-xs text-[#6E5511] shadow-sm animate-in fade-in duration-200">
           <div className="flex items-center gap-2">
-            <CheckCheck className="w-4 h-4 text-[#059669] flex-shrink-0" />
+            <CheckCheck className="w-4 h-4 text-[#8A6A16] flex-shrink-0" />
             <span className="font-bold">{whatsappSent}</span>
           </div>
           <button 
             type="button" 
             onClick={() => setWhatsappSent(null)}
-            className="text-emerald-700 hover:text-emerald-900 p-1 min-h-[44px] min-w-[44px] flex items-center justify-center"
+            className="text-[#8A6A16] hover:text-[#8A6A16] p-1 min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
       )}
 
-      {/* BARRA DE RBAC & CONTROLE DE PERFIS DO MÓDULO */}
-      <ModuloRbacBar
-        moduloId="automacao-mensageria"
-        activeRole={activeRole}
-        onRoleChange={setActiveRole}
-        accentColor="#059669"
-        lightBg="bg-emerald-50"
-        lightBorder="border-emerald-200"
-      />
+      {/* PERFIS & MATRIZ RBAC — só aparece na seção "Perfis" do menu lateral, não em todas as telas */}
+      {abaAtiva === 'perfis' && (
+        <ModuloRbacBar
+          moduloId="automacao-mensageria"
+          activeRole={activeRole}
+          onRoleChange={setActiveRole}
+          accentColor="#8A6A16"
+          lightBg="bg-[#8A6A16]/[0.08]"
+          lightBorder="border-[#8A6A16]/20"
+        />
+      )}
 
       {/* Cards de Métricas do Barramento */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -207,7 +209,7 @@ export default function AutomacaoMensageriaPage() {
           title="Status do Barramento"
           value="100% Online"
           subtitle="n8n Cluster + Redis"
-          icon={<Radio className="w-5 h-5 text-emerald-600" />}
+          icon={<Radio className="w-5 h-5 text-[#8A6A16]" />}
           trend={{ text: "Fila Ativa e Saudável", isPositive: true }}
         />
 
@@ -215,7 +217,7 @@ export default function AutomacaoMensageriaPage() {
           title="Latência Média"
           value="48 ms"
           subtitle="Entre Microsserviços"
-          icon={<Zap className="w-5 h-5 text-emerald-600" />}
+          icon={<Zap className="w-5 h-5 text-[#8A6A16]" />}
           trend={{ text: "Alta Performance", isPositive: true }}
         />
 
@@ -223,7 +225,7 @@ export default function AutomacaoMensageriaPage() {
           title="Fila Dead Letter (DLQ)"
           value="0 Falhas"
           subtitle="Nenhum Evento Perdido"
-          icon={<Workflow className="w-5 h-5 text-emerald-600" />}
+          icon={<Workflow className="w-5 h-5 text-[#8A6A16]" />}
           trend={{ text: "Zero Perdas", isPositive: true }}
         />
 
@@ -231,7 +233,7 @@ export default function AutomacaoMensageriaPage() {
           title="Disparos WhatsApp"
           value="1.420 msgs"
           subtitle="Taxa Entrega: 99.4%"
-          icon={<MessageSquare className="w-5 h-5 text-emerald-600" />}
+          icon={<MessageSquare className="w-5 h-5 text-[#8A6A16]" />}
           trend={{ text: "99.4% Entregues", isPositive: true }}
         />
       </div>
@@ -253,7 +255,7 @@ export default function AutomacaoMensageriaPage() {
               onClick={() => setAbaAtiva(tab.id as AbaMensageria)}
               className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap min-h-[44px] touch-manipulation ${
                 isActive
-                  ? 'bg-[#059669] text-white shadow-xs'
+                  ? 'bg-[#8A6A16] text-white shadow-xs'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
               }`}
             >
@@ -285,11 +287,11 @@ export default function AutomacaoMensageriaPage() {
                         <strong className="text-slate-900">{disp.paciente}</strong>
                         <span className="text-slate-500 font-mono text-[11px]">{disp.telefone}</span>
                       </div>
-                      <span className="text-emerald-800 font-semibold block mt-1">{disp.tipoMensagem}</span>
+                      <span className="text-[#8A6A16] font-semibold block mt-1">{disp.tipoMensagem}</span>
                     </div>
 
                     <div className="text-right">
-                      <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 block">
+                      <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#8A6A16]/[0.08] text-[#8A6A16] border border-[#8A6A16]/20 block">
                         {disp.status}
                       </span>
                       <span className="text-[10px] text-slate-400 mt-1 block">{disp.horario}</span>
@@ -309,7 +311,7 @@ export default function AutomacaoMensageriaPage() {
               <button
                 type="button"
                 onClick={() => handleSimulateWhatsAppNotification('Boletim Diário UTI')}
-                className="w-full p-2.5 rounded-xl border border-emerald-200 bg-emerald-50/50 hover:bg-emerald-100 text-emerald-900 text-xs font-bold text-left min-h-[44px]"
+                className="w-full p-2.5 rounded-xl border border-[#8A6A16]/20 bg-[#8A6A16]/50 hover:bg-[#6E5511]/[0.12] text-[#8A6A16] text-xs font-bold text-left min-h-[44px]"
               >
                 1. Boletim Clínico para Familiares
               </button>
@@ -343,7 +345,7 @@ export default function AutomacaoMensageriaPage() {
               Disparo inteligente 48h e 24h antes da consulta com reencaixe automático da fila de espera.
             </p>
 
-            <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-950 space-y-1 mb-4">
+            <div className="p-4 bg-[#8A6A16]/[0.08] border border-[#8A6A16]/20 rounded-xl text-xs text-[#6E5511] space-y-1 mb-4">
               <strong>Resultado Comprovado no Hospital 360:</strong>
               <p>O índice de faltas (no-show) caiu de <strong>28,4% para 4,1%</strong> com as confirmações ativas via WhatsApp.</p>
             </div>
@@ -365,7 +367,7 @@ export default function AutomacaoMensageriaPage() {
           <div className="flex items-center justify-between mb-5">
             <div>
               <h3 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
-                <Workflow className="w-5 h-5 text-[#059669]" />
+                <Workflow className="w-5 h-5 text-[#8A6A16]" />
                 Tráfego de Webhooks em Tempo Real (n8n Event Bus)
               </h3>
               <p className="text-xs text-slate-500">Comunicação assíncrona entre OpenEMR, OpenBoxes, LIMS e Hyperswitch</p>
@@ -391,12 +393,12 @@ export default function AutomacaoMensageriaPage() {
                   <tr key={evt.id} className="hover:bg-slate-50 transition-colors">
                     <td className="px-4 py-3.5 font-bold text-slate-900 font-sans">{evt.topic}</td>
                     <td className="px-4 py-3.5 text-slate-600 font-sans">{evt.source} &rarr; {evt.target}</td>
-                    <td className="px-4 py-3.5 text-[#059669] font-bold">{evt.latencyMs}ms</td>
+                    <td className="px-4 py-3.5 text-[#8A6A16] font-bold">{evt.latencyMs}ms</td>
                     <td className="px-4 py-3.5 text-slate-400 truncate max-w-[180px]" title={evt.payloadPreview}>
                       {evt.payloadPreview}
                     </td>
                     <td className="px-4 py-3.5 text-right font-sans">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#8A6A16]/[0.08] text-[#8A6A16] border border-[#8A6A16]/20">
                         {evt.status}
                       </span>
                     </td>
@@ -424,7 +426,7 @@ export default function AutomacaoMensageriaPage() {
                 <strong className="text-slate-900 block text-sm">Instância Principal: hospital-360-central</strong>
                 <span className="text-slate-500">Status: Conectado • Bateria Celular: 98% • Uptime: 42 dias</span>
               </div>
-              <span className="px-3 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl font-bold">
+              <span className="px-3 py-1 bg-[#8A6A16]/[0.08] text-[#8A6A16] border border-[#8A6A16]/20 rounded-xl font-bold">
                 Online &amp; Sincronizado
               </span>
             </div>
@@ -447,11 +449,11 @@ export default function AutomacaoMensageriaPage() {
               {roles.map((role) => (
                 <div key={role.id} className="p-4 rounded-2xl border border-[#E0E0E0] bg-white">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200">
+                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-[#8A6A16]/[0.08] text-[#8A6A16] border border-[#8A6A16]/20">
                       {role.level}
                     </span>
                     {role.id === activeRole.id && (
-                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                      <span className="text-[10px] font-bold text-[#8A6A16] bg-[#8A6A16]/[0.08] px-2 py-0.5 rounded-md border border-[#8A6A16]/20">
                         Perfil Ativo
                       </span>
                     )}

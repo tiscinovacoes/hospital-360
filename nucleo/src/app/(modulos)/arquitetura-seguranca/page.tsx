@@ -132,8 +132,8 @@ export default function ArchitectureSecurityPage() {
         activeSubtitle="Auditoria LGPD em prontuários, isolamento de dados RN-IND e certificados ICP-Brasil"
         actions={
           <div className="flex items-center gap-2">
-            <span className="px-3 py-2 min-h-[44px] rounded-xl text-xs font-mono font-medium bg-violet-50 border border-violet-200 text-[#7C3AED] flex items-center gap-1.5 shadow-xs">
-              <CheckCircle2 className="w-3.5 h-3.5 text-[#7C3AED]" />
+            <span className="px-3 py-2 min-h-[44px] rounded-xl text-xs font-mono font-medium bg-[#1B1F1C]/[0.08] border border-[#1B1F1C]/20 text-[#1B1F1C] flex items-center gap-1.5 shadow-xs">
+              <CheckCircle2 className="w-3.5 h-3.5 text-[#1B1F1C]" />
               TLS 1.3 • AES-256-GCM
             </span>
           </div>
@@ -141,30 +141,32 @@ export default function ArchitectureSecurityPage() {
       />
       {/* Toast Notice */}
       {notice && (
-        <div className="mb-4 p-3.5 bg-violet-50 border border-violet-200 rounded-2xl flex items-center justify-between text-xs text-violet-950 shadow-sm animate-in fade-in duration-200">
+        <div className="mb-4 p-3.5 bg-[#1B1F1C]/[0.08] border border-[#1B1F1C]/20 rounded-2xl flex items-center justify-between text-xs text-[#33382F] shadow-sm animate-in fade-in duration-200">
           <div className="flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-[#7C3AED] shrink-0" />
+            <ShieldCheck className="w-4 h-4 text-[#1B1F1C] shrink-0" />
             <span className="font-bold">{notice}</span>
           </div>
           <button 
             type="button" 
             onClick={() => setNotice(null)}
-            className="text-violet-700 hover:text-violet-900 p-1 min-h-[44px] min-w-[44px] flex items-center justify-center"
+            className="text-[#1B1F1C] hover:text-[#1B1F1C] p-1 min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
       )}
 
-      {/* BARRA DE RBAC & CONTROLE DE PERFIS DO MÓDULO */}
-      <ModuloRbacBar
-        moduloId="arquitetura-seguranca"
-        activeRole={activeRole}
-        onRoleChange={setActiveRole}
-        accentColor="#7C3AED"
-        lightBg="bg-violet-50"
-        lightBorder="border-violet-200"
-      />
+      {/* PERFIS & MATRIZ RBAC — só aparece na seção "Perfis" do menu lateral, não em todas as telas */}
+      {abaAtiva === 'perfis' && (
+        <ModuloRbacBar
+          moduloId="arquitetura-seguranca"
+          activeRole={activeRole}
+          onRoleChange={setActiveRole}
+          accentColor="#1B1F1C"
+          lightBg="bg-[#1B1F1C]/[0.08]"
+          lightBorder="border-[#1B1F1C]/20"
+        />
+      )}
 
       {/* CARDS DE MÉTRICAS CISO */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -172,7 +174,7 @@ export default function ArchitectureSecurityPage() {
           title="Conformidade LGPD"
           value="100% Auditável"
           subtitle="Artigo 11 Dados Sensíveis"
-          icon={<ShieldCheck className="w-5 h-5 text-violet-600" />}
+          icon={<ShieldCheck className="w-5 h-5 text-[#1B1F1C]" />}
           trend={{ text: "Trilha Imutável Ativa", isPositive: true }}
         />
 
@@ -180,7 +182,7 @@ export default function ArchitectureSecurityPage() {
           title="Isolamento RN-IND"
           value="Zero Vazamento"
           subtitle="Esquemas Segregados"
-          icon={<Database className="w-5 h-5 text-violet-600" />}
+          icon={<Database className="w-5 h-5 text-[#1B1F1C]" />}
           trend={{ text: "Chaves Cripto Exclusivas", isPositive: true }}
         />
 
@@ -188,7 +190,7 @@ export default function ArchitectureSecurityPage() {
           title="Certificados ICP-Brasil"
           value="48 Médicos"
           subtitle="Assinatura Digital CFM"
-          icon={<FileBadge className="w-5 h-5 text-violet-600" />}
+          icon={<FileBadge className="w-5 h-5 text-[#1B1F1C]" />}
           trend={{ text: "1 Alerta Renovação", isAlert: true }}
         />
 
@@ -218,7 +220,7 @@ export default function ArchitectureSecurityPage() {
               onClick={() => setAbaAtiva(tab.id as AbaSeguranca)}
               className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap min-h-[44px] touch-manipulation ${
                 isActive
-                  ? 'bg-[#7C3AED] text-white shadow-xs'
+                  ? 'bg-[#1B1F1C] text-white shadow-xs'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
               }`}
             >
@@ -234,7 +236,7 @@ export default function ArchitectureSecurityPage() {
         <div className="space-y-6">
           <div className="bg-white p-6 rounded-2xl border border-[#E0E0E0] shadow-xs">
             <h2 className="text-base font-bold text-slate-900 mb-2 flex items-center gap-2">
-              <Database className="w-5 h-5 text-[#7C3AED]" />
+              <Database className="w-5 h-5 text-[#1B1F1C]" />
               <span>Regra RN-IND: Princípio do Isolamento Financeiro e Clínico Estrito</span>
             </h2>
             <p className="text-xs text-slate-600 leading-relaxed">
@@ -246,7 +248,7 @@ export default function ArchitectureSecurityPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Banco da Clínica (Asséptico, sem preto escuro) */}
-            <div className="bg-white p-6 rounded-2xl border border-violet-200 shadow-xs flex flex-col justify-between">
+            <div className="bg-white p-6 rounded-2xl border border-[#1B1F1C]/20 shadow-xs flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
                   <div className="flex items-center gap-2">
@@ -255,14 +257,14 @@ export default function ArchitectureSecurityPage() {
                       PostgreSQL — Clínica Sala 204 (Cardiologia)
                     </h3>
                   </div>
-                  <span className="text-[10px] font-bold bg-violet-50 text-violet-700 border border-violet-200 px-2 py-0.5 rounded">
+                  <span className="text-[10px] font-bold bg-[#1B1F1C]/[0.08] text-[#1B1F1C] border border-[#1B1F1C]/20 px-2 py-0.5 rounded">
                     ISOLADO PRIVADO
                   </span>
                 </div>
 
                 <div className="text-xs space-y-2 text-slate-700">
-                  <div className="p-3 bg-violet-50/40 rounded-xl border border-violet-100">
-                    <p className="text-violet-900 font-bold mb-1">• faturamento_mensal: R$ 49.620,00</p>
+                  <div className="p-3 bg-[#1B1F1C]/40 rounded-xl border border-[#1B1F1C]/[0.12]">
+                    <p className="text-[#1B1F1C] font-bold mb-1">• faturamento_mensal: R$ 49.620,00</p>
                     <p className="text-slate-500 text-[11px]">Acessível exclusivamente pelo Dr. Ricardo (Chave KMS individual)</p>
                   </div>
                   <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
@@ -346,7 +348,7 @@ export default function ArchitectureSecurityPage() {
                       <strong className="text-slate-900">{log.usuario}</strong>
                       <span className="text-slate-400 font-mono">({log.matricula})</span>
                     </div>
-                    <span className="text-violet-900 font-semibold block mt-1">{log.acao} &rarr; {log.prontuarioAcessado}</span>
+                    <span className="text-[#1B1F1C] font-semibold block mt-1">{log.acao} &rarr; {log.prontuarioAcessado}</span>
                     <span className="text-slate-500 text-[11px] block mt-0.5">
                       Justificativa: {log.justificativaClinica} • IP: {log.ipOrigem}
                     </span>
@@ -386,7 +388,7 @@ export default function ArchitectureSecurityPage() {
                   <div>
                     <strong className="text-slate-900 block text-sm">{cert.medico}</strong>
                     <span className="text-slate-500">{cert.crm} • Tipo: {cert.tipoCertificado}</span>
-                    <span className="text-violet-800 font-semibold block mt-1">Validade: {cert.validade}</span>
+                    <span className="text-[#1B1F1C] font-semibold block mt-1">Validade: {cert.validade}</span>
                   </div>
 
                   <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold border ${
@@ -437,7 +439,7 @@ export default function ArchitectureSecurityPage() {
               {roles.map((role) => (
                 <div key={role.id} className="p-4 rounded-2xl border border-[#E0E0E0] bg-white">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-violet-50 text-violet-800 border border-violet-200">
+                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-[#1B1F1C]/[0.08] text-[#1B1F1C] border border-[#1B1F1C]/20">
                       {role.level}
                     </span>
                     {role.id === activeRole.id && (

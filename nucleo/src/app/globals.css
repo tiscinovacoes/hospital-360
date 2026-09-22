@@ -1,49 +1,54 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
 :root {
-  /* ── Azul Institucional — Primary ── */
-  --vs-blue-900: #1E3A5F;   /* Sidebar, headers escuros, fundo de destaque */
-  --vs-blue-700: #1A56DB;   /* Cor primária, CTAs, links, estados ativos */
-  --vs-blue-500: #2563EB;   /* Hover de elementos primários */
-  --vs-blue-100: #EBF0FB;   /* Backgrounds secundários, itens selecionados */
-  --vs-blue-50:  #F0F4FF;   /* Fundo de seções com ênfase azul */
+  /* ── Design System v2.0.0 — ver IDENTIDADE_VISUAL (1).md ──
+     Nomes --vs-* mantidos por compatibilidade; valores agora seguem a v2
+     (tinta/papel + teal/terracota), não mais o azul/verde da v1. */
 
-  /* ── Verde Sucesso — Accent / Success ── */
-  --vs-green:    #0E9F6E;   /* Sucesso, aprovação, IA, confirmação */
-  --vs-green-dk: #057A55;   /* Hover de sucesso, texto em contexto claro */
-  --vs-green-lt: #D1FAE5;   /* Background de alertas e badges de sucesso */
+  /* ── Teal — ação / confiança (substitui o azul institucional) ── */
+  --vs-blue-900: #1B1F1C;   /* Tinta — sidebar, headers escuros, hero de destaque */
+  --vs-blue-700: #0E5C4C;   /* Teal — cor de ação, links, estados ativos */
+  --vs-blue-500: #0A4A3D;   /* Teal escuro — hover de elementos de ação */
+  --vs-blue-100: rgba(14, 92, 76, 0.08);  /* Fundo de badge/pill "ativo" */
+  --vs-blue-50:  #EFEAE0;   /* Papel 2 — fundo de seções/sidebar secundária */
 
-  /* ── Amarelo Atenção — Warning ── */
-  --vs-yellow:    #FACA15;  /* Atenção, pendente, prazo próximo */
-  --vs-yellow-dk: #C27803;  /* Texto de aviso em fundo claro */
-  --vs-yellow-lt: #FEF9C3;  /* Background de alertas de atenção */
+  /* ── Terracota — destaque / CTA primário (substitui o verde sucesso) ── */
+  --vs-green:    #C1622D;   /* Terracota — CTA primário, único destaque por tela */
+  --vs-green-dk: #A8531F;   /* Hover do CTA primário */
+  --vs-green-lt: rgba(193, 98, 45, 0.08);  /* Fundo de badge/hover sutil de destaque */
 
-  /* ── Vermelho Crítico — Danger ── */
-  --vs-red:    #F05252;     /* Erro, rejeição, crítico, emergência */
-  --vs-red-dk: #C81E1E;     /* Texto de erro em fundo claro */
-  --vs-red-lt: #FDE8E8;     /* Background de alertas críticos */
+  /* ── Ocre — atenção (substitui o amarelo) ── */
+  --vs-yellow:    #8A6A16;  /* Atenção, pendente, prazo próximo */
+  --vs-yellow-dk: #6E5511;  /* Texto de aviso em fundo claro */
+  --vs-yellow-lt: rgba(138, 106, 22, 0.10);  /* Background de alertas de atenção */
 
-  /* ── Cinza Neutro — Neutral ── */
-  --vs-gray-900: #111928;   /* Texto principal, títulos */
-  --vs-gray-700: #374151;   /* Texto secundário, labels */
-  --vs-gray-500: #6B7280;   /* Placeholders, captions, ícones suaves */
-  --vs-gray-300: #D1D5DB;   /* Bordas de inputs */
-  --vs-gray-200: #E5E7EB;   /* Bordas de cards, divisores */
-  --vs-gray-100: #F3F4F6;   /* Fundo de inputs, cabeçalho de tabelas */
-  --vs-gray-50:  #F9FAFB;   /* Background da página */
+  /* ── Tijolo — crítico (substitui o vermelho) ── */
+  --vs-red:    #9C3B2E;     /* Erro, rejeição, esgotado, emergência */
+  --vs-red-dk: #7E2F24;     /* Texto de erro em fundo claro */
+  --vs-red-lt: rgba(156, 59, 46, 0.08);  /* Background de alertas críticos */
+
+  /* ── Tinta & Papel — Neutral (substitui o cinza-azulado slate) ── */
+  --vs-gray-900: #1B1F1C;   /* Tinta — texto principal, títulos */
+  --vs-gray-700: rgba(27, 31, 28, 0.70);   /* Texto secundário, labels */
+  --vs-gray-500: rgba(27, 31, 28, 0.45);   /* Placeholders, captions, ícones suaves */
+  --vs-gray-300: rgba(27, 31, 28, 0.18);   /* Bordas de inputs */
+  --vs-gray-200: rgba(27, 31, 28, 0.12);   /* Bordas de cards, divisores */
+  --vs-gray-100: rgba(27, 31, 28, 0.08);   /* Fundo de inputs, cabeçalho de tabelas */
+  --vs-gray-50:  #F6F3EC;   /* Papel — background da página */
   --white:       #FFFFFF;
 
-  /* ── Estrutura & Sombras ── */
+  /* ── Estrutura & Sombras (tinta em vez de preto puro) ── */
   --vs-radius: 8px;
-  --vs-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
-  --vs-shadow:    0 1px 4px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.06);
-  --vs-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+  --vs-shadow-sm: 0 1px 2px rgba(27, 31, 28, 0.05);
+  --vs-shadow:    0 1px 4px rgba(27, 31, 28, 0.06), 0 4px 12px rgba(27, 31, 28, 0.05);
+  --vs-shadow-lg: 0 8px 24px rgba(27, 31, 28, 0.10), 0 2px 8px rgba(27, 31, 28, 0.05);
 
   /* ── Variáveis Dinâmicas de Tema (ThemeContext) ── */
-  --theme-primary: #1A56DB;
-  --theme-secondary: #1E3A5F;
-  --theme-accent: #0E9F6E;
-  --theme-light: #EBF0FB;
+  --theme-primary: #0E5C4C;
+  --theme-secondary: #1B1F1C;
+  --theme-accent: #C1622D;
+  --theme-light: #EFEAE0;
 }
 
 @theme inline {
@@ -68,9 +73,10 @@
   --color-vs-gray-200: var(--vs-gray-200);
   --color-vs-gray-100: var(--vs-gray-100);
   --color-vs-gray-50: var(--vs-gray-50);
-  
-  --font-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-mono: var(--font-mono), "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --font-sans: 'Public Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
 }
 
 body {
@@ -78,6 +84,12 @@ body {
   color: var(--vs-gray-900);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+}
+
+/* Títulos usam a serifada de destaque do design system v2 — aplicado
+   globalmente para que os módulos herdem sem precisar editar cada tela. */
+h1, h2 {
+  font-family: var(--font-display);
 }
 
 /* ── Componentes Padrão do Design System ── */

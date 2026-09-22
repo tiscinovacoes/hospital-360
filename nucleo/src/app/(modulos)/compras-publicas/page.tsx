@@ -22,7 +22,6 @@ import {
   XCircle,
   Scale,
   RefreshCw,
-  UserCheck,
   Menu,
   X,
   LayoutDashboard,
@@ -68,7 +67,8 @@ type SecaoModulo =
   | 'ocorrencias'
   | 'logs'
   | 'despesas_hub'
-  | 'parametros';
+  | 'parametros'
+  | 'perfis';
 
 const SEED_PDC_PADRAO = {
   id: 'pdc-001',
@@ -113,7 +113,7 @@ export default function VigiaComprasPage() {
   // Controle de Navegação do Produto Único
   const [sidebarAberta, setSidebarAberta] = useState(true);
   const [secaoAtiva, setSecaoAtiva] = useState<SecaoModulo>('visao_geral');
-  const [perfilAtivo, setPerfilAtivo] = useState<PerfilCompras>('compras_operador');
+  const [perfilAtivo] = useState<PerfilCompras>('compras_operador');
 
   // Estados de Dados da API
   const [atas, setAtas] = useState<any[]>([]);
@@ -136,7 +136,7 @@ export default function VigiaComprasPage() {
   // -------------------------------------------------------------
   // ESTADOS DA TELA "NOVO PEDIDO DE COMPRA" (Idêntica à Imagem)
   // -------------------------------------------------------------
-  const [novoPdcNumero, setNovoPdcNumero] = useState(`PdC-2026-${String(Math.floor(100 + Math.random() * 900))}`);
+  const [novoPdcNumero, setNovoPdcNumero] = useState(() => `PdC-2026-${String(Math.floor(100 + Math.random() * 900))}`);
   const [novoPdcData, setNovoPdcData] = useState(new Date().toISOString().substring(0, 10));
   const [vinculadoAta, setVinculadoAta] = useState(true);
   const [ataSelecionadaId, setAtaSelecionadaId] = useState<string>('ata-001');
@@ -316,7 +316,9 @@ export default function VigiaComprasPage() {
   };
 
   useEffect(() => {
-    carregarDados();
+    // Adiado para microtask: carregarDados() seta loading=true de forma síncrona,
+    // o que a regra react-hooks/set-state-in-effect não permite dentro do corpo do efeito.
+    void Promise.resolve().then(() => carregarDados());
   }, []);
 
   // Ata selecionada atual para o formulário de Pedido
@@ -731,14 +733,14 @@ export default function VigiaComprasPage() {
       label: 'Pedidos de Compra (PdC)',
       icon: ShoppingCart,
       badge: 'Novo',
-      badgeCor: 'bg-[#1A56DB] text-white shadow-xs'
+      badgeCor: 'bg-[#0E5C4C] text-white shadow-xs'
     },
     {
       id: 'atas',
       label: 'Atas, Contratos & Empenhos',
       icon: FileText,
       badge: `${atas.length} Atas`,
-      badgeCor: 'bg-blue-100 text-blue-800'
+      badgeCor: 'bg-[#0E5C4C]/[0.12] text-[#0E5C4C]'
     },
     {
       id: 'confirmar_entrega',
@@ -773,7 +775,7 @@ export default function VigiaComprasPage() {
       label: 'Central de Chamados & OS',
       icon: HelpCircle,
       badge: chamados.length > 0 ? `${chamados.length}` : null,
-      badgeCor: 'bg-blue-100 text-blue-800'
+      badgeCor: 'bg-[#0E5C4C]/[0.12] text-[#0E5C4C]'
     },
     {
       id: 'ocorrencias',
@@ -794,6 +796,12 @@ export default function VigiaComprasPage() {
       icon: FileSpreadsheet,
       badge: 'Hub 360',
       badgeCor: 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+    },
+    {
+      id: 'perfis',
+      label: 'Perfis & Matriz RBAC',
+      icon: ShieldCheck,
+      badge: null
     }
   ];
 
@@ -814,7 +822,7 @@ export default function VigiaComprasPage() {
 
             <button
               onClick={() => setSecaoAtiva('pedidos_compra')}
-              className="flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl text-xs font-bold bg-[#1A56DB] text-white hover:bg-blue-700 transition-all shadow-xs cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl text-xs font-bold bg-[#0E5C4C] text-white hover:bg-[#0A4A3D] transition-all shadow-xs cursor-pointer"
             >
               <ShoppingCart className="w-3.5 h-3.5" />
               <span>Novo Pedido (PdC)</span>
@@ -849,11 +857,11 @@ export default function VigiaComprasPage() {
           className={`
             fixed lg:static inset-y-0 left-0 z-50 lg:z-30
             ${sidebarAberta ? 'translate-x-0 w-72 lg:w-64 shadow-xl lg:shadow-none' : '-translate-x-full lg:translate-x-0 lg:w-0 lg:hidden'}
-            shrink-0 bg-gradient-to-b from-blue-50/95 via-white to-blue-50/80 border-r border-blue-200/90 flex flex-col justify-between transition-all duration-200 ease-in-out
+            shrink-0 bg-gradient-to-b from-[#0E5C4C]/[0.06] via-white to-[#0E5C4C]/[0.05] border-r border-[#0E5C4C]/20 flex flex-col justify-between transition-all duration-200 ease-in-out
           `}
         >
           <nav className="p-3 space-y-1.5 flex-1 overflow-y-auto">
-            <div className="px-3 pb-2 text-[10px] font-bold text-blue-600 uppercase tracking-wider">
+            <div className="px-3 pb-2 text-[10px] font-bold text-[#0E5C4C] uppercase tracking-wider">
               Menu de Compras &amp; Atas
             </div>
             {menuItens.map((item) => {
@@ -868,16 +876,16 @@ export default function VigiaComprasPage() {
                       setSidebarAberta(false);
                     }
                   }}
-                  className={`w-full min-h-[44px] sm:min-h-[38px] flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all text-left cursor-pointer focus:ring-2 focus:ring-blue-600 focus:outline-none ${
+                  className={`w-full min-h-[44px] sm:min-h-[38px] flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all text-left cursor-pointer focus:ring-2 focus:ring-[#0E5C4C] focus:outline-none ${
                     ativo
-                      ? 'bg-[#1A56DB] text-white font-bold border border-blue-600 shadow-sm shadow-blue-600/25'
-                      : 'text-slate-700 hover:bg-white/90 hover:text-[#1A56DB] hover:shadow-2xs border border-transparent'
+                      ? 'bg-[#0E5C4C] text-white font-bold border border-[#0E5C4C] shadow-sm shadow-blue-600/25'
+                      : 'text-slate-700 hover:bg-white/90 hover:text-[#0E5C4C] hover:shadow-2xs border border-transparent'
                   }`}
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <Icone
                       className={`w-4 h-4 shrink-0 transition-colors ${
-                        ativo ? 'text-white' : 'text-blue-500/80 group-hover:text-[#1A56DB]'
+                        ativo ? 'text-white' : 'text-[#0E5C4C]/80 group-hover:text-[#0E5C4C]'
                       }`}
                     />
                     <span className="truncate">{item.label}</span>
@@ -887,7 +895,7 @@ export default function VigiaComprasPage() {
                       className={`text-[10px] px-2 py-0.5 rounded-full font-bold ml-2 shrink-0 ${
                         ativo
                           ? 'bg-white/20 text-white'
-                          : item.badgeCor || 'bg-blue-100 text-blue-800 border border-blue-200'
+                          : item.badgeCor || 'bg-[#0E5C4C]/[0.12] text-[#0E5C4C] border border-[#0E5C4C]/20'
                       }`}
                     >
                       {item.badge}
@@ -898,10 +906,10 @@ export default function VigiaComprasPage() {
             })}
           </nav>
 
-          <div className="p-3 border-t border-blue-200/90 bg-blue-50/90 space-y-2">
+          <div className="p-3 border-t border-[#0E5C4C]/20 bg-[#0E5C4C]/[0.10] space-y-2">
             <Link
               href="/"
-              className="flex items-center justify-center gap-2 w-full py-2.5 px-3 rounded-xl border border-blue-200 bg-white text-[#1A56DB] hover:text-blue-900 hover:bg-blue-50 text-xs font-bold transition-all shadow-2xs"
+              className="flex items-center justify-center gap-2 w-full py-2.5 px-3 rounded-xl border border-[#0E5C4C]/20 bg-white text-[#0E5C4C] hover:text-[#1B1F1C] hover:bg-[#0A4A3D]/[0.08] text-xs font-bold transition-all shadow-2xs"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Voltar ao Hub de Módulos</span>
@@ -922,15 +930,17 @@ export default function VigiaComprasPage() {
             </span>
           </div>
 
-          {/* BARRA DE RBAC & CONTROLE DE PERFIS DO MÓDULO */}
-          <ModuloRbacBar
-            moduloId="compras-publicas"
-            activeRole={activeRoleCompras}
-            onRoleChange={setActiveRoleCompras}
-            accentColor="#1A56DB"
-            lightBg="bg-blue-50"
-            lightBorder="border-blue-200"
-          />
+          {/* PERFIS & MATRIZ RBAC — só aparece na seção "Perfis" do menu lateral, não em todas as telas */}
+          {secaoAtiva === 'perfis' && (
+            <ModuloRbacBar
+              moduloId="compras-publicas"
+              activeRole={activeRoleCompras}
+              onRoleChange={setActiveRoleCompras}
+              accentColor="#0E5C4C"
+              lightBg="bg-[#0E5C4C]/[0.08]"
+              lightBorder="border-[#0E5C4C]/20"
+            />
+          )}
 
           {/* ========================================================================= */}
           {/* SEÇÃO 1: NOVO PEDIDO DE COMPRA (PdC) - FIEL À IMAGEM DO USUÁRIO */}
@@ -984,7 +994,7 @@ export default function VigiaComprasPage() {
                       type="date"
                       value={novoPdcData}
                       onChange={(e) => setNovoPdcData(e.target.value)}
-                      className="w-full px-3 py-2 bg-white border border-[#E0E0E0] rounded-xl text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                      className="w-full px-3 py-2 bg-white border border-[#E0E0E0] rounded-xl text-xs font-medium text-slate-800 focus:ring-2 focus:ring-[#0E5C4C] focus:outline-none"
                     />
                     <span className="text-[10px] text-slate-400 mt-0.5 block">Data da emissão</span>
                   </div>
@@ -999,7 +1009,7 @@ export default function VigiaComprasPage() {
                       onClick={() => setVinculadoAta(false)}
                       className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                         !vinculadoAta
-                          ? 'bg-[#1A56DB] text-white shadow-xs'
+                          ? 'bg-[#0E5C4C] text-white shadow-xs'
                           : 'bg-[#F5F5F5] text-slate-700 border border-[#E0E0E0] hover:bg-[#EAEAEA]'
                       }`}
                     >
@@ -1010,7 +1020,7 @@ export default function VigiaComprasPage() {
                       onClick={() => setVinculadoAta(true)}
                       className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                         vinculadoAta
-                          ? 'bg-[#1A56DB] text-white shadow-xs'
+                          ? 'bg-[#0E5C4C] text-white shadow-xs'
                           : 'bg-[#F5F5F5] text-slate-700 border border-[#E0E0E0] hover:bg-[#EAEAEA]'
                       }`}
                     >
@@ -1027,7 +1037,7 @@ export default function VigiaComprasPage() {
                       <select
                         value={ataSelecionadaId}
                         onChange={(e) => setAtaSelecionadaId(e.target.value)}
-                        className="w-full px-3 py-2.5 bg-white border border-[#E0E0E0] rounded-xl text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-600 focus:outline-none cursor-pointer"
+                        className="w-full px-3 py-2.5 bg-white border border-[#E0E0E0] rounded-xl text-xs font-medium text-slate-800 focus:ring-2 focus:ring-[#0E5C4C] focus:outline-none cursor-pointer"
                       >
                         {atas.map((a) => (
                           <option key={a.id} value={a.id}>
@@ -1076,7 +1086,7 @@ export default function VigiaComprasPage() {
                     <select
                       value={contratoSelecionadoId}
                       onChange={(e) => setContratoSelecionadoId(e.target.value)}
-                      className="w-full px-3 py-2 bg-white border border-[#E0E0E0] rounded-xl text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-600 focus:outline-none cursor-pointer"
+                      className="w-full px-3 py-2 bg-white border border-[#E0E0E0] rounded-xl text-xs font-medium text-slate-800 focus:ring-2 focus:ring-[#0E5C4C] focus:outline-none cursor-pointer"
                     >
                       {contratos.map((c) => (
                         <option key={c.id} value={c.id}>
@@ -1096,7 +1106,7 @@ export default function VigiaComprasPage() {
                     <select
                       value={empenhoSelecionadoId}
                       onChange={(e) => setEmpenhoSelecionadoId(e.target.value)}
-                      className="w-full px-3 py-2 bg-white border border-[#E0E0E0] rounded-xl text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-600 focus:outline-none cursor-pointer"
+                      className="w-full px-3 py-2 bg-white border border-[#E0E0E0] rounded-xl text-xs font-medium text-slate-800 focus:ring-2 focus:ring-[#0E5C4C] focus:outline-none cursor-pointer"
                     >
                       {empenhos.map((e) => (
                         <option key={e.id} value={e.id}>
@@ -1132,7 +1142,7 @@ export default function VigiaComprasPage() {
                         type="date"
                         value={dataEntregaPrevista}
                         onChange={(e) => setDataEntregaPrevista(e.target.value)}
-                        className="w-full px-3 py-2 pl-9 bg-white border border-[#E0E0E0] rounded-xl text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                        className="w-full px-3 py-2 pl-9 bg-white border border-[#E0E0E0] rounded-xl text-xs font-medium text-slate-800 focus:ring-2 focus:ring-[#0E5C4C] focus:outline-none"
                       />
                       <Calendar className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
                     </div>
@@ -1148,7 +1158,7 @@ export default function VigiaComprasPage() {
                     <select
                       value={medicamentoSelecionadoId}
                       onChange={(e) => setMedicamentoSelecionadoId(e.target.value)}
-                      className="w-full px-3 py-2 bg-white border border-[#E0E0E0] rounded-xl text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-600 focus:outline-none cursor-pointer"
+                      className="w-full px-3 py-2 bg-white border border-[#E0E0E0] rounded-xl text-xs font-medium text-slate-800 focus:ring-2 focus:ring-[#0E5C4C] focus:outline-none cursor-pointer"
                     >
                       {ataAtiva?.itens?.map((it: any) => (
                         <option key={it.id} value={it.id}>
@@ -1167,7 +1177,7 @@ export default function VigiaComprasPage() {
                         min="1"
                         value={itemQuantidade}
                         onChange={(e) => setItemQuantidade(Number(e.target.value))}
-                        className="w-full px-3 py-2 bg-white border border-[#E0E0E0] rounded-xl text-xs font-bold text-slate-800 focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                        className="w-full px-3 py-2 bg-white border border-[#E0E0E0] rounded-xl text-xs font-bold text-slate-800 focus:ring-2 focus:ring-[#0E5C4C] focus:outline-none"
                       />
                     </div>
                     <div>
@@ -1187,7 +1197,7 @@ export default function VigiaComprasPage() {
                     <div className="p-3 bg-[#F0F4FF] rounded-xl border border-[#E0E0E0] text-xs space-y-1.5">
                       <div className="flex items-center justify-between">
                         <span className="font-bold text-slate-800 flex items-center gap-1.5">
-                          <Scale className="w-3.5 h-3.5 text-[#1A56DB]" />
+                          <Scale className="w-3.5 h-3.5 text-[#0E5C4C]" />
                           <span>Banco Oficial de Preços de Medicamentos</span>
                         </span>
                         <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold">
@@ -1227,7 +1237,7 @@ export default function VigiaComprasPage() {
                   <button
                     type="button"
                     onClick={handleAdicionarMedicamento}
-                    className="w-full py-2.5 px-4 border border-[#1A56DB] text-[#1A56DB] hover:bg-blue-50 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer focus:ring-2 focus:ring-blue-500"
+                    className="w-full py-2.5 px-4 border border-[#0E5C4C] text-[#0E5C4C] hover:bg-[#0A4A3D]/[0.08] rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer focus:ring-2 focus:ring-[#0E5C4C]"
                   >
                     <PlusCircle className="w-4 h-4" />
                     <span>Adicionar outro medicamento</span>
@@ -1281,7 +1291,7 @@ export default function VigiaComprasPage() {
 
                   <div className="flex items-center justify-between p-3 bg-[#F8FAFC] rounded-xl border border-[#E0E0E0]">
                     <span className="text-xs font-bold text-slate-700">Total Geral do Pedido:</span>
-                    <span className="text-lg font-bold text-[#1A56DB]">
+                    <span className="text-lg font-bold text-[#0E5C4C]">
                       R$ {totalGeralPedido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </span>
                   </div>
@@ -1401,7 +1411,7 @@ export default function VigiaComprasPage() {
                     className={`px-5 py-2.5 rounded-xl text-xs font-bold text-white transition-all shadow-xs flex items-center gap-2 ${
                       faltaSaldoAta || itensAdicionados.length === 0
                         ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
-                        : 'bg-[#1A56DB] hover:bg-blue-700 cursor-pointer focus:ring-2 focus:ring-blue-500'
+                        : 'bg-[#0E5C4C] hover:bg-[#0A4A3D] cursor-pointer focus:ring-2 focus:ring-[#0E5C4C]'
                     }`}
                   >
                     {salvandoPedido ? <RefreshCw className="w-4 h-4 animate-spin" /> : <ShoppingCart className="w-4 h-4" />}
@@ -1425,7 +1435,7 @@ export default function VigiaComprasPage() {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setShowModalContrato(true)}
-                    className="px-3 py-1.5 bg-[#1A56DB] hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer"
+                    className="px-3 py-1.5 bg-[#0E5C4C] hover:bg-[#0A4A3D] text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer"
                   >
                     <PlusCircle className="w-4 h-4" />
                     <span>Gerar Contrato (50%)</span>
@@ -1458,7 +1468,7 @@ export default function VigiaComprasPage() {
                     <tbody className="divide-y divide-[#E0E0E0]">
                       {atas.map((a) => (
                         <tr key={a.id} className="hover:bg-[#F8FAFC]">
-                          <td className="py-2.5 px-3 font-bold text-[#1A56DB]">{a.numero_ata}</td>
+                          <td className="py-2.5 px-3 font-bold text-[#0E5C4C]">{a.numero_ata}</td>
                           <td className="py-2.5 px-3 font-medium text-slate-800">{a.fornecedor_razao_social}</td>
                           <td className="py-2.5 px-3 text-right font-medium text-slate-700">
                             R$ {a.valor_total?.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
@@ -1500,7 +1510,7 @@ export default function VigiaComprasPage() {
                           <td className="py-2.5 px-3 font-bold text-indigo-700">{c.numero_contrato}</td>
                           <td className="py-2.5 px-3 text-slate-600">{c.numero_ata}</td>
                           <td className="py-2.5 px-3">
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-[#1A56DB] border border-blue-200">
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#0E5C4C]/[0.08] text-[#0E5C4C] border border-[#0E5C4C]/20">
                               {c.tipo_fracionamento} ({c.percentual_fracionamento}%)
                             </span>
                           </td>
@@ -1550,7 +1560,7 @@ export default function VigiaComprasPage() {
                             R$ {e.saldo_empenho_remanescente?.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                           </td>
                           <td className="py-2.5 px-3 text-center">
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800">
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#0E5C4C]/[0.12] text-[#0E5C4C]">
                               {e.status}
                             </span>
                           </td>
@@ -1614,7 +1624,7 @@ export default function VigiaComprasPage() {
                     <select
                       value={pdcSelecionadoId}
                       onChange={(e) => setPdcSelecionadoId(e.target.value)}
-                      className="w-full px-3 py-2 bg-white border border-[#E0E0E0] rounded-xl text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-600 focus:outline-none cursor-pointer"
+                      className="w-full px-3 py-2 bg-white border border-[#E0E0E0] rounded-xl text-xs font-medium text-slate-800 focus:ring-2 focus:ring-[#0E5C4C] focus:outline-none cursor-pointer"
                     >
                       {pedidosCompra.map((p) => (
                         <option key={p.id} value={p.id}>
@@ -1629,7 +1639,7 @@ export default function VigiaComprasPage() {
                       type="text"
                       value={danfeNumero}
                       onChange={(e) => setDanfeNumero(e.target.value)}
-                      className="w-full px-3 py-2 bg-white border border-[#E0E0E0] rounded-xl text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                      className="w-full px-3 py-2 bg-white border border-[#E0E0E0] rounded-xl text-xs font-medium text-slate-800 focus:ring-2 focus:ring-[#0E5C4C] focus:outline-none"
                     />
                   </div>
                   <div>
@@ -1638,7 +1648,7 @@ export default function VigiaComprasPage() {
                       type="text"
                       value={danfeChave}
                       onChange={(e) => setDanfeChave(e.target.value)}
-                      className="w-full px-3 py-2 bg-white border border-[#E0E0E0] rounded-xl text-xs font-mono text-slate-800 focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                      className="w-full px-3 py-2 bg-white border border-[#E0E0E0] rounded-xl text-xs font-mono text-slate-800 focus:ring-2 focus:ring-[#0E5C4C] focus:outline-none"
                     />
                   </div>
                 </div>
@@ -1650,7 +1660,7 @@ export default function VigiaComprasPage() {
                       type="text"
                       value={loteConferido}
                       onChange={(e) => setLoteConferido(e.target.value)}
-                      className="w-full px-3 py-2 bg-white border border-[#E0E0E0] rounded-xl text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                      className="w-full px-3 py-2 bg-white border border-[#E0E0E0] rounded-xl text-xs font-medium text-slate-800 focus:ring-2 focus:ring-[#0E5C4C] focus:outline-none"
                     />
                   </div>
                   <div>
@@ -1659,7 +1669,7 @@ export default function VigiaComprasPage() {
                       type="date"
                       value={validadeConferida}
                       onChange={(e) => setValidadeConferida(e.target.value)}
-                      className="w-full px-3 py-2 bg-white border border-[#E0E0E0] rounded-xl text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                      className="w-full px-3 py-2 bg-white border border-[#E0E0E0] rounded-xl text-xs font-medium text-slate-800 focus:ring-2 focus:ring-[#0E5C4C] focus:outline-none"
                     />
                   </div>
                   <div>
@@ -1668,7 +1678,7 @@ export default function VigiaComprasPage() {
                       type="text"
                       value={tempAferida}
                       onChange={(e) => setTempAferida(e.target.value)}
-                      className="w-full px-3 py-2 bg-white border border-[#E0E0E0] rounded-xl text-xs font-bold text-slate-800 focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                      className="w-full px-3 py-2 bg-white border border-[#E0E0E0] rounded-xl text-xs font-bold text-slate-800 focus:ring-2 focus:ring-[#0E5C4C] focus:outline-none"
                     />
                   </div>
                 </div>
@@ -1682,7 +1692,7 @@ export default function VigiaComprasPage() {
                         type="checkbox"
                         checked={checklist.danfe_conferida}
                         onChange={(e) => setChecklist({ ...checklist, danfe_conferida: e.target.checked })}
-                        className="rounded text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer"
+                        className="rounded text-[#0E5C4C] focus:ring-[#0E5C4C] w-4 h-4 cursor-pointer"
                       />
                       <span className="font-medium text-slate-800">DANFE e Chave SEFAZ conferidas sem divergências</span>
                     </label>
@@ -1691,7 +1701,7 @@ export default function VigiaComprasPage() {
                         type="checkbox"
                         checked={checklist.embalagem_integra}
                         onChange={(e) => setChecklist({ ...checklist, embalagem_integra: e.target.checked })}
-                        className="rounded text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer"
+                        className="rounded text-[#0E5C4C] focus:ring-[#0E5C4C] w-4 h-4 cursor-pointer"
                       />
                       <span className="font-medium text-slate-800">Embalagens íntegras, lacradas e invioladas</span>
                     </label>
@@ -1700,7 +1710,7 @@ export default function VigiaComprasPage() {
                         type="checkbox"
                         checked={checklist.temperatura_conforme}
                         onChange={(e) => setChecklist({ ...checklist, temperatura_conforme: e.target.checked })}
-                        className="rounded text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer"
+                        className="rounded text-[#0E5C4C] focus:ring-[#0E5C4C] w-4 h-4 cursor-pointer"
                       />
                       <span className="font-medium text-slate-800">Cadeia de frio / temperatura ambiente controlada OK</span>
                     </label>
@@ -1709,7 +1719,7 @@ export default function VigiaComprasPage() {
                         type="checkbox"
                         checked={checklist.laudo_fabricante_anexo}
                         onChange={(e) => setChecklist({ ...checklist, laudo_fabricante_anexo: e.target.checked })}
-                        className="rounded text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer"
+                        className="rounded text-[#0E5C4C] focus:ring-[#0E5C4C] w-4 h-4 cursor-pointer"
                       />
                       <span className="font-medium text-slate-800">Laudo analítico do fabricante anexado ao lote</span>
                     </label>
@@ -1746,7 +1756,7 @@ export default function VigiaComprasPage() {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setShowModalNovaCotacao(true)}
-                    className="px-3 py-1.5 bg-[#1A56DB] hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer"
+                    className="px-3 py-1.5 bg-[#0E5C4C] hover:bg-[#0A4A3D] text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer"
                   >
                     <PlusCircle className="w-4 h-4" />
                     <span>Abrir Cotação</span>
@@ -1774,9 +1784,9 @@ export default function VigiaComprasPage() {
                   <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#E0E0E0]">
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-mono font-bold text-sm text-[#1A56DB]">{cot.codigo_cotacao}</span>
+                        <span className="font-mono font-bold text-sm text-[#0E5C4C]">{cot.codigo_cotacao}</span>
                         <h3 className="font-bold text-sm text-slate-900">{cot.titulo}</h3>
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-[#1A56DB] border border-blue-200">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#0E5C4C]/[0.08] text-[#0E5C4C] border border-[#0E5C4C]/20">
                           {cot.status}
                         </span>
                       </div>
@@ -1951,7 +1961,7 @@ export default function VigiaComprasPage() {
                     <tbody className="divide-y divide-[#E0E0E0]">
                       {pedidosCompra.map((p) => (
                         <tr key={p.id} className="hover:bg-[#F8FAFC]">
-                          <td className="py-2.5 px-3 font-bold text-[#1A56DB]">{p.numero_pdc}</td>
+                          <td className="py-2.5 px-3 font-bold text-[#0E5C4C]">{p.numero_pdc}</td>
                           <td className="py-2.5 px-3 font-mono text-slate-600">{p.numero_empenho}</td>
                           <td className="py-2.5 px-3 font-medium text-slate-800">{p.fornecedor_razao_social}</td>
                           <td className="py-2.5 px-3 text-right font-bold text-slate-900">
@@ -1986,7 +1996,7 @@ export default function VigiaComprasPage() {
                 {/* Seletor Rápido do Banco de Preços */}
                 <div className="p-3 bg-[#F0F4FF] rounded-xl border border-[#E0E0E0]">
                   <label className="block text-xs font-bold text-slate-800 mb-1 flex items-center gap-1.5">
-                    <Scale className="w-3.5 h-3.5 text-[#1A56DB]" />
+                    <Scale className="w-3.5 h-3.5 text-[#0E5C4C]" />
                     <span>Selecionar Medicamento do Banco Oficial de Preços (CMED/BPS/CATMAT)</span>
                   </label>
                   <select
@@ -1998,7 +2008,7 @@ export default function VigiaComprasPage() {
                         setPrecoPropostoInput(med.preco_referencia_bps?.toFixed(2) || '40.00');
                       }
                     }}
-                    className="w-full px-3 py-2 bg-white border border-[#E0E0E0] rounded-xl text-xs font-medium text-slate-800 cursor-pointer focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                    className="w-full px-3 py-2 bg-white border border-[#E0E0E0] rounded-xl text-xs font-medium text-slate-800 cursor-pointer focus:ring-2 focus:ring-[#0E5C4C] focus:outline-none"
                   >
                     <option value="">-- Escolha um medicamento para preenchimento automático --</option>
                     {bancoPrecos.map((m: any) => (
@@ -2016,7 +2026,7 @@ export default function VigiaComprasPage() {
                       type="text"
                       value={catmatInput}
                       onChange={(e) => setCatmatInput(e.target.value)}
-                      className="w-full px-3 py-2 bg-white border border-[#E0E0E0] rounded-xl text-xs font-mono font-bold text-slate-800 focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                      className="w-full px-3 py-2 bg-white border border-[#E0E0E0] rounded-xl text-xs font-mono font-bold text-slate-800 focus:ring-2 focus:ring-[#0E5C4C] focus:outline-none"
                     />
                   </div>
                   <div>
@@ -2025,7 +2035,7 @@ export default function VigiaComprasPage() {
                       type="text"
                       value={nomeMedInput}
                       onChange={(e) => setNomeMedInput(e.target.value)}
-                      className="w-full px-3 py-2 bg-white border border-[#E0E0E0] rounded-xl text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                      className="w-full px-3 py-2 bg-white border border-[#E0E0E0] rounded-xl text-xs font-medium text-slate-800 focus:ring-2 focus:ring-[#0E5C4C] focus:outline-none"
                     />
                   </div>
                   <div>
@@ -2036,12 +2046,12 @@ export default function VigiaComprasPage() {
                         step="0.01"
                         value={precoPropostoInput}
                         onChange={(e) => setPrecoPropostoInput(e.target.value)}
-                        className="w-full px-3 py-2 bg-white border border-[#E0E0E0] rounded-xl text-xs font-bold text-slate-800 focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                        className="w-full px-3 py-2 bg-white border border-[#E0E0E0] rounded-xl text-xs font-bold text-slate-800 focus:ring-2 focus:ring-[#0E5C4C] focus:outline-none"
                       />
                       <button
                         type="submit"
                         disabled={validandoPreco}
-                        className="px-4 py-2 bg-[#1A56DB] text-white rounded-xl text-xs font-bold hover:bg-blue-700 cursor-pointer shadow-xs"
+                        className="px-4 py-2 bg-[#0E5C4C] text-white rounded-xl text-xs font-bold hover:bg-[#0A4A3D] cursor-pointer shadow-xs"
                       >
                         {validandoPreco ? <RefreshCw className="w-4 h-4 animate-spin" /> : 'Auditar'}
                       </button>
@@ -2118,12 +2128,12 @@ export default function VigiaComprasPage() {
                     disabled={sincronizandoBanco}
                     className="px-3.5 py-2 bg-white border border-[#E0E0E0] hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer shadow-xs disabled:opacity-50"
                   >
-                    <RefreshCw className={`w-3.5 h-3.5 ${sincronizandoBanco ? 'animate-spin text-[#1A56DB]' : 'text-slate-500'}`} />
+                    <RefreshCw className={`w-3.5 h-3.5 ${sincronizandoBanco ? 'animate-spin text-[#0E5C4C]' : 'text-slate-500'}`} />
                     <span>{sincronizandoBanco ? 'Sincronizando...' : 'Sincronizar Supabase'}</span>
                   </button>
                   <button
                     onClick={() => setSecaoAtiva('validador_cmed')}
-                    className="px-3.5 py-2 bg-[#1A56DB] text-white hover:bg-blue-700 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
+                    className="px-3.5 py-2 bg-[#0E5C4C] text-white hover:bg-[#0A4A3D] rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
                   >
                     <Scale className="w-3.5 h-3.5" />
                     <span>Auditar Proposta</span>
@@ -2137,7 +2147,7 @@ export default function VigiaComprasPage() {
                   feedbackSincronizacao.tipo === 'sucesso'
                     ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
                     : feedbackSincronizacao.tipo === 'info'
-                    ? 'bg-blue-50 border-blue-200 text-blue-800'
+                    ? 'bg-[#0E5C4C]/[0.08] border-[#0E5C4C]/20 text-[#0E5C4C]'
                     : 'bg-rose-50 border-rose-200 text-rose-800'
                 }`}>
                   <div className="flex items-center gap-2">
@@ -2195,7 +2205,7 @@ export default function VigiaComprasPage() {
                       placeholder="Buscar por medicamento, princípio ativo ou CATMAT..."
                       value={filtroBancoPrecos}
                       onChange={(e) => setFiltroBancoPrecos(e.target.value)}
-                      className="w-full px-3 py-2 pl-9 bg-[#F8FAFC] border border-[#E0E0E0] rounded-xl text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                      className="w-full px-3 py-2 pl-9 bg-[#F8FAFC] border border-[#E0E0E0] rounded-xl text-xs font-medium text-slate-800 focus:ring-2 focus:ring-[#0E5C4C] focus:outline-none"
                     />
                     <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
                     {filtroBancoPrecos && (
@@ -2255,7 +2265,7 @@ export default function VigiaComprasPage() {
                           return (
                             <tr key={med.id || med.codigo_catmat} className="hover:bg-slate-50 transition-colors">
                               <td className="p-3">
-                                <span className="font-mono font-bold text-xs text-[#1A56DB] bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200">
+                                <span className="font-mono font-bold text-xs text-[#0E5C4C] bg-[#0E5C4C]/[0.08] px-2 py-0.5 rounded-md border border-[#0E5C4C]/20">
                                   {med.codigo_catmat}
                                 </span>
                               </td>
@@ -2310,14 +2320,14 @@ export default function VigiaComprasPage() {
                                     className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold flex items-center gap-1 transition-all cursor-pointer"
                                     title="Auditar no Validador CMED"
                                   >
-                                    <Scale className="w-3.5 h-3.5 text-[#1A56DB]" />
+                                    <Scale className="w-3.5 h-3.5 text-[#0E5C4C]" />
                                     <span className="hidden xl:inline">Auditar</span>
                                   </button>
                                   <button
                                     onClick={() => {
                                       setSecaoAtiva('pedidos_compra');
                                     }}
-                                    className="p-1.5 bg-blue-50 hover:bg-blue-100 text-[#1A56DB] rounded-lg text-xs font-bold flex items-center gap-1 transition-all cursor-pointer"
+                                    className="p-1.5 bg-[#0E5C4C]/[0.08] hover:bg-[#0A4A3D]/[0.12] text-[#0E5C4C] rounded-lg text-xs font-bold flex items-center gap-1 transition-all cursor-pointer"
                                     title="Adicionar em Pedido de Compra"
                                   >
                                     <PlusCircle className="w-3.5 h-3.5" />
@@ -2347,7 +2357,7 @@ export default function VigiaComprasPage() {
                 </div>
                 <button
                   onClick={() => setShowModalChamado(true)}
-                  className="px-3 py-1.5 bg-[#1A56DB] text-white rounded-xl text-xs font-bold hover:bg-blue-700 cursor-pointer shadow-xs"
+                  className="px-3 py-1.5 bg-[#0E5C4C] text-white rounded-xl text-xs font-bold hover:bg-[#0A4A3D] cursor-pointer shadow-xs"
                 >
                   Abrir Chamado
                 </button>
@@ -2357,11 +2367,11 @@ export default function VigiaComprasPage() {
                 {chamados.map((c) => (
                   <div key={c.id} className="p-3 bg-[#F8FAFC] rounded-xl border border-[#E0E0E0] flex items-center justify-between">
                     <div>
-                      <span className="font-mono font-bold text-xs text-[#1A56DB]">{c.protocolo}</span>
+                      <span className="font-mono font-bold text-xs text-[#0E5C4C]">{c.protocolo}</span>
                       <h4 className="font-bold text-xs text-slate-900 mt-0.5">{c.titulo}</h4>
                       <p className="text-[11px] text-slate-600">{c.descricao}</p>
                     </div>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800">
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#0E5C4C]/[0.12] text-[#0E5C4C]">
                       {c.status}
                     </span>
                   </div>
@@ -2411,7 +2421,7 @@ export default function VigiaComprasPage() {
                 {logs.map((l) => (
                   <div key={l.id} className="p-2.5 bg-[#F8FAFC] rounded-xl border border-[#E0E0E0] flex items-center justify-between">
                     <div>
-                      <span className="text-[#1A56DB] font-bold">[{l.data_hora}]</span>{' '}
+                      <span className="text-[#0E5C4C] font-bold">[{l.data_hora}]</span>{' '}
                       <span className="text-slate-800">{l.descricao}</span>
                     </div>
                     <span className="text-[10px] font-sans px-2 py-0.5 rounded-full bg-slate-200 text-slate-700">
@@ -2471,7 +2481,7 @@ export default function VigiaComprasPage() {
                     }}
                     className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-white text-slate-700 border border-[#E0E0E0] hover:bg-slate-50 shadow-2xs transition-all cursor-pointer"
                   >
-                    <Download className="w-3.5 h-3.5 text-blue-600" />
+                    <Download className="w-3.5 h-3.5 text-[#0E5C4C]" />
                     <span>Exportar JSON (Hub Contract)</span>
                   </button>
 
@@ -2533,7 +2543,7 @@ export default function VigiaComprasPage() {
                 </div>
                 <div className="bg-white border border-[#E0E0E0] rounded-2xl p-4 shadow-xs">
                   <div className="text-xs font-bold text-slate-500 mb-1">Economia Apurada vs CMED Teto</div>
-                  <div className="text-2xl font-bold text-[#1A56DB]">R$ 41.200,00</div>
+                  <div className="text-2xl font-bold text-[#0E5C4C]">R$ 41.200,00</div>
                   <div className="text-[11px] text-slate-500 mt-1">Redução de custo imputado aos pacientes</div>
                 </div>
                 <div className="bg-white border border-[#E0E0E0] rounded-2xl p-4 shadow-xs">
@@ -2559,15 +2569,15 @@ export default function VigiaComprasPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
-                      <tr className="hover:bg-blue-50/20">
-                        <td className="p-3 font-mono font-bold text-[#1A56DB]">PdC-2026-0001</td>
+                      <tr className="hover:bg-[#0E5C4C]/[0.05]">
+                        <td className="p-3 font-mono font-bold text-[#0E5C4C]">PdC-2026-0001</td>
                         <td className="p-3">
                           <div className="font-bold text-slate-900">Meropenem 1g Pó Liofilizado Injetável (2.000 un)</div>
                           <div className="text-[11px] text-slate-500">CATMAT: BR0284729 • NF-e 004.891.201</div>
                         </td>
                         <td className="p-3 text-slate-700">Distribuidora Farmacêutica Nacional S/A</td>
                         <td className="p-3">
-                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-800 border border-blue-200">
+                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#0E5C4C]/[0.08] text-[#0E5C4C] border border-[#0E5C4C]/20">
                             CD Almoxarifado / Farmácia FEFO
                           </span>
                         </td>
@@ -2578,15 +2588,15 @@ export default function VigiaComprasPage() {
                           </span>
                         </td>
                       </tr>
-                      <tr className="hover:bg-blue-50/20">
-                        <td className="p-3 font-mono font-bold text-[#1A56DB]">PdC-2026-0002</td>
+                      <tr className="hover:bg-[#0E5C4C]/[0.05]">
+                        <td className="p-3 font-mono font-bold text-[#0E5C4C]">PdC-2026-0002</td>
                         <td className="p-3">
                           <div className="font-bold text-slate-900">Kit Prótese Fixação Ortopédica Titânio (OPME)</div>
                           <div className="text-[11px] text-slate-500">Paciente: Carlos Eduardo Silveira • Prontuário #8841</div>
                         </td>
                         <td className="p-3 text-slate-700">Distribuidora Farmacêutica Nacional S/A</td>
                         <td className="p-3">
-                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-800 border border-blue-200">
+                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#0E5C4C]/[0.08] text-[#0E5C4C] border border-[#0E5C4C]/20">
                             Centro Cirúrgico (Imputação Direta)
                           </span>
                         </td>
@@ -2634,7 +2644,7 @@ export default function VigiaComprasPage() {
                   value={justificativaTexto}
                   onChange={(e) => setJustificativaTexto(e.target.value)}
                   placeholder="Ex: Aquisição em caráter emergencial para suprir UTI Covid/Adulto. Empenho de reforço formalizado sob protocolo nº 2026/894."
-                  className="w-full px-3 py-2 bg-white border border-[#E0E0E0] rounded-xl text-xs text-slate-800 focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                  className="w-full px-3 py-2 bg-white border border-[#E0E0E0] rounded-xl text-xs text-slate-800 focus:ring-2 focus:ring-[#0E5C4C] focus:outline-none"
                 />
               </div>
 
@@ -2644,7 +2654,7 @@ export default function VigiaComprasPage() {
                   type="text"
                   value={aprovadorNome}
                   onChange={(e) => setAprovadorNome(e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-[#E0E0E0] rounded-xl text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                  className="w-full px-3 py-2 bg-white border border-[#E0E0E0] rounded-xl text-xs font-medium text-slate-800 focus:ring-2 focus:ring-[#0E5C4C] focus:outline-none"
                 />
               </div>
 
@@ -2654,7 +2664,7 @@ export default function VigiaComprasPage() {
                   type="text"
                   value={aprovadorCargo}
                   onChange={(e) => setAprovadorCargo(e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-[#E0E0E0] rounded-xl text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                  className="w-full px-3 py-2 bg-white border border-[#E0E0E0] rounded-xl text-xs font-medium text-slate-800 focus:ring-2 focus:ring-[#0E5C4C] focus:outline-none"
                 />
               </div>
             </div>
@@ -2670,7 +2680,7 @@ export default function VigiaComprasPage() {
               <button
                 type="button"
                 onClick={handleCriarPedidoCompra}
-                className="px-4 py-2 bg-[#1A56DB] text-white rounded-xl text-xs font-bold hover:bg-blue-700 cursor-pointer shadow-xs"
+                className="px-4 py-2 bg-[#0E5C4C] text-white rounded-xl text-xs font-bold hover:bg-[#0A4A3D] cursor-pointer shadow-xs"
               >
                 Confirmar e Emitir Pedido
               </button>
@@ -2719,7 +2729,7 @@ export default function VigiaComprasPage() {
                     }}
                     className={`px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer ${
                       contratoTipoFracionamento === 'FRACIONADO'
-                        ? 'bg-[#1A56DB] text-white'
+                        ? 'bg-[#0E5C4C] text-white'
                         : 'bg-[#F5F5F5] text-slate-700 border border-[#E0E0E0]'
                     }`}
                   >
@@ -2733,7 +2743,7 @@ export default function VigiaComprasPage() {
                     }}
                     className={`px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer ${
                       contratoTipoFracionamento === 'INTEGRAL'
-                        ? 'bg-[#1A56DB] text-white'
+                        ? 'bg-[#0E5C4C] text-white'
                         : 'bg-[#F5F5F5] text-slate-700 border border-[#E0E0E0]'
                     }`}
                   >
@@ -2785,7 +2795,7 @@ export default function VigiaComprasPage() {
                 <button
                   type="submit"
                   disabled={salvandoContrato}
-                  className="px-4 py-2 bg-[#1A56DB] text-white rounded-xl text-xs font-bold hover:bg-blue-700 cursor-pointer shadow-xs"
+                  className="px-4 py-2 bg-[#0E5C4C] text-white rounded-xl text-xs font-bold hover:bg-[#0A4A3D] cursor-pointer shadow-xs"
                 >
                   {salvandoContrato ? <RefreshCw className="w-4 h-4 animate-spin" /> : 'Gerar Contrato'}
                 </button>
@@ -2900,7 +2910,7 @@ export default function VigiaComprasPage() {
                     type="button"
                     onClick={() => setNovaCotacaoOrigem('MANUAL')}
                     className={`px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer ${
-                      novaCotacaoOrigem === 'MANUAL' ? 'bg-[#1A56DB] text-white' : 'bg-[#F5F5F5] text-slate-700 border border-[#E0E0E0]'
+                      novaCotacaoOrigem === 'MANUAL' ? 'bg-[#0E5C4C] text-white' : 'bg-[#F5F5F5] text-slate-700 border border-[#E0E0E0]'
                     }`}
                   >
                     Manual / Digitação
@@ -2909,7 +2919,7 @@ export default function VigiaComprasPage() {
                     type="button"
                     onClick={() => setNovaCotacaoOrigem('LOTE_CSV')}
                     className={`px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer ${
-                      novaCotacaoOrigem === 'LOTE_CSV' ? 'bg-[#1A56DB] text-white' : 'bg-[#F5F5F5] text-slate-700 border border-[#E0E0E0]'
+                      novaCotacaoOrigem === 'LOTE_CSV' ? 'bg-[#0E5C4C] text-white' : 'bg-[#F5F5F5] text-slate-700 border border-[#E0E0E0]'
                     }`}
                   >
                     Lote CSV / Planilha
@@ -2939,7 +2949,7 @@ export default function VigiaComprasPage() {
                 <button
                   type="submit"
                   disabled={salvandoCotacao}
-                  className="px-4 py-2 bg-[#1A56DB] text-white rounded-xl text-xs font-bold hover:bg-blue-700 cursor-pointer shadow-xs"
+                  className="px-4 py-2 bg-[#0E5C4C] text-white rounded-xl text-xs font-bold hover:bg-[#0A4A3D] cursor-pointer shadow-xs"
                 >
                   {salvandoCotacao ? <RefreshCw className="w-4 h-4 animate-spin" /> : 'Disparar Cotação'}
                 </button>
@@ -3092,7 +3102,7 @@ export default function VigiaComprasPage() {
                 <button
                   type="submit"
                   disabled={salvandoChamado}
-                  className="px-4 py-2 bg-[#1A56DB] text-white rounded-xl text-xs font-bold hover:bg-blue-700 cursor-pointer shadow-xs"
+                  className="px-4 py-2 bg-[#0E5C4C] text-white rounded-xl text-xs font-bold hover:bg-[#0A4A3D] cursor-pointer shadow-xs"
                 >
                   {salvandoChamado ? <RefreshCw className="w-4 h-4 animate-spin" /> : 'Abrir'}
                 </button>

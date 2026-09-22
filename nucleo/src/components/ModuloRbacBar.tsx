@@ -37,9 +37,9 @@ export function ModuloRbacBar({
   moduloId,
   activeRole,
   onRoleChange,
-  accentColor = '#1A56DB',
-  lightBg = 'bg-blue-50',
-  lightBorder = 'border-blue-200',
+  accentColor = '#0E5C4C',
+  lightBg = 'bg-[#0E5C4C]/[0.08]',
+  lightBorder = 'border-[#0E5C4C]/20',
 }: ModuloRbacBarProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [matrixModalOpen, setMatrixModalOpen] = useState(false);
@@ -231,7 +231,7 @@ export function ModuloRbacBar({
                   key={role.id}
                   className={`p-4 rounded-2xl border transition-all ${
                     role.id === activeRole.id 
-                      ? 'bg-blue-50/40 border-blue-200' 
+                      ? 'bg-[#0E5C4C]/[0.06] border-[#0E5C4C]/20'
                       : 'bg-white border-[#E0E0E0]'
                   }`}
                 >
@@ -239,7 +239,7 @@ export function ModuloRbacBar({
                     <div className="flex items-center gap-2">
                       <h4 className="font-bold text-sm text-slate-900">{role.name}</h4>
                       {role.id === activeRole.id && (
-                        <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-600 text-white">
+                        <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#0E5C4C] text-white">
                           Ativo Agora
                         </span>
                       )}

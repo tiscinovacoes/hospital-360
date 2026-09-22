@@ -225,7 +225,7 @@ export default function FinanceiroSplitPage() {
             </Link>
             <button
               onClick={handleSimulateSplitPayment}
-              className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] text-xs font-bold text-white bg-[#16A34A] hover:bg-green-700 rounded-xl transition-all shadow-xs touch-manipulation"
+              className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] text-xs font-bold text-white bg-[#1B1F1C] hover:bg-[#33382F] rounded-xl transition-all shadow-xs touch-manipulation"
             >
               <Split className="w-4 h-4" />
               <span>Simular Consulta c/ Split</span>
@@ -235,30 +235,32 @@ export default function FinanceiroSplitPage() {
       />
       {/* Feedback de Notificação */}
       {successNotice && (
-        <div className="mb-4 p-3.5 bg-green-50 border border-green-300 rounded-2xl flex items-center justify-between text-xs text-green-950 shadow-sm animate-in fade-in duration-200">
+        <div className="mb-4 p-3.5 bg-[#1B1F1C]/[0.08] border border-[#1B1F1C]/30 rounded-2xl flex items-center justify-between text-xs text-[#33382F] shadow-sm animate-in fade-in duration-200">
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-[#16A34A] shrink-0" />
+            <CheckCircle2 className="w-4 h-4 text-[#1B1F1C] shrink-0" />
             <span className="font-bold">{successNotice}</span>
           </div>
           <button 
             type="button" 
             onClick={() => setSuccessNotice(null)}
-            className="text-green-700 hover:text-green-900 p-1 min-h-[44px] min-w-[44px] flex items-center justify-center"
+            className="text-[#1B1F1C] hover:text-[#1B1F1C] p-1 min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
       )}
 
-      {/* BARRA DE RBAC & CONTROLE DE PERFIS DO MÓDULO */}
-      <ModuloRbacBar
-        moduloId="financeiro-split"
-        activeRole={activeRole}
-        onRoleChange={setActiveRole}
-        accentColor="#16A34A"
-        lightBg="bg-green-50"
-        lightBorder="border-green-200"
-      />
+      {/* PERFIS & MATRIZ RBAC — só aparece na seção "Perfis" do menu lateral, não em todas as telas */}
+      {abaAtiva === 'perfis' && (
+        <ModuloRbacBar
+          moduloId="financeiro-split"
+          activeRole={activeRole}
+          onRoleChange={setActiveRole}
+          accentColor="#1B1F1C"
+          lightBg="bg-[#1B1F1C]/[0.08]"
+          lightBorder="border-[#1B1F1C]/20"
+        />
+      )}
 
       {/* Cards de Métricas Padronizados */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -266,7 +268,7 @@ export default function FinanceiroSplitPage() {
           title="Volume Total Liquidado"
           value={`R$ ${totalProcessed.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
           subtitle="100% Conciliado"
-          icon={<DollarSign className="w-5 h-5 text-green-600" />}
+          icon={<DollarSign className="w-5 h-5 text-[#1B1F1C]" />}
           trend={{ text: "Hyperswitch Operante", isPositive: true }}
         />
 
@@ -274,7 +276,7 @@ export default function FinanceiroSplitPage() {
           title="Repasse Médicos (85%)"
           value={`R$ ${totalDoctorShare.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
           subtitle="Crédito Imediato D+0"
-          icon={<UserCheck className="w-5 h-5 text-green-600" />}
+          icon={<UserCheck className="w-5 h-5 text-[#1B1F1C]" />}
           trend={{ text: "PIX D+0 Instantâneo", isPositive: true }}
         />
 
@@ -282,7 +284,7 @@ export default function FinanceiroSplitPage() {
           title="Taxa Hospitalar (15%)"
           value={`R$ ${totalHospitalShare.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
           subtitle="Custeio & Facilities"
-          icon={<Building2 className="w-5 h-5 text-green-600" />}
+          icon={<Building2 className="w-5 h-5 text-[#1B1F1C]" />}
           trend={{ text: "Cobre Custos Fixos", isPositive: true }}
         />
 
@@ -290,7 +292,7 @@ export default function FinanceiroSplitPage() {
           title="Notas Fiscais (NFS-e)"
           value={`${transactions.length} NFS-e`}
           subtitle="Emissão Municipal"
-          icon={<Receipt className="w-5 h-5 text-green-600" />}
+          icon={<Receipt className="w-5 h-5 text-[#1B1F1C]" />}
           trend={{ text: "100% Escrituradas", isPositive: true }}
         />
       </div>
@@ -313,7 +315,7 @@ export default function FinanceiroSplitPage() {
               onClick={() => setAbaAtiva(tab.id as AbaFinanceiro)}
               className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap min-h-[44px] touch-manipulation ${
                 isActive
-                  ? 'bg-[#16A34A] text-white shadow-xs'
+                  ? 'bg-[#1B1F1C] text-white shadow-xs'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
               }`}
             >
@@ -358,7 +360,7 @@ export default function FinanceiroSplitPage() {
                   <th className="p-3">Paciente / Atendimento</th>
                   <th className="p-3">Médico Cooperado</th>
                   <th className="p-3 text-right">Valor Total</th>
-                  <th className="p-3 text-right text-green-700">Médico (85%)</th>
+                  <th className="p-3 text-right text-[#1B1F1C]">Médico (85%)</th>
                   <th className="p-3 text-right text-blue-700">Hospital (15%)</th>
                   <th className="p-3 text-center">Status Split</th>
                   <th className="p-3 text-center">NFS-e</th>
@@ -366,7 +368,7 @@ export default function FinanceiroSplitPage() {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {transactions.map((tx) => (
-                  <tr key={tx.id} className="hover:bg-green-50/20 transition-colors">
+                  <tr key={tx.id} className="hover:bg-[#33382F]/20 transition-colors">
                     <td className="p-3">
                       <strong className="text-slate-900 block font-mono">{tx.id}</strong>
                       <span className="text-[11px] text-slate-500">{tx.createdAt}</span>
@@ -382,7 +384,7 @@ export default function FinanceiroSplitPage() {
                     <td className="p-3 text-right font-black text-slate-900">
                       R$ {tx.totalAmount.toFixed(2)}
                     </td>
-                    <td className="p-3 text-right font-bold text-green-700 font-mono">
+                    <td className="p-3 text-right font-bold text-[#1B1F1C] font-mono">
                       R$ {tx.doctorShare.toFixed(2)}
                     </td>
                     <td className="p-3 text-right font-bold text-blue-700 font-mono">
@@ -421,7 +423,7 @@ export default function FinanceiroSplitPage() {
                   <div>
                     <div className="flex items-center gap-2">
                       <strong className="text-sm text-slate-900">{rem.id}</strong>
-                      <span className="px-2 py-0.5 rounded-md font-bold bg-green-50 text-green-800 border border-green-200">
+                      <span className="px-2 py-0.5 rounded-md font-bold bg-[#1B1F1C]/[0.08] text-[#1B1F1C] border border-[#1B1F1C]/20">
                         {rem.tipo}
                       </span>
                     </div>
@@ -447,7 +449,7 @@ export default function FinanceiroSplitPage() {
                 onClick={() => triggerNotice('Arquivo Magnético BPA/AIH assinado digitalmente e transmitido ao Ministério da Saúde.')}
                 className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all min-h-[44px] ${
                   hasPermission(activeRole, 'APPROVE')
-                    ? 'bg-[#16A34A] hover:bg-green-700 text-white shadow-xs'
+                    ? 'bg-[#1B1F1C] hover:bg-[#33382F] text-white shadow-xs'
                     : 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
                 }`}
               >
@@ -535,7 +537,7 @@ export default function FinanceiroSplitPage() {
               Batimento do extrato de liquidações bancárias com as baixas do sistema contábil.
             </p>
 
-            <div className="p-4 bg-green-50 border border-green-200 rounded-xl text-xs text-green-950 space-y-1">
+            <div className="p-4 bg-[#1B1F1C]/[0.08] border border-[#1B1F1C]/20 rounded-xl text-xs text-[#33382F] space-y-1">
               <strong className="block text-sm">Status da Conciliação D-0:</strong>
               <p>100% dos lançamentos do gateway Hyperswitch batidos com a conta corrente hospitalar. Nenhuma divergência pendente.</p>
             </div>
@@ -558,7 +560,7 @@ export default function FinanceiroSplitPage() {
               {roles.map((role) => (
                 <div key={role.id} className="p-4 rounded-2xl border border-[#E0E0E0] bg-white">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-green-50 text-green-800 border border-green-200">
+                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-[#1B1F1C]/[0.08] text-[#1B1F1C] border border-[#1B1F1C]/20">
                       {role.level}
                     </span>
                     {role.id === activeRole.id && (

@@ -1,6 +1,19 @@
-# Vigia Saúde — Identidade Visual
-> Sistema Governamental de Compras Públicas de Medicamentos com IA  
-> Design System v1.0.0
+# Vigia Saúde 360 — Identidade Visual
+> Sistema Governamental de Custeio, Compras Públicas e Gestão Hospitalar
+> Design System v2.0.0 — substitui a v1.0.0 (paleta azul/Inter)
+
+---
+
+## Nota de versão
+
+A v1.0.0 (`#1A56DB`, Inter, cards multicoloridos por módulo) foi avaliada e descartada por parecer genérica — "SaaS azul de template". Esta v2.0.0 é a direção aprovada a partir do esboço em [https://claude.ai/artifact/Rk8UxQdFTS2HQy8zwn3znH](https://claude.ai/artifact/Rk8UxQdFTS2HQy8zwn3znH) (Hub de Módulos + Compras &amp; Atas).
+
+Princípios da mudança:
+- **Menos cor, mais hierarquia.** Um único acento de ação (teal) e um único acento de destaque (terracota), em vez de uma cor própria por módulo espalhada em ícones, fundos e bordas.
+- **Tipografia com identidade.** Serifada (Fraunces) nos títulos para fugir do sans-serif genérico (Inter/Roboto/Arial) que qualquer produto usa.
+- **Papel, não branco puro.** Fundo levemente creme (`#F6F3EC`), texto quase-preto quente (`#1B1F1C`), no lugar do cinza-azulado `slate`.
+- **Categoria como sinal discreto** (um ponto de 9px), não como bloco colorido de card inteiro.
+- A geometria dos componentes (raio, grid, alturas de toque ≥44px) **não muda** — só a pele. Isso barateia a execução: é recolorir/retipografar, não redesenhar.
 
 ---
 
@@ -13,6 +26,7 @@
 5. [Ícones](#5-ícones)
 6. [Tokens de Design](#6-tokens-de-design)
 7. [Espaçamento e Raio](#7-espaçamento-e-raio)
+8. [Como Executar nos Módulos](#8-como-executar-nos-módulos)
 
 ---
 
@@ -20,45 +34,35 @@
 
 ### Composição
 
-O logotipo é composto por dois elementos indissociáveis:
+Mesma geometria de escudo já usada no código (`VigiaSidebarLayout.tsx`) — só a pele muda. Dois elementos indissociáveis:
 
-- **Ícone** — escudo com cruz da saúde e ponto verde de IA no canto superior direito
-- **Wordmark** — "Vigia" em peso 800 + "Saúde" na cor primária azul `#1A56DB`
+- **Ícone** — escudo com cruz da saúde vazada, cor única (tinta, não mais azul sobre fundo colorido por módulo)
+- **Wordmark** — "Vigia" em Fraunces 600 (serifada) + "Saúde" em Public Sans 600 na cor teal — "360" como sufixo pequeno, versalete, cor neutra
 
 ### Variações
 
 | Variação | Fundo | Uso |
 |---|---|---|
-| **Principal** | Branco / cinza claro | Documentos, interfaces, telas de conteúdo |
-| **Negativa** | Azul escuro `#1E3A5F` | Sidebar, cabeçalhos, splash screen |
+| **Principal** | Papel `#F6F3EC` | Documentos, telas de conteúdo |
+| **Negativa** | Tinta `#1B1F1C` | Sidebar (topo), hero de destaque, splash |
 | **Monocromática** | Qualquer | Impressão, carimbos, escala de cinza |
 
 ### Ícone SVG
 
+Mesmo `path` do escudo atual (`VigiaSidebarLayout.tsx:222`), recolorido:
+
 ```svg
-<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Escudo -->
-  <path d="M20 3L5 9v11c0 8.3 6.4 16.1 15 18 8.6-1.9 15-9.7 15-18V9L20 3z" fill="#1A56DB"/>
-  <!-- Cruz da saúde -->
-  <rect x="17" y="12" width="6" height="16" rx="1" fill="white"/>
-  <rect x="12" y="17" width="16" height="6" rx="1" fill="white"/>
-  <!-- Ponto IA -->
-  <circle cx="29" cy="11" r="4" fill="#0E9F6E"/>
-  <path d="M28 11h2M29 10v2" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+<svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-1 6h2v4h4v2h-4v4h-2v-4H7v-2h4V7z"
+        fill="#1B1F1C"/>
 </svg>
 ```
 
+Sobre fundo escuro (sidebar/hero), inverter para `fill="#F6F3EC"`. Nunca reintroduzir o preenchimento azul (`#1A56DB`) ou o ponto verde de "IA" da v1 — o acento de IA/automação passa a ser textual ("IA" em caixa alta, cor teal), não um elemento gráfico extra no ícone.
+
 ### Espaço de Proteção
 
-Manter área livre equivalente à **altura do ícone (x)** em todos os lados do logotipo. Nenhum elemento pode invadir essa zona.
-
-```
-  ←─ x ─→
-↑          ↑
-x  [LOGO]  x
-↓          ↓
-  ←─ x ─→
-```
+Inalterado: área livre equivalente à altura do ícone (`x`) em todos os lados.
 
 ### Regras de Uso
 
@@ -67,67 +71,79 @@ x  [LOGO]  x
 | ✅ | Usar somente as variações aprovadas |
 | ✅ | Manter o espaço de proteção sempre |
 | ❌ | Distorcer as proporções do logotipo |
-| ❌ | Alterar as cores da marca |
+| ❌ | Reintroduzir azul `#1A56DB` ou verde `#0E9F6E` no ícone |
 | ❌ | Aplicar sobre fundos com baixo contraste |
-| ❌ | Adicionar sombras, contornos ou efeitos externos |
-| ❌ | Recriar o ícone com outros elementos gráficos |
+| ❌ | Adicionar sombras, gradientes ou contornos externos |
+| ❌ | Recriar o escudo com outros elementos gráficos |
 
 ---
 
 ## 2. Paleta de Cores
 
-### Azul Institucional — Primary
+### Tinta & Papel — Base Neutra
 
 | Tom | Hex | Uso |
 |---|---|---|
-| **900 — Profundo** | `#1E3A5F` | Sidebar, headers escuros, fundo de destaque |
-| **700 — Principal ★** | `#1A56DB` | Cor primária, CTAs, links, estados ativos |
-| **500 — Médio** | `#2563EB` | Hover de elementos primários |
-| **100 — Suave** | `#EBF0FB` | Backgrounds secundários, itens selecionados |
-| **50 — Fundo** | `#F0F4FF` | Fundo de seções com ênfase azul |
+| **Tinta ★** | `#1B1F1C` | Texto principal, títulos, hero escuro, sidebar (variação escura) |
+| **Tinta 70%** | `rgba(27,31,28,.70)` | Texto secundário, descrições |
+| **Tinta 45%** | `rgba(27,31,28,.45)` | Labels, captions, placeholders |
+| **Tinta 12%** | `rgba(27,31,28,.12)` | Bordas de cards, divisores |
+| **Tinta 8%** | `rgba(27,31,28,.08)` | Divisores internos sutis (footer de card, linha de tabela) |
+| **Papel ★** | `#F6F3EC` | Background de página (substitui o `#F9FAFB` cinza-azulado) |
+| **Papel 2** | `#EFEAE0` | Sidebar, painéis secundários, rail lateral |
+| **Branco** | `#FFFFFF` | Cards, inputs, superfícies elevadas sobre o papel |
 
-### Verde Sucesso — Accent / Success
-
-| Tom | Hex | Uso |
-|---|---|---|
-| **700 — Escuro** | `#057A55` | Hover, texto em contexto claro |
-| **500 — Principal ★** | `#0E9F6E` | Sucesso, aprovação, IA, confirmação |
-| **100 — Claro** | `#D1FAE5` | Background de alertas e badges de sucesso |
-
-### Amarelo Atenção — Warning
+### Teal Institucional — Primary / Ação
 
 | Tom | Hex | Uso |
 |---|---|---|
-| **700 — Escuro** | `#C27803` | Texto de aviso em fundo claro |
-| **500 — Principal ★** | `#FACA15` | Atenção, pendente, prazo próximo |
-| **100 — Claro** | `#FEF9C3` | Background de alertas de atenção |
+| **Escuro** | `#0A4A3D` | Hover de botões/links primários |
+| **Principal ★** | `#0E5C4C` | Cor de ação: CTAs secundários, links, estado ativo, "sucesso" |
+| **8% (fundo)** | `rgba(14,92,76,.08)` | Background de badge/pill "ativo" |
 
-### Vermelho Crítico — Danger
-
-| Tom | Hex | Uso |
-|---|---|---|
-| **700 — Escuro** | `#C81E1E` | Texto de erro em fundo claro |
-| **500 — Principal ★** | `#F05252` | Erro, rejeição, crítico, emergência |
-| **100 — Claro** | `#FDE8E8` | Background de alertas críticos |
-
-### Cinza Neutro — Neutral
+### Terracota — Accent / Destaque
 
 | Tom | Hex | Uso |
 |---|---|---|
-| **900 — Texto** | `#111928` | Texto principal, títulos |
-| **700 — Secundário** | `#374151` | Texto secundário, labels |
-| **500 — Suave** | `#6B7280` | Placeholders, captions, ícones suaves |
-| **200 — Borda** | `#E5E7EB` | Bordas de cards, divisores |
-| **50 — Fundo de página** | `#F9FAFB` | Background da página |
+| **Principal ★** | `#C1622D` | CTA primário (a única cor "quente" de destaque na tela), banner central |
+| **8% (fundo)** | `rgba(193,98,45,.08)` | Background de badge de destaque, hover sutil |
+
+Substitui o azul `#1A56DB` como cor de ação primária — o teal assume o papel de "ação/confiança", o terracota assume o papel de "chamada à atenção pontual" (era o que o azul fazia demais, em tudo).
+
+### Ocre — Atenção
+
+| Tom | Hex | Uso |
+|---|---|---|
+| **Principal ★** | `#8A6A16` | Atenção, pendente, prazo próximo (substitui o amarelo `#FACA15`) |
+| **8% (fundo)** | `rgba(138,106,22,.10)` | Background de badge/alerta de atenção |
+
+### Tijolo — Crítico
+
+| Tom | Hex | Uso |
+|---|---|---|
+| **Principal ★** | `#9C3B2E` | Erro, rejeição, esgotado, crítico (substitui o vermelho `#F05252`) |
+| **8% (fundo)** | `rgba(156,59,46,.08)` | Background de badge/alerta crítico |
+
+Os tons de atenção e crítico ficam **dessaturados** de propósito — nada de amarelo/vermelho neon de dashboard genérico; devem parecer tinta sobre papel, não luz de alerta.
 
 ### Semântica de Cores
 
 | Cor | Hex | Significado | Exemplos |
 |---|---|---|---|
-| 🔵 Informação | `#1A56DB` | Ação primária, navegação | Links, botões CTA, aba ativa |
-| 🟢 Sucesso | `#0E9F6E` | Conclusão positiva | ATA vigente, PdC aprovado, pago |
-| 🟡 Atenção | `#FACA15` | Requer verificação | Em análise, prazo próximo, estoque baixo |
-| 🔴 Crítico | `#F05252` | Falha ou urgência | Erro, rejeição, dispensa emergencial |
+| 🟢 Teal | `#0E5C4C` | Ação, confiança, ativo/sucesso | Links, CTA secundário, ATA vigente, sem divergência |
+| 🟠 Terracota | `#C1622D` | Destaque, chamada à ação primária | Botão principal, módulo central em destaque |
+| 🟡 Ocre | `#8A6A16` | Requer verificação | Em análise, saldo em 80%+, renovação pendente |
+| 🔴 Tijolo | `#9C3B2E` | Falha ou urgência | Ata esgotada, rejeição, dispensa emergencial |
+| ⚫ Tinta | `#1B1F1C` | Categoria "Financeiro/Governança" (neutra) | Dot de categoria, texto padrão |
+
+### Cor por categoria de módulo (dot de 9px, não card colorido)
+
+| Categoria | Cor do dot |
+|---|---|
+| Suprimentos & Atas | Teal `#0E5C4C` |
+| Clínico & Assistencial | Terracota `#C1622D` |
+| Pessoas & Operação | Ocre `#8A6A16` |
+| Financeiro & Governança | Tinta 70% `rgba(27,31,28,.7)` |
 
 ---
 
@@ -137,44 +153,50 @@ x  [LOGO]  x
 
 | Função | Família | Pesos | Importação |
 |---|---|---|---|
-| **Principal** | Inter | 300, 400, 500, 600, 700, 800 | Google Fonts |
-| **Mono / Dados** | JetBrains Mono | 400, 500 | Google Fonts |
+| **Display / Títulos** | Fraunces | 500, 600, 700 | Google Fonts |
+| **Corpo / UI** | Public Sans | 400, 500, 600, 700 | Google Fonts |
+| **Mono / Dados** | JetBrains Mono | 400, 500 | Google Fonts (mantido da v1) |
 
 ```css
-@import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 ```
 
 **Fallback stack:**
 ```css
-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+--font-display: 'Fraunces', Georgia, serif;
+--font-body: 'Public Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 ```
+
+Substituem **Inter** como fonte principal — Inter/Roboto/Arial ficam reservadas para nunca mais aparecer na UI de conteúdo (são a marca registrada do "template genérico de IA" que motivou a troca).
+
+### Regra de uso: quando serifada, quando sans
+
+- **Fraunces (serifada):** `H1`/`Display`/`H2` de página e de card em destaque (título de módulo, número de KPI, título de hero). Nunca em textos correntes, labels ou tabelas.
+- **Public Sans:** todo o resto — corpo, labels, botões, inputs, navegação, tabelas.
 
 ### Escala Tipográfica
 
-| Nível | Tamanho | Peso | CSS | Uso |
+| Nível | Tamanho | Peso | Fonte | Uso |
 |---|---|---|---|---|
-| Display | 36px | 800 | `text-4xl font-extrabold` | Títulos de páginas principais |
-| H1 | 30px | 700 | `text-3xl font-bold` | Cabeçalho de tela |
-| H2 | 24px | 600 | `text-2xl font-semibold` | Seção dentro da tela |
-| H3 | 20px | 600 | `text-xl font-semibold` | Subseção, painel |
-| H4 | 16px | 600 | `text-base font-semibold` | Label de grupo |
-| Body Large | 16px | 400 | `text-base font-normal` | Texto corrido principal |
-| Body Small | 14px | 400 | `text-sm font-normal` | Texto de apoio, tabelas |
-| Caption | 12px | 500 | `text-xs font-medium` | Metadados, rótulos |
-| Mono | 13px | 400 | `text-sm font-mono` | Códigos, IDs, valores R$ |
+| Display | 34px | 600 | Fraunces | Hero do módulo central, título de tela cheia |
+| H1 | 25–26px | 600 | Fraunces | Cabeçalho de tela |
+| H2 | 15–17px | 600 | Fraunces | Título de card/seção em destaque |
+| H3 | 14px | 700 | Public Sans | Cabeçalho de tabela/painel (sans, não serifado) |
+| Body Large | 14px | 400 | Public Sans | Texto corrido principal |
+| Body Small | 12.5px | 400 | Public Sans | Texto de apoio, descrição de card |
+| Caption / Overline | 10–11px | 700, versalete, `letter-spacing: .5–1.5px` | Public Sans | Categoria, labels de KPI, tags |
+| Mono | 12.5px | 400–500 | JetBrains Mono | Códigos, IDs, CATMAT, valores R$ em tabela |
 
 ### Exemplos Reais
 
 ```
-Display   Vigia Saúde
-H1        Gestão de Compras Públicas
-H2        Pedidos de Compra (PdC)
-H3        Detalhes da ATA nº 2024-0042
-H4        Número do Processo
-Body      Informações do fornecedor e condições gerais de fornecimento.
-Small     Prazo de validade: 31/12/2025 · Responsável: João Silva
-Caption   CNPJ: 00.000.000/0001-00
-Mono      ATA-2024-0042 · PdC-2024-0187 · R$ 1.234,56
+Display   Custo do Paciente          (Fraunces 600, 34px, tinta ou papel sobre hero)
+H1        Atas, Contratos & Empenhos  (Fraunces 600, 26px)
+H2        Compras Públicas & Gestão de Atas  (Fraunces 600, 17px, título de card)
+H3        ATAS DE REGISTRO DE PREÇOS  (Public Sans 700, 14px)
+Overline  SUPRIMENTOS · LEI 14.133/21 (Public Sans 700, 10px, versalete)
+Body      Conformidade com a Lei 14.133/21 — trava preventiva CMED/BPS ativa.
+Mono      ARP-2026/042-SMS · R$ 812.400,00
 ```
 
 ---
@@ -183,83 +205,77 @@ Mono      ATA-2024-0042 · PdC-2024-0187 · R$ 1.234,56
 
 ### Botões
 
-#### Variantes
-
 | Variante | Background | Texto | Hover | Uso |
 |---|---|---|---|---|
-| `primary` | `#1A56DB` | `#ffffff` | `#1E3A5F` | Ação principal da tela |
-| `secondary` | `#EBF0FB` | `#1A56DB` | `#d9e4f8` | Ação secundária |
-| `success` | `#0E9F6E` | `#ffffff` | `#057A55` | Aprovar, confirmar |
-| `danger` | `#F05252` | `#ffffff` | `#C81E1E` | Rejeitar, excluir |
-| `outline` | `transparent` | `#1A56DB` | `#EBF0FB` | Ação terciária com borda |
-| `ghost` | `transparent` | `#374151` | `#E5E7EB` | Ação sutil, sem destaque |
+| `primary` | `#C1622D` (terracota) | `#FFFFFF` | `#A8531F` | **Única** ação de destaque por tela (ex.: "Novo Pedido de Compra") |
+| `secondary` | `rgba(14,92,76,.08)` | `#0E5C4C` (teal) | `rgba(14,92,76,.14)` | Ação recorrente, não-destrutiva |
+| `outline` | transparente | `#1B1F1C` | `rgba(27,31,28,.06)` | Ação terciária ("Voltar ao Hub", "Ver documentação") |
+| `ghost` | transparente | `rgba(27,31,28,.7)` | `rgba(27,31,28,.06)` | Tabs, ação sutil dentro de lista |
+| `danger` | `#9C3B2E` | `#FFFFFF` | `#7E2F24` | Excluir, rejeitar, ação destrutiva |
 
-#### Tamanhos
-
-| Tamanho | Padding | Font | Border-radius |
-|---|---|---|---|
-| `sm` | `5px 12px` | 12px | 6px |
-| `md` (padrão) | `8px 16px` | 14px | 8px |
-| `lg` | `12px 24px` | 16px | 10px |
-
-#### CSS Base
+Regra dura: **no máximo um botão `primary` (terracota) visível por tela.** É o que substitui o "tudo é azul" da v1 — se duas ações competem, a segunda é `secondary` ou `outline`.
 
 ```css
 .btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  border: none;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s;
-  font-family: 'Inter', sans-serif;
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 18px; border-radius: 8px;
+  font-family: 'Public Sans', sans-serif; font-size: 13px; font-weight: 700;
+  border: none; cursor: pointer; transition: background .15s, color .15s;
 }
-.btn-primary   { background: #1A56DB; color: #fff; }
-.btn-primary:hover { background: #1E3A5F; }
-.btn-secondary { background: #EBF0FB; color: #1A56DB; }
-.btn-success   { background: #0E9F6E; color: #fff; }
-.btn-danger    { background: #F05252; color: #fff; }
-.btn-outline   { background: transparent; border: 1.5px solid #1A56DB; color: #1A56DB; }
-.btn-ghost     { background: transparent; color: #374151; }
+.btn-primary   { background: #C1622D; color: #fff; }
+.btn-primary:hover { background: #A8531F; }
+.btn-secondary { background: rgba(14,92,76,.08); color: #0E5C4C; }
+.btn-outline   { background: transparent; border: 1px solid rgba(27,31,28,.12); color: #1B1F1C; }
+.btn-ghost     { background: transparent; color: rgba(27,31,28,.7); }
+.btn-danger    { background: #9C3B2E; color: #fff; }
 ```
 
 ---
 
-### Badges / Status
+### Badges / Status (pill)
 
-#### Variantes (pill)
+| Status | Background | Texto |
+|---|---|---|
+| Ativo / Sucesso | `rgba(14,92,76,.08)` | `#0E5C4C` |
+| Atenção / Em análise | `rgba(138,106,22,.10)` | `#8A6A16` |
+| Crítico / Esgotado | `rgba(156,59,46,.08)` | `#9C3B2E` |
+| Neutro / Expirado | `rgba(27,31,28,.06)` | `rgba(27,31,28,.6)` |
 
-| Status | Background | Texto | Dot |
-|---|---|---|---|
-| Ativa | `#EBF0FB` | `#1A56DB` | `#1A56DB` |
-| Em análise | `#FEF9C3` | `#92400E` | `#FACA15` |
-| Aprovado | `#D1FAE5` | `#057A55` | `#0E9F6E` |
-| Rejeitado | `#FDE8E8` | `#C81E1E` | `#F05252` |
-| Expirada | `#E5E7EB` | `#374151` | `#9CA3AF` |
-| Emergência | `#F5F3FF` | `#6D28D9` | `#7C3AED` |
-
-#### CSS
+Marcador: um `●` (caractere, não `<div>` de bolinha) na cor do texto, antes do label — mais leve que o dot separado da v1.
 
 ```css
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 3px 10px;
-  border-radius: 9999px;
-  font-size: 12px;
-  font-weight: 500;
-}
-.badge-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
+.pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: 20px;
+  font-family: 'Public Sans', sans-serif; font-size: 11px; font-weight: 700;
 }
 ```
+
+---
+
+### Cards de Módulo (grid do Hub)
+
+Substituem os cards com ícone colorido em bloco da v1. Estrutura:
+
+```
+┌──────────────────────────────┐
+│ ● Suprimentos            ↗   │  ← dot 9px + overline + seta (tinta 30%)
+│                               │
+│ Compras Públicas & Atas       │  ← H2 Fraunces 17px
+│ Conformidade — Lei 14.133/21  │  ← caption, tinta 45%
+│ Descrição em duas linhas...   │  ← body small, tinta 70%
+│ ─────────────────────────────│
+│ Trava CMED & BPS ativa   Acessar → │  ← métrica (cor da categoria) + link
+└──────────────────────────────┘
+```
+
+Fundo branco, borda `1px solid rgba(27,31,28,.12)`, raio `12px`, padding `22px`. **Nenhum ícone de card colorido de fundo** — a única cor viva no card é o dot de categoria e a métrica no footer.
+
+---
+
+### Painel de Destaque (hero de módulo central)
+
+Fundo `#1B1F1C` (tinta), texto papel, raio `16px`, padding `40px 48px`. Overline em terracota, H1 em Fraunces papel, CTA primário terracota + CTA outline papel. Usar **no máximo um por tela** — é o elemento que "grita", tudo mais no hub deve ficar quieto ao redor dele.
 
 ---
 
@@ -267,23 +283,15 @@ Mono      ATA-2024-0042 · PdC-2024-0187 · R$ 1.234,56
 
 | Tipo | Background | Borda esq. | Texto |
 |---|---|---|---|
-| Informação | `#EBF0FB` | `#1A56DB` | `#1E3A5F` |
-| Sucesso | `#D1FAE5` | `#0E9F6E` | `#057A55` |
-| Atenção | `#FEF9C3` | `#FACA15` | `#92400E` |
-| Crítico | `#FDE8E8` | `#F05252` | `#C81E1E` |
-
-#### CSS
+| Ativo/Sucesso | `rgba(14,92,76,.06)` | `#0E5C4C` | `#0E5C4C` |
+| Atenção | `rgba(138,106,22,.08)` | `#8A6A16` | `#8A6A16` |
+| Crítico | `rgba(156,59,46,.06)` | `#9C3B2E` | `#9C3B2E` |
 
 ```css
 .alert {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 12px 16px;
-  border-radius: 8px;
-  border-left: 4px solid;
-  font-size: 14px;
-  line-height: 1.5;
+  display: flex; gap: 12px; padding: 10px 14px;
+  border-radius: 6px; border-left: 3px solid;
+  font-family: 'Public Sans', sans-serif; font-size: 12px; line-height: 1.5;
 }
 ```
 
@@ -293,34 +301,24 @@ Mono      ATA-2024-0042 · PdC-2024-0187 · R$ 1.234,56
 
 ```
 ┌─────────────────────┐
-│ [ícone 40px]        │
+│ ATAS ATIVAS         │  ← overline 10px, tinta 45%, versalete
 │                     │
-│ 142                 │  ← valor: 24px bold
-│ ATAs Ativas         │  ← label: 12px gray-500
-│ +12 este mês        │  ← delta: 12px cor temática
+│ 12                  │  ← valor: Fraunces 26px 600
+│ +2 este mês         │  ← delta: 11px, cor semântica
 └─────────────────────┘
 ```
 
-Padding: `20px` · Border-radius: `12px` · Border: `1px solid #E5E7EB`
+Padding `16px 18px` · Borda `1px solid rgba(27,31,28,.12)` · Raio `10px` · Fundo branco. Sem ícone — o valor grande em serifada já carrega a hierarquia.
 
 ---
 
 ### Tabela de Dados
 
-```
-┌──────────┬──────────────────┬────────────────┬───────────┬────────────┬──────────────┐
-│ Nº ATA   │ Fornecedor       │ Item           │ Valor     │ Validade   │ Status       │
-├──────────┼──────────────────┼────────────────┼───────────┼────────────┼──────────────┤
-│ 2024-42  │ FarmaDistrib.    │ Dipirona 500mg │ R$ 0,38  │ 31/12/2025 │ ● Ativa      │
-│ 2024-31  │ MediSupply S.A.  │ Amoxicilina    │ R$ 1,12  │ 30/06/2025 │ ● Em análise │
-│ 2024-19  │ Pharma BH Ltda   │ Enalapril 10mg │ R$ 0,24  │ 28/02/2025 │ ● Expirada   │
-└──────────┴──────────────────┴────────────────┴───────────┴────────────┴──────────────┘
-```
-
-- Cabeçalho: `#F9FAFB`, texto `11px uppercase gray-500`
-- Linhas: `hover → #F9FAFB`
-- IDs/códigos: `font-mono text-blue-700`
-- Valores monetários: `font-mono font-medium gray-900`
+- Cabeçalho: fundo branco (não cinza), texto `10.5px` versalete tinta 45%, borda inferior `1px solid rgba(27,31,28,.08)`
+- Linhas separadas por `1px solid rgba(27,31,28,.08)`, sem hover-fundo agressivo
+- Códigos/IDs: `font-mono`, tinta 100% (não mais azul — o mono já é o sinal de "isto é um código")
+- Valores monetários: `font-mono font-weight:600`
+- Status: badge pill (seção 4)
 
 ---
 
@@ -328,190 +326,177 @@ Padding: `20px` · Border-radius: `12px` · Border: `1px solid #E5E7EB`
 
 | Estado | Border | Background | Ring |
 |---|---|---|---|
-| Padrão | `#D1D5DB` | `#ffffff` | — |
-| Focus | `#1A56DB` | `#ffffff` | `rgba(26,86,219,.15)` 3px |
-| Erro | `#F05252` | `#FDE8E8` | — |
+| Padrão | `rgba(27,31,28,.12)` | `#FFFFFF` | — |
+| Focus | `#0E5C4C` | `#FFFFFF` | `rgba(14,92,76,.15)` 2px |
+| Erro | `#9C3B2E` | `rgba(156,59,46,.05)` | — |
 
 ```css
 input {
-  padding: 8px 12px;
-  border-radius: 8px;
-  border: 1px solid #D1D5DB;
-  font-size: 13px;
-  font-family: 'Inter', sans-serif;
-  outline: none;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  padding: 9px 12px; border-radius: 8px;
+  border: 1px solid rgba(27,31,28,.12);
+  font-family: 'Public Sans', sans-serif; font-size: 12.5px;
+  outline: none; transition: border-color .15s, box-shadow .15s;
 }
-input:focus {
-  border-color: #1A56DB;
-  box-shadow: 0 0 0 3px rgba(26, 86, 219, 0.15);
-}
-input.error {
-  border-color: #F05252;
-  background: #FDE8E8;
-}
+input:focus { border-color: #0E5C4C; box-shadow: 0 0 0 2px rgba(14,92,76,.15); }
+input.error { border-color: #9C3B2E; background: rgba(156,59,46,.05); }
 ```
 
 ---
 
 ## 5. Ícones
 
-**Biblioteca:** [`lucide-react`](https://lucide.dev)  
-**Stroke-width padrão:** `1.5px`
+**Biblioteca:** [`lucide-react`](https://lucide.dev) — mantida da v1, sem mudança de dependência.
+**Stroke-width padrão:** `1.5px`.
 
-### Tamanhos Contextuais
+### Mudança de uso (não de biblioteca)
+
+Na v1, cada módulo tinha um ícone grande dentro de um bloco colorido (`w-12 h-12 rounded-2xl bg-{cor}`). Na v2:
+
+- Ícone de navegação/sidebar: `stroke: rgba(27,31,28,.7)`, sem bloco de fundo colorido — só o próprio traço.
+- Estado ativo: ícone em `#FFFFFF` sobre fundo `#1B1F1C` (não mais a cor do módulo).
+- Categoria é sinalizada pelo **dot de 9px** ao lado do label/overline, não pela cor do ícone.
+- Ícones seguem monocromáticos (tinta) em 95% dos casos; cor só aparece em badges/pills e no dot de categoria.
+
+### Tamanhos Contextuais (inalterado da v1)
 
 | Tamanho | Uso |
 |---|---|
-| `12px` | Badges, chips, elementos inline pequenos |
-| `16px` | Texto inline, labels, inputs |
-| `20px` | Cards, botões com ícone |
-| `24px` | Cabeçalhos de seção, sidebar |
-| `32px` | Hero, telas de estado vazio |
-
-### Ícones do Sistema
-
-| Ícone | Nome Lucide | Contexto |
-|---|---|---|
-| `Shield` | `shield` | Auditoria, segurança |
-| `Activity` | `activity` | Dashboard, monitoramento |
-| `FileText` | `file-text` | Pedidos de Compra (PdC) |
-| `AlertTriangle` | `alert-triangle` | Dispensa emergencial, alertas |
-| `Users` | `users` | Gestão de fornecedores |
-| `Package` | `package` | ATAs, estoques |
-| `Pill` | `pill` | Medicamentos |
-| `Building2` | `building-2` | Órgão público |
-| `BarChart3` | `bar-chart-3` | Relatórios, analytics |
-| `Lock` | `lock` | Permissões, acesso |
-| `Bell` | `bell` | Notificações |
-| `Search` | `search` | Busca global |
-| `Download` | `download` | Exportar dados |
-| `Eye` | `eye` | Visualizar detalhe |
-| `TrendingUp` | `trending-up` | Tendências, economia |
-| `Zap` | `zap` | IA, automação |
+| `12px` | Badges, chips |
+| `15–16px` | Navegação, inputs, labels |
+| `20px` | Botões com ícone |
+| `24–26px` | Cabeçalhos de seção |
+| `32px` | Estados vazios |
 
 ---
 
 ## 6. Tokens de Design
 
-### Variáveis CSS (`--vs-*`)
+### Variáveis CSS (`--vs2-*`)
+
+Novo prefixo `--vs2-*` para não colidir com o `--vs-*` da v1 durante a migração incremental (permite os dois coexistirem enquanto módulos são migrados um a um).
 
 ```css
 :root {
-  /* ── Azul Institucional ── */
-  --vs-blue-900: #1E3A5F;   /* Sidebar, headers escuros */
-  --vs-blue-700: #1A56DB;   /* Cor primária, CTAs, links */
-  --vs-blue-500: #2563EB;   /* Hover de elementos primários */
-  --vs-blue-100: #EBF0FB;   /* Backgrounds secundários */
-  --vs-blue-50:  #F0F4FF;   /* Fundo de seções com ênfase */
+  /* ── Tinta & Papel ── */
+  --vs2-ink:      #1B1F1C;
+  --vs2-ink-70:   rgba(27,31,28,.70);
+  --vs2-ink-45:   rgba(27,31,28,.45);
+  --vs2-ink-30:   rgba(27,31,28,.30);
+  --vs2-ink-12:   rgba(27,31,28,.12);
+  --vs2-ink-08:   rgba(27,31,28,.08);
+  --vs2-paper:    #F6F3EC;
+  --vs2-paper-2:  #EFEAE0;
 
-  /* ── Verde Sucesso ── */
-  --vs-green:    #0E9F6E;   /* Sucesso, aprovação, IA */
-  --vs-green-dk: #057A55;   /* Hover, texto em fundo claro */
-  --vs-green-lt: #D1FAE5;   /* Background de badges/alertas */
+  /* ── Teal — ação/confiança ── */
+  --vs2-teal:      #0E5C4C;
+  --vs2-teal-dark: #0A4A3D;
+  --vs2-teal-08:   rgba(14,92,76,.08);
 
-  /* ── Amarelo Atenção ── */
-  --vs-yellow:    #FACA15;  /* Atenção, pendente */
-  --vs-yellow-dk: #C27803;  /* Texto de aviso */
-  --vs-yellow-lt: #FEF9C3;  /* Background de alertas */
+  /* ── Terracota — destaque ── */
+  --vs2-terracotta:    #C1622D;
+  --vs2-terracotta-dk: #A8531F;
+  --vs2-terracotta-08: rgba(193,98,45,.08);
 
-  /* ── Vermelho Crítico ── */
-  --vs-red:    #F05252;     /* Erro, rejeição, emergência */
-  --vs-red-dk: #C81E1E;     /* Texto de erro */
-  --vs-red-lt: #FDE8E8;     /* Background de alertas */
+  /* ── Ocre — atenção ── */
+  --vs2-ochre:    #8A6A16;
+  --vs2-ochre-08: rgba(138,106,22,.10);
 
-  /* ── Cinza Neutro ── */
-  --vs-gray-900: #111928;   /* Texto principal */
-  --vs-gray-700: #374151;   /* Texto secundário */
-  --vs-gray-500: #6B7280;   /* Placeholders, captions */
-  --vs-gray-300: #D1D5DB;   /* Bordas de inputs */
-  --vs-gray-200: #E5E7EB;   /* Bordas de cards */
-  --vs-gray-100: #F3F4F6;   /* Fundo de inputs, thead */
-  --vs-gray-50:  #F9FAFB;   /* Background da página */
+  /* ── Tijolo — crítico ── */
+  --vs2-brick:    #9C3B2E;
+  --vs2-brick-08: rgba(156,59,46,.08);
 
-  /* ── Estrutura ── */
-  --vs-radius: 8px;
-  --vs-shadow-sm: 0 1px 2px rgba(0,0,0,.06);
-  --vs-shadow:    0 1px 4px rgba(0,0,0,.08), 0 4px 12px rgba(0,0,0,.06);
+  /* ── Tipografia ── */
+  --vs2-font-display: 'Fraunces', Georgia, serif;
+  --vs2-font-body:    'Public Sans', -apple-system, sans-serif;
+  --vs2-font-mono:    'JetBrains Mono', monospace;
+
+  /* ── Estrutura (herdada da v1, sem mudança) ── */
+  --vs2-radius: 8px;
+  --vs2-shadow-sm: 0 1px 2px rgba(27,31,28,.05);
+  --vs2-shadow:    0 1px 4px rgba(27,31,28,.06), 0 4px 12px rgba(27,31,28,.05);
 }
 ```
 
-### Mapeamento Tailwind → Token
+### Mapeamento Tailwind → Token (v2)
 
-| Classe Tailwind | Token equivalente |
-|---|---|
-| `bg-background` | `--vs-gray-50` |
-| `text-foreground` | `--vs-gray-900` |
-| `bg-primary` | `--vs-blue-700` |
-| `text-primary-foreground` | `#ffffff` |
-| `bg-accent` | `--vs-green` |
-| `bg-destructive` | `--vs-red` |
-| `border-border` | `--vs-gray-200` |
-| `bg-muted` | `--vs-gray-200` |
-| `text-muted-foreground` | `--vs-gray-500` |
+| Classe Tailwind | Token v2 | Token v1 substituído |
+|---|---|---|
+| `bg-background` | `--vs2-paper` | `--vs-gray-50` (`#F9FAFB`) |
+| `text-foreground` | `--vs2-ink` | `--vs-gray-900` (`#111928`) |
+| `bg-primary` | `--vs2-terracotta` | `--vs-blue-700` (`#1A56DB`) |
+| `bg-secondary` / ação recorrente | `--vs2-teal` | — (não existia; era tudo azul) |
+| `bg-accent` | `--vs2-terracotta` | `--vs-green` (`#0E9F6E`) |
+| `bg-destructive` | `--vs2-brick` | `--vs-red` (`#F05252`) |
+| `bg-warning` | `--vs2-ochre` | `--vs-yellow` (`#FACA15`) |
+| `border-border` | `--vs2-ink-12` | `--vs-gray-200` (`#E5E7EB`) |
+| `text-muted-foreground` | `--vs2-ink-45` | `--vs-gray-500` (`#6B7280`) |
 
 ---
 
 ## 7. Espaçamento e Raio
 
-### Escala de Espaçamento
+Escala de espaçamento **inalterada** da v1 (`space-1` a `space-16`) — a mudança é só de cor e tipografia, não de grid.
 
-| Token Tailwind | px | rem | Uso típico |
+### Raios de Borda — uma correção
+
+| Classe Tailwind | Valor | Uso | Mudança vs. v1 |
 |---|---|---|---|
-| `space-1` | 4px | 0.25rem | Gap entre ícone e texto |
-| `space-2` | 8px | 0.5rem | Padding de badges |
-| `space-3` | 12px | 0.75rem | Gap entre campos |
-| `space-4` | 16px | 1rem | Padding de botões, gap padrão |
-| `space-5` | 20px | 1.25rem | Padding interno de cards |
-| `space-6` | 24px | 1.5rem | Padding de seções |
-| `space-8` | 32px | 2rem | Gap entre componentes |
-| `space-10` | 40px | 2.5rem | Margem de seção |
-| `space-12` | 48px | 3rem | Padding de hero interno |
-| `space-16` | 64px | 4rem | Padding de seção de página |
+| `rounded-md` | 6px | Botões `sm`, inputs pequenos | inalterado |
+| `rounded-lg` | 8px | Botões, inputs, cards pequenos | inalterado |
+| `rounded-xl` | 12px | Cards de conteúdo | inalterado |
+| `rounded-2xl` | 16px | Painel de destaque (hero), modais | **teto máximo** — não usar raio maior |
+| `rounded-full` | 9999px | Badges pill, avatares | inalterado |
 
-### Raios de Borda
-
-| Classe Tailwind | Valor | Uso |
-|---|---|---|
-| `rounded-sm` | 2px | Tags muito pequenas |
-| `rounded` | 4px | Elementos inline |
-| `rounded-md` | 6px | Botões `sm`, inputs pequenos |
-| `rounded-lg` | 8px | Botões `md`, inputs, cards pequenos |
-| `rounded-xl` | 12px | Cards de conteúdo |
-| `rounded-2xl` | 16px | Cards de destaque, modais |
-| `rounded-full` | 9999px | Badges pill, avatares |
+A v1 usava `rounded-3xl` (24px) no banner do hub — na v2 isso fica em `rounded-2xl` (16px) no máximo. Cantos muito arredondados reforçam o efeito "template fofo"; a v2 é levemente mais reta.
 
 ### Sombras
 
+Mesmas três elevações da v1, só com a cor da sombra trocada de preto puro para tinta (`rgba(27,31,28,…)` em vez de `rgba(0,0,0,…)`) — sombra mais quente, coerente com o papel:
+
 ```css
 /* Elevação baixa — cards, inputs */
-box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+box-shadow: 0 1px 2px rgba(27,31,28,.05);
 
 /* Elevação média — dropdowns, tooltips */
-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.06);
+box-shadow: 0 1px 4px rgba(27,31,28,.06), 0 4px 12px rgba(27,31,28,.05);
 
 /* Elevação alta — modais, overlays */
-box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+box-shadow: 0 8px 24px rgba(27,31,28,.10), 0 2px 8px rgba(27,31,28,.05);
 ```
+
+---
+
+## 8. Como Executar nos Módulos
+
+Ordem sugerida — do centro (que todo módulo herda) para as pontas, para não migrar tela por tela do zero:
+
+1. **`MODULO_THEMES` (`nucleo/src/components/ModuloLayoutShell.tsx`)** — hoje dá uma cor própria (azul, verde, âmbar, roxo...) a cada `moduloId`. Reduzir para: todo módulo herda o mesmo par tinta/papel; o único campo que varia por módulo passa a ser o **dot de categoria** (teal/terracota/ocre/tinta), não mais um `primaryBg`/`lightBg` inteiro por módulo.
+2. **`VigiaSidebarLayout.tsx`** — recolorir escudo, wordmark (Fraunces + teal), fundo da sidebar (`paper-2`), estado ativo do item de navegação (fundo tinta, não mais `currentTheme.primaryBg`).
+3. **`(modulos)/page.tsx` (Hub)** — já prototipado no esboço; aplicar hero escuro + grid monocromático com dot.
+4. **Demais 11 módulos**, um a um, reaproveitando os componentes já re-skinados nos passos 1–3 (botões, badges, tabela, KPI card) — a maior parte do trabalho por módulo é achar `#1A56DB`/`bg-blue-*`/`rounded-3xl`/`font-sans` e trocar pelo token v2 correspondente da tabela da seção 6, não redesenhar a tela.
+5. **Tipografia global** — importar Fraunces + Public Sans em `layout.tsx` root e trocar a classe base de `font-sans` (Inter) para `font-body` (Public Sans), reservando `font-display` (Fraunces) só para `h1`/`h2` de destaque via classe utilitária.
+
+Este documento é a referência para essa execução — qualquer PR de reskin de módulo deve apontar para a seção correspondente aqui, não inventar tom de cor novo.
 
 ---
 
 ## Referência Rápida
 
 ```
-AZUL PRINCIPAL  #1A56DB   ████  Botões, links, ativo
-AZUL ESCURO     #1E3A5F   ████  Sidebar, cabeçalho
-VERDE           #0E9F6E   ████  Sucesso, IA
-AMARELO         #FACA15   ████  Atenção, pendente
-VERMELHO        #F05252   ████  Erro, emergência
-TEXTO           #111928   ████  Padrão
-FUNDO           #F9FAFB   ████  Página
+TERRACOTA (ação)   #C1622D   ████  Botão primário, destaque único por tela
+TEAL (confiança)    #0E5C4C   ████  Links, ativo, sucesso
+OCRE (atenção)      #8A6A16   ████  Pendente, em análise
+TIJOLO (crítico)    #9C3B2E   ████  Erro, esgotado, emergencial
+TINTA               #1B1F1C   ████  Texto, hero escuro, sidebar
+PAPEL               #F6F3EC   ████  Fundo de página
 
-FONTE           Inter 14–32 · JetBrains Mono (dados)
-RAIO            8px padrão · 12px cards · pill badges
-ÍCONES          lucide-react · stroke 1.5px
+FONTE DISPLAY   Fraunces (serifada) — só títulos H1/H2 de destaque
+FONTE CORPO     Public Sans — todo o resto (substitui Inter)
+FONTE MONO      JetBrains Mono — códigos, IDs, valores (mantida)
+RAIO            8px padrão · 12px cards · 16px teto (hero/modal) · pill badges
+ÍCONES          lucide-react · stroke 1.5px · monocromático (cor só em badge/dot)
 ```
 
 ---
 
-*Vigia Saúde Design System v1.0.0 — Governo Federal do Brasil*
+*Vigia Saúde 360 Design System v2.0.0 — Rede Pública de Saúde*

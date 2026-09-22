@@ -1,0 +1,1509 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hospital 360 — Ecossistema de Gestão Hospitalar & Condomínio Clínico</title>
+  <meta name="description" content="Plataforma de alta precisão para governança hospitalar, custeio door-to-door, escala médica, compras públicas e split financeiro condominal.">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-primary: #070B14;
+      --bg-surface: #0E1626;
+      --bg-card: rgba(17, 27, 46, 0.75);
+      --bg-card-hover: rgba(25, 39, 64, 0.85);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-accent: rgba(16, 185, 129, 0.3);
+      
+      --text-main: #F1F5F9;
+      --text-muted: #94A3B8;
+      --text-dim: #64748B;
+      
+      --emerald-500: #10B981;
+      --emerald-400: #34D399;
+      --emerald-glow: rgba(16, 185, 129, 0.18);
+      
+      --cyan-500: #06B6D4;
+      --cyan-glow: rgba(6, 182, 212, 0.18);
+      
+      --indigo-500: #6366F1;
+      --indigo-glow: rgba(99, 102, 241, 0.18);
+      
+      --amber-500: #F59E0B;
+      --rose-500: #F43F5E;
+      
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --radius-full: 9999px;
+      
+      --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      line-height: 1.6;
+      overflow-x: hidden;
+      min-height: 100vh;
+      background-image: 
+        radial-gradient(ellipse at top right, rgba(16, 185, 129, 0.08), transparent 50%),
+        radial-gradient(ellipse at bottom left, rgba(6, 182, 212, 0.08), transparent 50%),
+        radial-gradient(circle at 50% 20%, rgba(99, 102, 241, 0.06), transparent 45%);
+      background-attachment: fixed;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg-primary);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1E293B;
+      border-radius: var(--radius-full);
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #334155;
+    }
+
+    .container {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Top Navigation */
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      background: rgba(7, 11, 20, 0.85);
+      border-bottom: 1px solid var(--border-subtle);
+      transition: all 0.3s ease;
+    }
+
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 72px;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text-main);
+    }
+
+    .brand-icon-box {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, #10B981, #06B6D4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.35);
+    }
+
+    .brand-icon-box svg {
+      width: 22px;
+      height: 22px;
+      stroke: white;
+    }
+
+    .brand-name {
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      background: linear-gradient(90deg, #FFFFFF, #CBD5E1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-badge {
+      font-size: 0.72rem;
+      font-family: var(--font-mono);
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+      background: rgba(16, 185, 129, 0.12);
+      color: var(--emerald-400);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      font-weight: 600;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      list-style: none;
+    }
+
+    .nav-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.92rem;
+      font-weight: 500;
+      transition: color 0.2s ease;
+    }
+
+    .nav-link:hover {
+      color: var(--text-main);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 18px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      border: 1px solid transparent;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #10B981, #059669);
+      color: #FFFFFF;
+      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(16, 185, 129, 0.45);
+    }
+
+    .btn-outline {
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text-main);
+      border-color: var(--border-subtle);
+    }
+
+    .btn-outline:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Hero Section */
+    .hero-section {
+      padding: 90px 0 60px;
+      text-align: center;
+      position: relative;
+    }
+
+    .hero-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      border-radius: var(--radius-full);
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      color: var(--emerald-400);
+      font-size: 0.82rem;
+      font-weight: 600;
+      margin-bottom: 24px;
+      animation: pulseGlow 3s infinite ease-in-out;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--emerald-400);
+      box-shadow: 0 0 10px var(--emerald-400);
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 12px rgba(16, 185, 129, 0.1); }
+      50% { box-shadow: 0 0 24px rgba(16, 185, 129, 0.3); }
+    }
+
+    .hero-title {
+      font-size: clamp(2.2rem, 5vw, 3.8rem);
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      margin-bottom: 20px;
+      max-width: 960px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .hero-title span {
+      background: linear-gradient(135deg, #10B981 20%, #06B6D4 80%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-desc {
+      font-size: clamp(1.05rem, 2vw, 1.25rem);
+      color: var(--text-muted);
+      max-width: 760px;
+      margin: 0 auto 36px;
+      font-weight: 400;
+    }
+
+    .hero-cta-group {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 50px;
+    }
+
+    /* Metrics Bar */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-top: 40px;
+      margin-bottom: 80px;
+    }
+
+    .metric-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 24px 20px;
+      text-align: left;
+      backdrop-filter: blur(12px);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .metric-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--border-accent), transparent);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .metric-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(255, 255, 255, 0.15);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .metric-card:hover::before {
+      opacity: 1;
+    }
+
+    .metric-value {
+      font-size: 2rem;
+      font-weight: 800;
+      font-family: var(--font-mono);
+      letter-spacing: -0.03em;
+      margin-bottom: 4px;
+      color: #FFFFFF;
+    }
+
+    .metric-label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    /* Live Interactive Simulator */
+    .section-header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .section-tag {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--emerald-400);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    .section-heading {
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 14px;
+    }
+
+    .section-subheading {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    .simulator-container {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      margin-bottom: 90px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .simulator-tabs {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border-subtle);
+      overflow-x: auto;
+      margin-bottom: 28px;
+    }
+
+    .sim-tab-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      padding: 10px 18px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .sim-tab-btn:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .sim-tab-btn.active {
+      color: #FFFFFF;
+      background: rgba(16, 185, 129, 0.14);
+      border-color: rgba(16, 185, 129, 0.35);
+    }
+
+    .sim-view {
+      display: none;
+      animation: fadeIn 0.35s ease;
+    }
+
+    .sim-view.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .sim-grid-two {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 860px) {
+      .sim-grid-two {
+        grid-template-columns: 1fr;
+      }
+      .nav-links {
+        display: none;
+      }
+    }
+
+    .panel-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 24px;
+    }
+
+    .panel-title {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.86rem;
+    }
+
+    .data-table th {
+      text-align: left;
+      padding: 10px 12px;
+      color: var(--text-dim);
+      font-weight: 600;
+      border-bottom: 1px solid var(--border-subtle);
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      text-transform: uppercase;
+    }
+
+    .data-table td {
+      padding: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      color: var(--text-main);
+    }
+
+    .data-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 8px;
+      border-radius: var(--radius-full);
+      font-size: 0.74rem;
+      font-weight: 600;
+      font-family: var(--font-mono);
+    }
+
+    .badge-success {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--emerald-400);
+    }
+
+    .badge-info {
+      background: rgba(6, 182, 212, 0.15);
+      color: var(--cyan-500);
+    }
+
+    .badge-warning {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--amber-500);
+    }
+
+    /* Modules Catalog Grid */
+    .modules-section {
+      padding: 20px 0 90px;
+    }
+
+    .modules-filter-bar {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 40px;
+    }
+
+    .filter-btn {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      padding: 8px 16px;
+      border-radius: var(--radius-full);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .filter-btn:hover {
+      color: var(--text-main);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .filter-btn.active {
+      background: var(--text-main);
+      color: var(--bg-primary);
+      border-color: var(--text-main);
+    }
+
+    .modules-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .mod-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.25s ease;
+      backdrop-filter: blur(8px);
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .mod-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--border-accent);
+      background: var(--bg-card-hover);
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35);
+    }
+
+    .mod-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .mod-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .mod-title {
+      font-size: 1.12rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: #FFFFFF;
+    }
+
+    .mod-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+
+    .mod-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 0.78rem;
+      font-family: var(--font-mono);
+      color: var(--text-dim);
+    }
+
+    /* Door to Door Cost Stations */
+    .stations-timeline {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
+      margin: 40px 0;
+    }
+
+    @media (max-width: 980px) {
+      .stations-timeline {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .station-node {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      position: relative;
+    }
+
+    .station-node.active {
+      border-color: var(--emerald-400);
+      background: rgba(16, 185, 129, 0.08);
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+    }
+
+    .station-step-num {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--emerald-400);
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .station-name {
+      font-weight: 700;
+      font-size: 0.95rem;
+      margin-bottom: 6px;
+    }
+
+    .station-cost-preview {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* Terminal Code Block */
+    .terminal-box {
+      background: #050811;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      font-family: var(--font-mono);
+      font-size: 0.86rem;
+      position: relative;
+      margin: 30px auto;
+      max-width: 760px;
+      text-align: left;
+    }
+
+    .terminal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .terminal-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .terminal-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .dot-red { background: #EF4444; }
+    .dot-yellow { background: #F59E0B; }
+    .dot-green { background: #10B981; }
+
+    .terminal-code {
+      color: #E2E8F0;
+      line-height: 1.8;
+      overflow-x: auto;
+    }
+
+    .cmd-prompt {
+      color: var(--emerald-400);
+      user-select: none;
+    }
+
+    .cmd-comment {
+      color: var(--text-dim);
+    }
+
+    /* Footer */
+    .footer {
+      border-top: 1px solid var(--border-subtle);
+      background: #04070D;
+      padding: 60px 0 40px;
+      color: var(--text-dim);
+      font-size: 0.88rem;
+    }
+
+    .footer-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 24px;
+      margin-bottom: 30px;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 24px;
+      list-style: none;
+    }
+
+    .footer-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .footer-links a:hover {
+      color: #FFFFFF;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="container nav-inner">
+      <a href="#" class="brand-logo">
+        <div class="brand-icon-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14"/>
+          </svg>
+        </div>
+        <div>
+          <span class="brand-name">HOSPITAL 360</span>
+        </div>
+        <span class="brand-badge">CORE v2.4</span>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="#modulos" class="nav-link">Módulos Hospitalares</a></li>
+        <li><a href="#simulador" class="nav-link">Simulador Door-to-Door</a></li>
+        <li><a href="#arquitetura" class="nav-link">Arquitetura Técnica</a></li>
+        <li><a href="#execucao" class="nav-link">Execução Local</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <a href="https://github.com/tiscinovacoes/hospital-360" target="_blank" class="btn btn-outline">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+          </svg>
+          GitHub Repo
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <header class="hero-section">
+    <div class="container">
+      <div class="hero-pill">
+        <span class="status-dot"></span>
+        Plataforma Ativa • Stack Next.js 16 + Supabase
+      </div>
+      
+      <h1 class="hero-title">
+        Ecossistema Hospitalar 360°<br>
+        <span>Custos Door-to-Door & Condomínio Clínico</span>
+      </h1>
+      
+      <p class="hero-desc">
+        A mais completa suíte integrada para gestão hospitalar: desde a admissão beira-leito e apuração de custos em 5 estações até compras públicas com Catmat, escala médica com ponto GPS e rateio financeiro condominal.
+      </p>
+
+      <div class="hero-cta-group">
+        <a href="#modulos" class="btn btn-primary" style="padding: 12px 24px; font-size: 0.95rem;">
+          Explorar 14 Módulos Ativos
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+        <a href="#simulador" class="btn btn-outline" style="padding: 12px 24px; font-size: 0.95rem;">
+          Simulador de Ingestão de Despesas
+        </a>
+      </div>
+
+      <!-- Live Metrics Bar -->
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-value" style="color: var(--emerald-400);">14</div>
+          <div class="metric-label">Módulos Integrados no Núcleo</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value" style="color: var(--cyan-500);">5 Estações</div>
+          <div class="metric-label">Apuração Custo Door-to-Door</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value" style="color: #A855F7;">100% Auditável</div>
+          <div class="metric-label">Conformidade BPS, CMED & TUSS</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value" style="color: var(--amber-500);">CRED-OMEGA</div>
+          <div class="metric-label">Zero Segredos Expostos no Git</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Interactive Live Simulator -->
+  <section class="container" id="simulador">
+    <div class="section-header">
+      <span class="section-tag">Simulação Operacional em Tempo Real</span>
+      <h2 class="section-heading">Hub de Ingestão & Perfis de Governança</h2>
+      <p class="section-subheading">
+        Alterne entre as perspectivas hospitalares para visualizar a consolidação de custos, auditoria de glosas e métricas de plantões.
+      </p>
+    </div>
+
+    <div class="simulator-container">
+      <div class="simulator-tabs">
+        <button class="sim-tab-btn active" onclick="switchSimTab('custos')">
+          💰 Vigia de Custos (Door-to-Door)
+        </button>
+        <button class="sim-tab-btn" onclick="switchSimTab('escala')">
+          🩺 Escala Médica & Plantões GPS
+        </button>
+        <button class="sim-tab-btn" onclick="switchSimTab('leitos')">
+          🛏️ Censo & Giro de Leitos
+        </button>
+        <button class="sim-tab-btn" onclick="switchSimTab('split')">
+          🏢 Split Condominial & Honorários
+        </button>
+      </div>
+
+      <!-- Tab 1: Custos -->
+      <div id="sim-custos" class="sim-view active">
+        <div class="sim-grid-two">
+          <div class="panel-box">
+            <div class="panel-title">
+              <span>Lote de Ingestão Recente</span>
+              <span class="badge-pill badge-success">Protocolo ING-HUB-361947</span>
+            </div>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Estação Clínica</th>
+                  <th>Procedimento / Insumo</th>
+                  <th>Tabela</th>
+                  <th>Valor Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Estação 1</td>
+                  <td>Acolhimento + Triagem Manchester</td>
+                  <td>TUSS</td>
+                  <td>R$ 145,00</td>
+                </tr>
+                <tr>
+                  <td>Estação 2</td>
+                  <td>Hemograma Completo + PCR Automatizado</td>
+                  <td>TUSS</td>
+                  <td>R$ 82,50</td>
+                </tr>
+                <tr>
+                  <td>Estação 3</td>
+                  <td>Kit Intubação + Fentanil 50mcg/ml</td>
+                  <td>CMED</td>
+                  <td>R$ 380,00</td>
+                </tr>
+                <tr>
+                  <td>Estação 5</td>
+                  <td>Honorário Intensivista Plantão 12h</td>
+                  <td>Direto</td>
+                  <td style="font-weight: 700; color: var(--emerald-400);">R$ 1.770,00</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="panel-box">
+            <div class="panel-title">
+              <span>Balanço Comparativo TUSS x SUS</span>
+              <span class="badge-pill badge-info">Confronto Automático</span>
+            </div>
+            <div style="margin-top: 14px; font-size: 0.9rem; color: var(--text-muted);">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                <span>Faturamento TUSS / Particular:</span>
+                <strong style="color: #FFFFFF;">R$ 2.377,50</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                <span>Teto de Cobertura SIGTAP / SUS:</span>
+                <strong style="color: var(--amber-500);">R$ 642,10</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                <span>Déficit Assistencial Projetado:</span>
+                <strong style="color: var(--rose-500);">- R$ 1.735,40</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding-top: 12px; border-top: 1px solid var(--border-subtle);">
+                <span>Subsídio Requerido do Condomínio:</span>
+                <span class="badge-pill badge-warning">Aprovado pelo Conselho</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 2: Escala -->
+      <div id="sim-escala" class="sim-view">
+        <div class="sim-grid-two">
+          <div class="panel-box">
+            <div class="panel-title">
+              <span>Plantões Ativos (Check-in GPS Validado)</span>
+              <span class="badge-pill badge-success">Sincronizado CFM</span>
+            </div>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Profissional</th>
+                  <th>Setor</th>
+                  <th>Check-in</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Dr. Carlos Eduardo (CRM/SP 148201)</td>
+                  <td>UTI Adulto - Leito 01 a 10</td>
+                  <td>07:00 (Raio 15m)</td>
+                  <td><span class="badge-pill badge-success">Em Plantão</span></td>
+                </tr>
+                <tr>
+                  <td>Dra. Mariana Vaz (CRM/SP 192834)</td>
+                  <td>Pronto Socorro / Triagem</td>
+                  <td>07:15 (Raio 8m)</td>
+                  <td><span class="badge-pill badge-success">Em Plantão</span></td>
+                </tr>
+                <tr>
+                  <td>Dr. Roberto Dias (CRM/SP 134902)</td>
+                  <td>Centro Cirúrgico Bloco B</td>
+                  <td>07:45 (Biometria)</td>
+                  <td><span class="badge-pill badge-info">Cirurgia Eletiva</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="panel-box">
+            <div class="panel-title">
+              <span>Honorários Apurados no Turno</span>
+              <span class="badge-pill badge-info">R$ 5.310,00</span>
+            </div>
+            <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 16px;">
+              Cada plantão validado gera automaticamente lançamento contábil no motor de rateio do condomínio e é espelhado no Vigia de Custos.
+            </p>
+            <div style="background: rgba(0,0,0,0.25); padding: 14px; border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: 0.8rem; color: var(--emerald-400);">
+              ✓ 3 médicos escalados e presentes<br>
+              ✓ 0 substituições não autorizadas<br>
+              ✓ Sincronização REST /api/escala-medica: OK
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 3: Leitos -->
+      <div id="sim-leitos" class="sim-view">
+        <div class="sim-grid-two">
+          <div class="panel-box">
+            <div class="panel-title">
+              <span>Censo Hospitalar em Tempo Real</span>
+              <span class="badge-pill badge-success">Ocupação 91.8%</span>
+            </div>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Ala / Bloco</th>
+                  <th>Capacidade</th>
+                  <th>Ocupados</th>
+                  <th>Higienização Facilities</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>UTI Geral Adulto</td>
+                  <td>20 leitos</td>
+                  <td>19 leitos</td>
+                  <td>1 leito (liberação 25 min)</td>
+                </tr>
+                <tr>
+                  <td>Semi-intensiva</td>
+                  <td>15 leitos</td>
+                  <td>14 leitos</td>
+                  <td>0 pendentes</td>
+                </tr>
+                <tr>
+                  <td>Enfermaria Cirúrgica</td>
+                  <td>40 leitos</td>
+                  <td>36 leitos</td>
+                  <td>4 leitos livres</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="panel-box">
+            <div class="panel-title">
+              <span>Indicadores Assistenciais</span>
+              <span class="badge-pill badge-info">Taxa de Giro</span>
+            </div>
+            <div style="font-size: 0.9rem; color: var(--text-muted); line-height: 2;">
+              Tempo médio de permanência: <strong style="color: #FFF;">3.8 dias</strong><br>
+              Giro de leito mensal: <strong style="color: #FFF;">7.4 pacientes/leito</strong><br>
+              Tempo médio de desinfecção terminal: <strong style="color: var(--emerald-400);">28 minutos</strong><br>
+              Taxa de infecção hospitalar: <strong style="color: var(--emerald-400);">&lt; 0.7% (Meta ONA 3)</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 4: Split -->
+      <div id="sim-split" class="sim-view">
+        <div class="sim-grid-two">
+          <div class="panel-box">
+            <div class="panel-title">
+              <span>Rateio Condominial de Salas & Centros Cirúrgicos</span>
+              <span class="badge-pill badge-success">Ciclo Mensal</span>
+            </div>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Clínica / Especialidade</th>
+                  <th>Uso CC (Horas)</th>
+                  <th>Custos Compartilhados</th>
+                  <th>Repasse Líquido</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Instituto de Cardiologia SP</td>
+                  <td>42h</td>
+                  <td>R$ 14.800,00</td>
+                  <td style="color: var(--emerald-400); font-weight: 700;">R$ 98.420,00</td>
+                </tr>
+                <tr>
+                  <td>Ortopedia & Coluna Avançada</td>
+                  <td>36h</td>
+                  <td>R$ 12.600,00</td>
+                  <td style="color: var(--emerald-400); font-weight: 700;">R$ 74.310,00</td>
+                </tr>
+                <tr>
+                  <td>Oftalmologia Cirúrgica</td>
+                  <td>18h</td>
+                  <td>R$ 6.300,00</td>
+                  <td style="color: var(--emerald-400); font-weight: 700;">R$ 41.200,00</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="panel-box">
+            <div class="panel-title">
+              <span>Automação Bancária & Split</span>
+              <span class="badge-pill badge-info">Conciliação Instantânea</span>
+            </div>
+            <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 16px;">
+              O Hospital 360 segrega automaticamente o pagamento do paciente entre a taxa do condomínio hospitalar, taxa de sala/gases medicinais e honorário médico direto.
+            </p>
+            <div style="background: rgba(0,0,0,0.25); padding: 14px; border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: 0.8rem; color: var(--cyan-500);">
+              ✓ Split regulamentado sem bitributação<br>
+              ✓ Integração bancária com D+1<br>
+              ✓ Relatórios de fechamento em CSV e JSON
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Door to Door 5 Stations Interactive Flow -->
+  <section class="container" style="margin-bottom: 90px;">
+    <div class="section-header">
+      <span class="section-tag">Rastreabilidade Clínica & Econômica</span>
+      <h2 class="section-heading">As 5 Estações Door-to-Door</h2>
+      <p class="section-subheading">
+        Cada etapa da jornada do paciente é mapeada em tempo real com apuração de custos unitários e confrontação de tabelas oficiais.
+      </p>
+    </div>
+
+    <div class="stations-timeline">
+      <div class="station-node active" onclick="highlightStation(this, 'Estação 1: Acolhimento, Triagem Manchester e Validação de Elegibilidade TUSS/SUS com prontuário unificado.')">
+        <div class="station-step-num">ESTAÇÃO 01</div>
+        <div class="station-name">Acolhimento & Triagem</div>
+        <div class="station-cost-preview">Tempo: ~12 min</div>
+      </div>
+
+      <div class="station-node" onclick="highlightStation(this, 'Estação 2: Coleta de exames laboratoriais, gasometria e imagens de urgência integradas diretamente com o LIMS.')">
+        <div class="station-step-num">ESTAÇÃO 02</div>
+        <div class="station-name">Apoio Diagnóstico (LIS)</div>
+        <div class="station-cost-preview">Tempo: ~35 min</div>
+      </div>
+
+      <div class="station-node" onclick="highlightStation(this, 'Estação 3: Insumos cirúrgicos e próteses OPME com checagem automática de preço máximo Anvisa/CMED e código Catmat.')">
+        <div class="station-step-num">ESTAÇÃO 03</div>
+        <div class="station-name">Insumos & OPME</div>
+        <div class="station-cost-preview">Compliance: CMED/BPS</div>
+      </div>
+
+      <div class="station-node" onclick="highlightStation(this, 'Estação 4: Dispensação beira-leito com biometria ou código de barras, bloqueio de dose duplicada e rastreamento de lote.')">
+        <div class="station-step-num">ESTAÇÃO 04</div>
+        <div class="station-name">Farmácia Beira-Leito</div>
+        <div class="station-cost-preview">Dupla Checagem</div>
+      </div>
+
+      <div class="station-node" onclick="highlightStation(this, 'Estação 5: Internação UTI, hotelaria hospitalar, custos de gases medicinais e apuração ponderada de honorários médicos.')">
+        <div class="station-step-num">ESTAÇÃO 05</div>
+        <div class="station-name">Internação & Honorários</div>
+        <div class="station-cost-preview">Custo/Paciente-Dia</div>
+      </div>
+    </div>
+
+    <div id="station-detail-box" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 20px; font-size: 0.95rem; color: var(--text-main); text-align: center;">
+      Estação 1: Acolhimento, Triagem Manchester e Validação de Elegibilidade TUSS/SUS com prontuário unificado.
+    </div>
+  </section>
+
+  <!-- 14 Modules Catalog -->
+  <section class="container modules-section" id="modulos">
+    <div class="section-header">
+      <span class="section-tag">Catálogo do Sistema</span>
+      <h2 class="section-heading">14 Módulos Nativos do Núcleo</h2>
+      <p class="section-subheading">
+        Estruturados no App Router do Next.js sob o route group <code>(modulos)</code> com tipagem estrita e navegação por sidebar individual.
+      </p>
+    </div>
+
+    <div class="modules-filter-bar">
+      <button class="filter-btn active" onclick="filterModules('all', this)">Todos (14)</button>
+      <button class="filter-btn" onclick="filterModules('clinico', this)">Assistencial & Clínico</button>
+      <button class="filter-btn" onclick="filterModules('custos', this)">Custos & Finanças</button>
+      <button class="filter-btn" onclick="filterModules('operacoes', this)">Operações & Estoque</button>
+      <button class="filter-btn" onclick="filterModules('governanca', this)">Governança & TI</button>
+    </div>
+
+    <div class="modules-grid" id="modules-list">
+      <!-- 1 -->
+      <div class="mod-card" data-cat="custos">
+        <div>
+          <div class="mod-header">
+            <div class="mod-icon">📊</div>
+            <span class="badge-pill badge-success">Produção</span>
+          </div>
+          <h3 class="mod-title">Dashboard Executivo</h3>
+          <p class="mod-desc">Painel central de BI com taxas de ocupação, glosa hospitalar, EBITDA e fluxo de caixa consolidado.</p>
+        </div>
+        <div class="mod-footer">
+          <span>/dashboard-executivo</span>
+          <span>Next.js 16</span>
+        </div>
+      </div>
+
+      <!-- 2 -->
+      <div class="mod-card" data-cat="clinico">
+        <div>
+          <div class="mod-header">
+            <div class="mod-icon">🩺</div>
+            <span class="badge-pill badge-success">Produção</span>
+          </div>
+          <h3 class="mod-title">Gestão Clínica & PEP</h3>
+          <p class="mod-desc">Prontuário eletrônico unificado, prescrição com alertas de alergias e histórico multiprofissional.</p>
+        </div>
+        <div class="mod-footer">
+          <span>/gestao-clinica</span>
+          <span>Next.js 16</span>
+        </div>
+      </div>
+
+      <!-- 3 -->
+      <div class="mod-card" data-cat="operacoes">
+        <div>
+          <div class="mod-header">
+            <div class="mod-icon">⏱️</div>
+            <span class="badge-pill badge-success">Produção</span>
+          </div>
+          <h3 class="mod-title">Escala Médica & Plantões</h3>
+          <p class="mod-desc">Grade de escalas, validação de presença via GPS/biometria e apuração de honorários para o Hub.</p>
+        </div>
+        <div class="mod-footer">
+          <span>/escala-medica</span>
+          <span>Next.js 16</span>
+        </div>
+      </div>
+
+      <!-- 4 -->
+      <div class="mod-card" data-cat="custos">
+        <div>
+          <div class="mod-header">
+            <div class="mod-icon">💰</div>
+            <span class="badge-pill badge-success">Produção</span>
+          </div>
+          <h3 class="mod-title">Ingestão de Módulos (Hub)</h3>
+          <p class="mod-desc">Motor central de despesas das 5 Estações Clínicas com conciliação automática TUSS x SIGTAP.</p>
+        </div>
+        <div class="mod-footer">
+          <span>/ingestao-modulos</span>
+          <span>Next.js 16</span>
+        </div>
+      </div>
+
+      <!-- 5 -->
+      <div class="mod-card" data-cat="custos">
+        <div>
+          <div class="mod-header">
+            <div class="mod-icon">⚖️</div>
+            <span class="badge-pill badge-success">Produção</span>
+          </div>
+          <h3 class="mod-title">Compras Públicas</h3>
+          <p class="mod-desc">Módulo para editais, dispensas de licitação, pregões eletrônicos e validação com catálogo Catmat e BPS.</p>
+        </div>
+        <div class="mod-footer">
+          <span>/compras-publicas</span>
+          <span>Next.js 16</span>
+        </div>
+      </div>
+
+      <!-- 6 -->
+      <div class="mod-card" data-cat="clinico">
+        <div>
+          <div class="mod-header">
+            <div class="mod-icon">🧪</div>
+            <span class="badge-pill badge-success">Produção</span>
+          </div>
+          <h3 class="mod-title">Laboratório & LIS</h3>
+          <p class="mod-desc">Integração com analisadores bioquímicos, emissão de laudos com assinatura digital e envio direto ao PEP.</p>
+        </div>
+        <div class="mod-footer">
+          <span>/laboratorio</span>
+          <span>Next.js 16</span>
+        </div>
+      </div>
+
+      <!-- 7 -->
+      <div class="mod-card" data-cat="clinico">
+        <div>
+          <div class="mod-header">
+            <div class="mod-icon">🛏️</div>
+            <span class="badge-pill badge-success">Produção</span>
+          </div>
+          <h3 class="mod-title">Leitos & Censo Diário</h3>
+          <p class="mod-desc">Mapa visual de leitos por ala (UTI, Semi, Enfermaria), isolamentos e sincronia com Facilities.</p>
+        </div>
+        <div class="mod-footer">
+          <span>/leitos-censo</span>
+          <span>Next.js 16</span>
+        </div>
+      </div>
+
+      <!-- 8 -->
+      <div class="mod-card" data-cat="operacoes">
+        <div>
+          <div class="mod-header">
+            <div class="mod-icon">💊</div>
+            <span class="badge-pill badge-success">Produção</span>
+          </div>
+          <h3 class="mod-title">Farmácia & Estoque</h3>
+          <p class="mod-desc">Dispensação individualizada por paciente, rastreamento por leitor óptico e controle de psicotrópicos.</p>
+        </div>
+        <div class="mod-footer">
+          <span>/farmacia-estoque</span>
+          <span>Next.js 16</span>
+        </div>
+      </div>
+
+      <!-- 9 -->
+      <div class="mod-card" data-cat="operacoes">
+        <div>
+          <div class="mod-header">
+            <div class="mod-icon">📦</div>
+            <span class="badge-pill badge-success">Produção</span>
+          </div>
+          <h3 class="mod-title">Estoque Central</h3>
+          <p class="mod-desc">Curva ABC de medicamentos, ponto de reposição automatizado e controle de validade e lotes Anvisa.</p>
+        </div>
+        <div class="mod-footer">
+          <span>/estoque-central</span>
+          <span>Next.js 16</span>
+        </div>
+      </div>
+
+      <!-- 10 -->
+      <div class="mod-card" data-cat="custos">
+        <div>
+          <div class="mod-header">
+            <div class="mod-icon">🤝</div>
+            <span class="badge-pill badge-success">Produção</span>
+          </div>
+          <h3 class="mod-title">Financeiro & Split Condominial</h3>
+          <p class="mod-desc">Rateio transparente de água, energia, gases medicinais e repasse pontual aos médicos e clínicas.</p>
+        </div>
+        <div class="mod-footer">
+          <span>/financeiro-split</span>
+          <span>Next.js 16</span>
+        </div>
+      </div>
+
+      <!-- 11 -->
+      <div class="mod-card" data-cat="governanca">
+        <div>
+          <div class="mod-header">
+            <div class="mod-icon">📲</div>
+            <span class="badge-pill badge-success">Produção</span>
+          </div>
+          <h3 class="mod-title">Automação & Mensageria</h3>
+          <p class="mod-desc">Envio automático de lembretes cirúrgicos, convocações de escala e alertas de desabastecimento crítico.</p>
+        </div>
+        <div class="mod-footer">
+          <span>/automacao-mensageria</span>
+          <span>Next.js 16</span>
+        </div>
+      </div>
+
+      <!-- 12 -->
+      <div class="mod-card" data-cat="governanca">
+        <div>
+          <div class="mod-header">
+            <div class="mod-icon">🔐</div>
+            <span class="badge-pill badge-success">Produção</span>
+          </div>
+          <h3 class="mod-title">Arquitetura & Segurança</h3>
+          <p class="mod-desc">Protocolo CRED-OMEGA, auditoria SAST, trilha de log imutável e isolamento de banco por tenant.</p>
+        </div>
+        <div class="mod-footer">
+          <span>/arquitetura-seguranca</span>
+          <span>Next.js 16</span>
+        </div>
+      </div>
+
+      <!-- 13 -->
+      <div class="mod-card" data-cat="governanca">
+        <div>
+          <div class="mod-header">
+            <div class="mod-icon">👥</div>
+            <span class="badge-pill badge-success">Produção</span>
+          </div>
+          <h3 class="mod-title">Admin & Perfis de Acesso</h3>
+          <p class="mod-desc">Matriz RBAC completa para 8 perfis: médicos, enfermagem, auditores, recepcionistas e administradores.</p>
+        </div>
+        <div class="mod-footer">
+          <span>/admin/perfis-acessos</span>
+          <span>Next.js 16</span>
+        </div>
+      </div>
+
+      <!-- 14 -->
+      <div class="mod-card" data-cat="operacoes">
+        <div>
+          <div class="mod-header">
+            <div class="mod-icon">🧹</div>
+            <span class="badge-pill badge-success">Produção</span>
+          </div>
+          <h3 class="mod-title">Facilities & Higienização</h3>
+          <p class="mod-desc">Controle de higienização concorrente e terminal, cronômetro de liberação de leito e chamados de manutenção.</p>
+        </div>
+        <div class="mod-footer">
+          <span>/facilities</span>
+          <span>Next.js 16</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Local Execution -->
+  <section class="container" id="execucao" style="margin-bottom: 90px;">
+    <div class="section-header">
+      <span class="section-tag">Desenvolvimento & Deploy</span>
+      <h2 class="section-heading">Como Rodar o Núcleo Localmente</h2>
+      <p class="section-subheading">
+        O sistema completo com suporte a SSR e API Routes roda a partir da pasta <code>nucleo/</code>.
+      </p>
+    </div>
+
+    <div class="terminal-box">
+      <div class="terminal-header">
+        <div class="terminal-dots">
+          <span class="terminal-dot dot-red"></span>
+          <span class="terminal-dot dot-yellow"></span>
+          <span class="terminal-dot dot-green"></span>
+        </div>
+        <span style="color: var(--text-dim); font-size: 0.78rem;">bash / powershell</span>
+      </div>
+      <div class="terminal-code">
+        <span class="cmd-comment"># 1. Clonar o repositório oficial</span><br>
+        <span class="cmd-prompt">$</span> git clone https://github.com/tiscinovacoes/hospital-360.git<br>
+        <span class="cmd-prompt">$</span> cd hospital-360/nucleo<br><br>
+        <span class="cmd-comment"># 2. Instalar dependências (Node 20+ LTS recomendado)</span><br>
+        <span class="cmd-prompt">$</span> npm install<br><br>
+        <span class="cmd-comment"># 3. Iniciar o servidor de desenvolvimento</span><br>
+        <span class="cmd-prompt">$</span> npm run dev<br><br>
+        <span class="cmd-comment"># Acesse no seu navegador: http://localhost:3000</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div class="brand-icon-box" style="width: 32px; height: 32px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px;">
+              <path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14"/>
+            </svg>
+          </div>
+          <span style="font-weight: 700; color: #FFFFFF;">Hospital 360</span>
+          <span>• TISC Inovações em Saúde</span>
+        </div>
+
+        <ul class="footer-links">
+          <li><a href="https://github.com/tiscinovacoes/hospital-360" target="_blank">Repositório Git</a></li>
+          <li><a href="#modulos">Módulos</a></li>
+          <li><a href="#simulador">Simulador</a></li>
+          <li><a href="#execucao">Instalação</a></li>
+        </ul>
+      </div>
+
+      <div style="text-align: center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 24px; font-size: 0.8rem; color: var(--text-dim);">
+        Hospital 360 © 2026. Todos os direitos reservados à TISC Inovações. Desenvolvido para máxima governança e eficiência clínica.
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Tab switching in live simulator
+    function switchSimTab(tabId) {
+      document.querySelectorAll('.sim-tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.sim-view').forEach(view => view.classList.remove('active'));
+
+      event.currentTarget.classList.add('active');
+      const targetView = document.getElementById('sim-' + tabId);
+      if (targetView) {
+        targetView.classList.add('active');
+      }
+    }
+
+    // Door to door stations interactivity
+    function highlightStation(element, description) {
+      document.querySelectorAll('.station-node').forEach(node => node.classList.remove('active'));
+      element.classList.add('active');
+      const box = document.getElementById('station-detail-box');
+      if (box) {
+        box.textContent = description;
+      }
+    }
+
+    // Modules Filter
+    function filterModules(category, button) {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      button.classList.add('active');
+
+      const cards = document.querySelectorAll('.mod-card');
+      cards.forEach(card => {
+        if (category === 'all' || card.getAttribute('data-cat') === category) {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+  </script>
+</body>
+</html>
