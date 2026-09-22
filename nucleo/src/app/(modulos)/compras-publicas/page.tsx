@@ -22,7 +22,6 @@ import {
   XCircle,
   Scale,
   RefreshCw,
-  UserCheck,
   Menu,
   X,
   LayoutDashboard,
@@ -113,7 +112,7 @@ export default function VigiaComprasPage() {
   // Controle de Navegação do Produto Único
   const [sidebarAberta, setSidebarAberta] = useState(true);
   const [secaoAtiva, setSecaoAtiva] = useState<SecaoModulo>('visao_geral');
-  const [perfilAtivo, setPerfilAtivo] = useState<PerfilCompras>('compras_operador');
+  const [perfilAtivo] = useState<PerfilCompras>('compras_operador');
 
   // Estados de Dados da API
   const [atas, setAtas] = useState<any[]>([]);

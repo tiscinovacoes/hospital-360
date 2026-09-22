@@ -36,7 +36,6 @@ import {
   Info,
   Menu,
   ChevronRight,
-  UserCheck,
   FileSpreadsheet,
   Upload,
   RefreshCw,

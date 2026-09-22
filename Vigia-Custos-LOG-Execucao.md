@@ -12,6 +12,81 @@ data-criacao: 2026-08-12
 > [!info] Como usar este log
 > Registro cronológico (mais recente no topo) de toda ação relevante no projeto Vigia Custos, dos dois caminhos de trabalho: **[[Vigia-Custos-Caminho-Claude]]** e **[[Vigia-Custos-LOG-Execucao]]**. Cada entrada identifica quem executou, o que foi feito, arquivos tocados e o próximo passo. Serve pra qualquer um dos dois (ou o Luca) saber exatamente onde o projeto parou sem precisar perguntar.
 
+## [2026-09-22 — Antigravity] 🚀 CONCLUÍDO: Backends de Integração de Módulos, Ingestão Central e Exportação de Custos Door-to-Door
+
+- **Motivo:** Coordenação de trabalho paralela com o Claude (que está atualizando a identidade visual do projeto). Foco integral na infraestrutura de backends, motores de cálculo, conciliação e exportação de custos do ecossistema.
+- **O que foi feito:**
+  1. **Motor Central de Custos & Store em Memória (`nucleo/src/lib/hubDespesasStore.ts`):**
+     - Criado `HubDespesasService` com persistência em processo Node.js e tipagem canônica para os 14 módulos hospitalares.
+     - Implementado o mapeador automático para as **5 Estações Clínicas Door-to-Door**:
+       - Estação 1: Acolhimento, Triagem & Ambulatório (`GESTAO_CLINICA`, `OPENEMR`)
+       - Estação 2: Apoio Diagnóstico & Exames LIMS (`LABORATORIO_LIMS`, `SENAITE`)
+       - Estação 3: Insumos de Almoxarifado, OPME & Compras (`ESTOQUE_CENTRAL`, `COMPRAS_PUBLICAS`, `OPENBOXES`)
+       - Estação 4: Terapia Medicamentosa Beira-Leito (`FARMACIA_HOSPITALAR`)
+       - Estação 5: Internação, Hotelaria, Facilities & Honorários (`LEITOS_CENSO_NIR`, `ESCALA_MEDICA`, `FACILITIES_HOTELARIA`)
+     - Motor de benchmark financeiro confrontando custos reais x **TUSS** (margem líquida, provisão de 4.5% de glosas), **SIGTAP / SUS** (déficit de repasse e contrapartida pública) e **CMED / ANVISA** (teto regulatório).
+     - Alertas inteligentes do motor **Vigia-Custos** para risco de glosa técnica, déficit SUS e OPME sem lote rastreado.
+  2. **Refatoração da Ingestão Central (`nucleo/src/app/api/hub/despesas/ingestao/route.ts`):**
+     - Integrado ao `HubDespesasService`, com suporte a filtros multi-critério (`cpf`, `episodio`, `origem`, `centro_custo`, `estacao`, `termo`) e sumarização por módulo emissor e centro de custo.
+  3. **Consolidador Door-to-Door por Paciente (`nucleo/src/app/api/hub/despesas/consolidado/route.ts`):**
+     - Endpoint REST fornecendo visão unificada do paciente, tempo de permanência, agregação das 5 estações e demonstrativo de rentabilidade.
+  4. **Motor de Exportação de Despesas Multi-Formato (`nucleo/src/app/api/hub/despesas/exportar/route.ts`):**
+     - Exportações prontas para download em **CSV** estruturado para BI/Excel, **JSON** canônico e **XML TISS v04.01.00** para operadoras de planos de saúde.
+  5. **Endpoints Especializados de Apuração & Exportação dos Módulos:**
+     - `nucleo/src/app/api/farmacia/despesas/route.ts`: dispensação beira-leito (Polimixina B, Fentanila Portaria 344).
+     - `nucleo/src/app/api/leitos/despesas/route.ts`: diárias de isolamento UTI e suporte de gases medicinais.
+     - `nucleo/src/app/api/escala-medica/despesas/route.ts`: honorários de intensivistas e ato cirúrgico por paciente-dia.
+     - `nucleo/src/app/api/laboratorio/despesas/route.ts`: painéis LIMS (Hemograma, Troponina, PCR) e custos de bancada.
+     - `nucleo/src/app/api/compras-atas/despesas/route.ts`: kits OPME com ata de registro e rastreabilidade ANVISA.
+     - `nucleo/src/app/api/gestao-clinica/despesas/route.ts`: triagem Manchester e consultas médicas ambulatoriais.
+     - `nucleo/src/app/api/contabil/despesas/route.ts`: DRE do paciente, split condominial (20% condomínio / 80% clínica parceira) e prévia de NFSe.
+     - `nucleo/src/app/api/custo-paciente/route.ts`: dinamicamente sincronizado com o `HubDespesasService`.
+  6. **Validação Automatizada de Integração:**
+     - Criado e executado `test_backend_routes.ps1`, atestando 100% de sucesso nas 12 rotas com payloads reais.
+- **Arquivos Criados/Modificados:**
+  - `g:\Projetos\360\nucleo\src\lib\hubDespesasStore.ts`
+  - `g:\Projetos\360\nucleo\src\app\api\hub\despesas\ingestao\route.ts`
+  - `g:\Projetos\360\nucleo\src\app\api\hub\despesas\consolidado\route.ts`
+  - `g:\Projetos\360\nucleo\src\app\api\hub\despesas\exportar\route.ts`
+  - `g:\Projetos\360\nucleo\src\app\api\farmacia\despesas\route.ts`
+  - `g:\Projetos\360\nucleo\src\app\api\leitos\despesas\route.ts`
+  - `g:\Projetos\360\nucleo\src\app\api\escala-medica\despesas\route.ts`
+  - `g:\Projetos\360\nucleo\src\app\api\laboratorio\despesas\route.ts`
+  - `g:\Projetos\360\nucleo\src\app\api\compras-atas\despesas\route.ts`
+  - `g:\Projetos\360\nucleo\src\app\api\gestao-clinica\despesas\route.ts`
+  - `g:\Projetos\360\nucleo\src\app\api\contabil\despesas\route.ts`
+  - `g:\Projetos\360\nucleo\src\app\api\custo-paciente\route.ts`
+  - `g:\Projetos\360\nucleo\test_backend_routes.ps1`
+  - `g:\Projetos\360\Vigia-Custos-LOG-Execucao.md`
+- **Próximos Passos:**
+  - Aguardar a conclusão do novo design system visual que o Claude está implementando.
+  - Conectar os cards e botões de exportação das telas de cada módulo diretamente a estes novos endpoints de backend.
+
+---
+
+## [2026-09-22 — Claude] ✅ CONCLUÍDO: Performance de navegação do protótipo `nucleo/` (Turbopack + layout persistente por route group)
+
+- **Motivo:** Feedback do usuário de que o protótipo estava muito lento para trocar de tela. Diagnóstico apontou três causas: (1) `dev` forçado a rodar em Webpack em vez do Turbopack padrão do Next 16; (2) a casca de navegação (`VigiaSidebarLayout`) era chamada dentro de cada `page.tsx` em vez de viver num `layout.tsx`, então era desmontada e remontada inteira a cada navegação entre módulos; (3) `compras-publicas` e `estoque-central` tinham header/sidebar reescritos à mão (duplicando ~140-160 linhas cada), em vez de usar a casca compartilhada.
+- **O que foi feito:**
+  1. `nucleo/package.json`: script `dev` de `next dev --webpack` para `next dev` (Turbopack).
+  2. Criado `PageHeaderContext` (`nucleo/src/app/contexts/PageHeaderContext.tsx`) + componente `PageHeader` (`nucleo/src/components/PageHeader.tsx`): como um `layout.tsx` só recebe `children` da página (não props arbitrárias), cada página agora "publica" seu `activeTitle`/`activeSubtitle`/`actions` via contexto em vez de passar como prop direta pro `VigiaSidebarLayout`.
+  3. Criado `nucleo/src/app/(modulos)/layout.tsx` — grupo de rotas (sem efeito na URL) que monta o `VigiaSidebarLayout` uma única vez e o mantém persistente entre navegações; só o conteúdo interno troca.
+  4. Movidas as 14 rotas de módulo (`/`, `/admin/perfis-acessos`, `/arquitetura-seguranca`, `/automacao-mensageria`, `/compras-publicas`, `/dashboard-executivo`, `/escala-medica`, `/estoque-central`, `/farmacia-estoque`, `/financeiro-split`, `/gestao-clinica`, `/ingestao-modulos`, `/laboratorio`, `/leitos-censo`) para dentro de `src/app/(modulos)/` — URLs inalteradas, confirmado no build (`Route (app)` lista os mesmos paths de antes).
+  5. Em `compras-publicas` e `estoque-central`: removido o header/aside duplicado à mão (inclusive o seletor de perfil antigo, redundante com o `ModuloRbacBar` que já faz a mesma troca de papel); mantida intacta a navegação interna de seções de cada módulo.
+  6. Validado com `npm run build` (Turbopack) limpo: compilação e typecheck sem erros, 48 páginas geradas, todas as rotas preservadas.
+- **Nota de coordenação:** a funcionalidade de RBAC simulado (`ModuloRbacBar` + `src/types/rbac.ts`) e o endpoint `api/hub/despesas/ingestao` já estavam em `nucleo/` antes desta sessão, aparentemente adicionados por outro agente sem entrada correspondente neste log — mencionado ao usuário, não revertido.
+- **Arquivos Modificados/Criados:**
+  - `g:\Projetos\360\nucleo\package.json`
+  - `g:\Projetos\360\nucleo\src\app\Providers.tsx`
+  - `g:\Projetos\360\nucleo\src\app\contexts\PageHeaderContext.tsx` (novo)
+  - `g:\Projetos\360\nucleo\src\components\PageHeader.tsx` (novo)
+  - `g:\Projetos\360\nucleo\src\app\(modulos)\layout.tsx` (novo)
+  - As 14 páginas movidas para `g:\Projetos\360\nucleo\src\app\(modulos)\...`
+- **Próximos Passos Previstos:**
+  - Rodar `npm run dev` e confirmar visualmente a navegação mais rápida entre módulos.
+  - Avaliar se as demais páginas com header duplicado à mão (`admin`, `medico`, `gestao-clinica` já migrada, `internacao`, `facilities`, `recepcao` etc., fora do escopo desta sessão) merecem a mesma consolidação.
+
+
 ## [2026-09-21 08:36 — Antigravity] 📋 PLANEJAMENTO: Expansão de Módulos Operacionais e Financeiros Hospital 360
 - **Motivo:** Definição do roadmap para expansão dos novos módulos integrados no ecossistema Hospital 360 / AIVIQ Saúde.
 - **Escopo Alinhado:**

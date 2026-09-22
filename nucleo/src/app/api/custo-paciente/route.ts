@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { HubDespesasService } from '@/lib/hubDespesasStore';
 
 export interface PacienteCustoAnalysis {
   cpf: string;
@@ -9,9 +10,9 @@ export interface PacienteCustoAnalysis {
   dataAlta?: string;
   diasInternacao: number;
   custosDiretos: {
-    medicamentosMateriais: number; // Estoque FEFO ou Ingestão
-    procedimentosExames: number;   // Laboratório / FHIR
-    equipeAssistencial: number;    // RH / Custo-hora ou Ingestão
+    medicamentosMateriais: number;
+    procedimentosExames: number;
+    equipeAssistencial: number;
     totalDireto: number;
     itensDetalhados: Array<{
       descricao: string;
@@ -21,10 +22,10 @@ export interface PacienteCustoAnalysis {
     }>;
   };
   custosIndiretosRateados: {
-    diariaHotelaria: number;       // Leitos / Facilities Sabia
-    higienizacaoFacilities: number; // Sabia Facilities
-    depreciacaoEquipamentos: number; // Compras / Patrimônio
-    apoioAdministrativoABC: number; // Rateio Geral
+    diariaHotelaria: number;
+    higienizacaoFacilities: number;
+    depreciacaoEquipamentos: number;
+    apoioAdministrativoABC: number;
     totalIndireto: number;
   };
   custoTotalReal: number;
@@ -43,62 +44,102 @@ export interface PacienteCustoAnalysis {
 }
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const cpf = searchParams.get('cpf') || '123.456.789-00';
+  try {
+    const { searchParams } = new URL(request.url);
+    const cpf = searchParams.get('cpf') || '123.456.789-00';
 
-  // Simulação / Cálculo robusto consolidando eventos de jornada do paciente
-  const mockAnalysis: PacienteCustoAnalysis = {
-    cpf,
-    nome: 'Carlos Eduardo Silveira',
-    episodioId: 'EPIS-2026-8841',
-    tipoAtendimento: 'INTERNACAO',
-    dataEntrada: '2026-09-18T10:30:00Z',
-    dataAlta: '2026-09-21T09:00:00Z',
-    diasInternacao: 3,
-    custosDiretos: {
-      medicamentosMateriais: 845.50,
-      procedimentosExames: 420.00,
-      equipeAssistencial: 1250.00,
-      totalDireto: 2515.50,
-      itensDetalhados: [
-        { descricao: 'Ceftriaxona 1g IV (Lote C-2026/09)', origem: 'Farmácia FEFO (OpenBoxes)', valor: 215.50, lote: 'L-9941' },
-        { descricao: 'Kit Insumo Cirúrgico Estéril', origem: 'Farmácia FEFO / Almoxarifado', valor: 380.00, lote: 'K-302' },
-        { descricao: 'Solução Fisiológica 0.9% 500ml (x6)', origem: 'Farmácia FEFO (OpenBoxes)', valor: 250.00, lote: 'SF-112' },
-        { descricao: 'Hemograma Completo + PCR + Coagulograma', origem: 'Laboratório FHIR R4', valor: 420.00 },
-        { descricao: 'Horas Médicas Especialista e Plantonista (10h)', origem: 'RH Escalas (OpenHRApp)', valor: 850.00 },
-        { descricao: 'Assistência Enfermagem 24h Ponderada', origem: 'RH Escalas (OpenHRApp)', valor: 400.00 },
-      ],
-    },
-    custosIndiretosRateados: {
-      diariaHotelaria: 690.00,      // R$ 230/dia x 3
-      higienizacaoFacilities: 185.00, // OS Sabia Leito 204B
-      depreciacaoEquipamentos: 240.00, // Monitor multiparamétrico + bomba de infusão
-      apoioAdministrativoABC: 320.00, // Rateio TI, governança, contabilidade
-      totalIndireto: 1435.00,
-    },
-    custoTotalReal: 3950.50,
-    benchmarkPrivado: {
-      tabelaTussParticular: 5800.00,
-      margemContribuicao: 1849.50,
-      margemPercentual: 31.88,
-      statusMargem: 'LUCRO_SAUDAVEL',
-    },
-    benchmarkPublicoSus: {
-      repasseTabelaSigtap: 1420.00,
-      subsidioMunicipalNecessario: 2530.50,
-      percentualCoberturaSus: 35.94,
-      deficitPorProcedimento: -2530.50,
-    },
-  };
+    const consolidado = HubDespesasService.obterConsolidadoPaciente(cpf);
 
-  return NextResponse.json({
-    success: true,
-    data: mockAnalysis,
-    error: null,
-    meta: {
-      timestamp: new Date().toISOString(),
-      version: 'v1.0-modular',
-      motorCusteio: 'ABC_HOSPITALAR_360',
-    },
-  });
+    if (!consolidado) {
+      return NextResponse.json(
+        { success: false, error: `Paciente com CPF ${cpf} não localizado no Hub de Custos.` },
+        { status: 404 }
+      );
+    }
+
+    // Separação de custos diretos e indiretos com base nas estações clínicas
+    const estacao1 = consolidado.estacoes.find(e => e.estacaoNumero === 1)?.totalGasto || 0;
+    const estacao2 = consolidado.estacoes.find(e => e.estacaoNumero === 2)?.totalGasto || 0;
+    const estacao3 = consolidado.estacoes.find(e => e.estacaoNumero === 3)?.totalGasto || 0;
+    const estacao4 = consolidado.estacoes.find(e => e.estacaoNumero === 4)?.totalGasto || 0;
+    const estacao5 = consolidado.estacoes.find(e => e.estacaoNumero === 5)?.totalGasto || 0;
+
+    const medMateriais = Number((estacao3 + estacao4).toFixed(2));
+    const procExames = Number((estacao1 + estacao2).toFixed(2));
+    const equipeAssist = Number((estacao5 * 0.4).toFixed(2)); // 40% de honorários e assistência médica
+    const totalDireto = Number((medMateriais + procExames + equipeAssist).toFixed(2));
+
+    const diariaHotelaria = Number((estacao5 * 0.4).toFixed(2));
+    const higienizacao = Number((estacao5 * 0.08).toFixed(2));
+    const depreciacao = Number((estacao5 * 0.06).toFixed(2));
+    const apoioAdm = Number((estacao5 * 0.06).toFixed(2));
+    const totalIndireto = Number((diariaHotelaria + higienizacao + depreciacao + apoioAdm).toFixed(2));
+
+    // Mapeamento dos itens detalhados de todas as estações
+    const itensDetalhados = consolidado.estacoes.flatMap(e =>
+      e.itens.map(it => ({
+        descricao: it.item_descricao,
+        origem: `${it.origem_modulo} (${it.centro_custo})`,
+        valor: it.valor_total_imputado,
+        lote: it.lote_fabricante
+      }))
+    );
+
+    let statusMargem: PacienteCustoAnalysis['benchmarkPrivado']['statusMargem'] = 'LUCRO_SAUDAVEL';
+    if (consolidado.benchmarkFinanceiro.margemPercentual < 10 && consolidado.benchmarkFinanceiro.margemPercentual >= 0) {
+      statusMargem = 'MARGEM_APERTADA';
+    } else if (consolidado.benchmarkFinanceiro.margemPercentual < 0) {
+      statusMargem = 'PREJUIZO';
+    }
+
+    const analysis: PacienteCustoAnalysis = {
+      cpf: consolidado.paciente.cpf,
+      nome: consolidado.paciente.nome,
+      episodioId: consolidado.paciente.episodioId,
+      tipoAtendimento: 'INTERNACAO',
+      dataEntrada: consolidado.paciente.dataAdmissao,
+      diasInternacao: Math.max(1, Math.round(consolidado.paciente.tempoPermanenciaHoras / 24)),
+      custosDiretos: {
+        medicamentosMateriais: medMateriais,
+        procedimentosExames: procExames,
+        equipeAssistencial: equipeAssist,
+        totalDireto: totalDireto,
+        itensDetalhados
+      },
+      custosIndiretosRateados: {
+        diariaHotelaria,
+        higienizacaoFacilities: higienizacao,
+        depreciacaoEquipamentos: depreciacao,
+        apoioAdministrativoABC: apoioAdm,
+        totalIndireto
+      },
+      custoTotalReal: consolidado.custoTotalReal,
+      benchmarkPrivado: {
+        tabelaTussParticular: consolidado.benchmarkFinanceiro.faturamentoPrevistoTuss,
+        margemContribuicao: consolidado.benchmarkFinanceiro.margemBrutaReais,
+        margemPercentual: consolidado.benchmarkFinanceiro.margemPercentual,
+        statusMargem
+      },
+      benchmarkPublicoSus: {
+        repasseTabelaSigtap: consolidado.benchmarkFinanceiro.repasseSigtapSus,
+        subsidioMunicipalNecessario: consolidado.benchmarkFinanceiro.deficitSusReais,
+        percentualCoberturaSus: consolidado.benchmarkFinanceiro.percentualCoberturaSus,
+        deficitPorProcedimento: -consolidado.benchmarkFinanceiro.deficitSusReais
+      }
+    };
+
+    return NextResponse.json({
+      success: true,
+      data: analysis,
+      error: null,
+      meta: {
+        timestamp: new Date().toISOString(),
+        version: 'v2.0-dynamic-door-to-door',
+        fonte_dados: 'HubDespesasService'
+      }
+    });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return NextResponse.json({ success: false, error: msg }, { status: 500 });
+  }
 }
