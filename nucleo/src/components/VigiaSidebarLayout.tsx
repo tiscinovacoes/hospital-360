@@ -196,14 +196,14 @@ export function VigiaSidebarLayout({
         />
       )}
 
-      {/* SIDEBAR LATERAL DO VIGIA SAÚDE */}
+      {/* SIDEBAR LATERAL DO VIGIA SAÚDE COLORIDA COM A COR DO MÓDULO */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 bg-white border-r border-[#E0E0E0] flex flex-col transition-all duration-300 ease-in-out ${
+        className={`fixed top-0 bottom-0 left-0 z-50 ${currentTheme.lightBg}/50 border-r ${currentTheme.lightBorder} flex flex-col transition-all duration-300 ease-in-out backdrop-blur-xs ${
           collapsed ? 'w-20' : 'w-72'
         } ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
       >
         {/* Topo da Sidebar: Brand & Botão de Colapso */}
-        <div className="h-16 px-4 flex items-center justify-between border-b border-[#E0E0E0] flex-shrink-0">
+        <div className={`h-16 px-4 flex items-center justify-between border-b ${currentTheme.lightBorder} ${currentTheme.lightBg}/80 flex-shrink-0`}>
           <Link href="/" className="flex items-center gap-3 overflow-hidden">
             {/* Escudo Vigia Saúde com a cor do módulo atual */}
             <div
@@ -221,7 +221,7 @@ export function VigiaSidebarLayout({
                     Vigia <span className={currentTheme.primaryText}>Saúde</span>
                   </span>
                 </div>
-                <span className="text-[11px] font-medium text-slate-500">
+                <span className={`text-[11px] font-bold ${currentTheme.primaryText}`}>
                   {currentTheme.corNome}
                 </span>
               </div>
@@ -231,7 +231,7 @@ export function VigiaSidebarLayout({
           {/* Botão de fechar no mobile (touch target >= 44px) */}
           <button
             onClick={() => setMobileOpen(false)}
-            className="lg:hidden min-w-[44px] min-h-[44px] rounded-xl flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors"
+            className="lg:hidden min-w-[44px] min-h-[44px] rounded-xl flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-white/60 transition-colors"
             aria-label="Fechar gaveta"
           >
             <X className="w-5 h-5" />
@@ -240,7 +240,7 @@ export function VigiaSidebarLayout({
           {/* Botão de colapsar sidebar no desktop */}
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="hidden lg:flex w-8 h-8 rounded-lg items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+            className="hidden lg:flex w-8 h-8 rounded-lg items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-white/60 transition-colors"
             title={collapsed ? 'Expandir barra lateral' : 'Recolher barra lateral'}
           >
             {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
@@ -250,7 +250,7 @@ export function VigiaSidebarLayout({
         {/* Lista de Navegação com scroll suave */}
         <div className="flex-1 overflow-y-auto px-3 py-4 space-y-1.5 custom-scrollbar">
           {!collapsed && (
-            <div className="px-3 pb-1 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+            <div className={`px-3 pb-1 text-[10px] font-extrabold ${currentTheme.primaryText} uppercase tracking-wider`}>
               Módulos Especializados
             </div>
           )}
@@ -273,7 +273,7 @@ export function VigiaSidebarLayout({
                     ? itemTheme
                       ? `${itemTheme.primaryBg} text-white shadow-sm`
                       : 'bg-[#1A56DB] text-white shadow-sm'
-                    : 'text-slate-700 hover:bg-slate-50 hover:text-slate-900 border border-transparent'
+                    : 'text-slate-700 hover:bg-white/90 hover:text-slate-900 border border-transparent'
                 } ${collapsed ? 'justify-center' : ''}`}
               >
                 <Icon
@@ -296,7 +296,7 @@ export function VigiaSidebarLayout({
                             ? 'bg-white/20 text-white'
                             : itemTheme
                             ? `${itemTheme.lightBg} ${itemTheme.primaryText} border ${itemTheme.lightBorder}`
-                            : 'bg-slate-100 text-slate-600 border border-[#E0E0E0]'
+                            : 'bg-white text-slate-600 border border-[#E0E0E0]'
                         }`}
                       >
                         {item.badge}
@@ -310,17 +310,17 @@ export function VigiaSidebarLayout({
         </div>
 
         {/* Rodapé da Sidebar: Perfil & Sair */}
-        <div className="p-3 border-t border-[#E0E0E0] flex-shrink-0 bg-white">
+        <div className={`p-3 border-t ${currentTheme.lightBorder} flex-shrink-0 ${currentTheme.lightBg}/70`}>
           <div className={`flex items-center gap-3 ${collapsed ? 'justify-center' : 'px-2 py-1.5'}`}>
             <div
-              className={`w-8 h-8 rounded-full ${currentTheme.lightBg} ${currentTheme.primaryText} font-bold text-xs flex items-center justify-center flex-shrink-0 border ${currentTheme.lightBorder}`}
+              className={`w-8 h-8 rounded-full ${currentTheme.primaryBg} text-white font-bold text-xs flex items-center justify-center flex-shrink-0 shadow-xs`}
             >
               CD
             </div>
             {!collapsed && (
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-bold text-slate-800 truncate">Diretoria Clínica / CD</p>
-                <p className="text-[10px] text-slate-500 truncate">Hospital Central 360</p>
+                <p className={`text-[10px] ${currentTheme.primaryText} font-semibold truncate`}>Hospital Central 360</p>
               </div>
             )}
             {!collapsed && (

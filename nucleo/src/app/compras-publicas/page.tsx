@@ -869,15 +869,18 @@ export default function VigiaComprasPage() {
       {/* 2. CORPO PRINCIPAL COM SIDEBAR RETRÁTIL & MOBILE DRAWER */}
       {/* ========================================================================= */}
       <div className="flex flex-1 overflow-hidden relative">
-        {/* Menu Lateral Retrátil (Mobile Drawer / Desktop Sidebar) */}
+        {/* Menu Lateral Colorido com a Cor do Módulo (Azul Cobalto) */}
         <aside
           className={`
             fixed lg:static inset-y-0 left-0 z-50 lg:z-30
             ${sidebarAberta ? 'translate-x-0 w-72 lg:w-64 shadow-xl lg:shadow-none' : '-translate-x-full lg:translate-x-0 lg:w-0 lg:hidden'}
-            shrink-0 bg-white border-r border-[#E0E0E0] flex flex-col justify-between transition-all duration-200 ease-in-out
+            shrink-0 bg-gradient-to-b from-blue-50/95 via-white to-blue-50/80 border-r border-blue-200/90 flex flex-col justify-between transition-all duration-200 ease-in-out
           `}
         >
           <nav className="p-3 space-y-1.5 flex-1 overflow-y-auto">
+            <div className="px-3 pb-2 text-[10px] font-bold text-blue-600 uppercase tracking-wider">
+              Menu de Compras &amp; Atas
+            </div>
             {menuItens.map((item) => {
               const Icone = item.icon;
               const ativo = secaoAtiva === item.id;
@@ -892,14 +895,14 @@ export default function VigiaComprasPage() {
                   }}
                   className={`w-full min-h-[44px] sm:min-h-[38px] flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all text-left cursor-pointer focus:ring-2 focus:ring-blue-600 focus:outline-none ${
                     ativo
-                      ? 'bg-[#F0F4FF] text-[#1A56DB] font-bold border border-[#E0E0E0] shadow-2xs'
-                      : 'text-slate-700 hover:bg-[#F5F5F5] hover:text-slate-900 border border-transparent'
+                      ? 'bg-[#1A56DB] text-white font-bold border border-blue-600 shadow-sm shadow-blue-600/25'
+                      : 'text-slate-700 hover:bg-white/90 hover:text-[#1A56DB] hover:shadow-2xs border border-transparent'
                   }`}
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <Icone
-                      className={`w-4 h-4 shrink-0 ${
-                        ativo ? 'text-[#1A56DB]' : 'text-slate-500'
+                      className={`w-4 h-4 shrink-0 transition-colors ${
+                        ativo ? 'text-white' : 'text-blue-500/80 group-hover:text-[#1A56DB]'
                       }`}
                     />
                     <span className="truncate">{item.label}</span>
@@ -907,7 +910,9 @@ export default function VigiaComprasPage() {
                   {item.badge && (
                     <span
                       className={`text-[10px] px-2 py-0.5 rounded-full font-bold ml-2 shrink-0 ${
-                        item.badgeCor || 'bg-[#F5F5F5] text-slate-700 border border-[#E0E0E0]'
+                        ativo
+                          ? 'bg-white/20 text-white'
+                          : item.badgeCor || 'bg-blue-100 text-blue-800 border border-blue-200'
                       }`}
                     >
                       {item.badge}
@@ -918,10 +923,10 @@ export default function VigiaComprasPage() {
             })}
           </nav>
 
-          <div className="p-4 border-t border-[#E0E0E0] bg-[#F8FAFC] space-y-2">
+          <div className="p-3 border-t border-blue-200/90 bg-blue-50/90 space-y-2">
             <Link
               href="/"
-              className="flex items-center justify-center gap-2 w-full py-2 px-3 rounded-xl border border-[#E0E0E0] bg-white text-slate-700 hover:text-slate-900 hover:bg-[#F5F5F5] text-xs font-bold transition-all shadow-2xs"
+              className="flex items-center justify-center gap-2 w-full py-2.5 px-3 rounded-xl border border-blue-200 bg-white text-[#1A56DB] hover:text-blue-900 hover:bg-blue-50 text-xs font-bold transition-all shadow-2xs"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Voltar ao Hub de Módulos</span>

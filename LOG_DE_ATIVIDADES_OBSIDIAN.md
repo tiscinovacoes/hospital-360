@@ -5,6 +5,28 @@ criado: 2026-09-21
 
 # Log de Atividades — hospital-360
 
+## 2026-09-21 22:30 — Refinamento Visual: Menu Lateral Colorido com a Cor do Módulo
+
+**O que foi feito / Implantações Salvas:**
+- **Colorização do Menu Lateral Interno de Compras Públicas (Módulo 1)**:
+  - `<aside>` de navegação estilizada com gradiente clínico asséptico na cor do módulo (`bg-gradient-to-b from-blue-50/95 via-white to-blue-50/80 border-r border-blue-200/90`).
+  - Item ativo realçado em Azul Cobalto sólido (`bg-[#1A56DB] text-white font-bold shadow-sm shadow-blue-600/25 border border-blue-600`) com ícone branco e badge translúcido `bg-white/20`.
+  - Itens inativos com hover suave `hover:bg-white/90 hover:text-[#1A56DB]` e ícones na tonalidade do tema.
+  - Rodapé e botão "Voltar ao Hub de Módulos" estilizados em harmonia com a cor do módulo (`bg-blue-50/90 border-blue-200/90`).
+- **Colorização Dinâmica da Sidebar do Chassi Compartilhado (`VigiaSidebarLayout`)**:
+  - Container da sidebar adaptado para refletir sutilmente a cor do módulo ativo (`${currentTheme.lightBg}/50 border-r ${currentTheme.lightBorder}`).
+  - Topo e rodapé da barra lateral acompanhando a identidade cromática do módulo.
+- **Validação & Testes**:
+  - Validação estrita de tipos com `npx tsc --noEmit` (**0 erros**).
+  - Teste da rota `/compras-publicas` via HTTP retornando **Status 200 OK**.
+
+**Arquivos alterados:**
+- `nucleo/src/app/compras-publicas/page.tsx`
+- `nucleo/src/components/VigiaSidebarLayout.tsx`
+- `LOG_DE_ATIVIDADES_OBSIDIAN.md`
+
+---
+
 ## 2026-09-21 22:25 — Implementação: Sistema de Cores por Módulo, Chassi HIG Touch-First e Adaptação Mobile
 
 **O que foi feito / Implantações Salvas:**
