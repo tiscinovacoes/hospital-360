@@ -6,7 +6,7 @@
 export const SUPABASE_CONFIG = {
   projectId: process.env.SUPABASE_PROJECT_ID || 'oogpcdaosexarxmvupiw',
   supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://oogpcdaosexarxmvupiw.supabase.co',
-  anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vZ3BjZGFvc2V4YXJ4bXZ1cGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1NjIxMjAsImV4cCI6MjEwMjEzODEyMH0.mP9evq5xoSrgjLSiGpVSO75z1Zo0plQnz_XP67xGNXw',
+  anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
   defaultTenantId: process.env.DEFAULT_TENANT_ID || 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' // Tenant Piloto do Núcleo
 };
 

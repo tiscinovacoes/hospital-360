@@ -40,15 +40,10 @@ jobs:
       - name: Auditoria de Dependências (SAST)
         run: npm audit --audit-level=high || true
 
-      - name: Verificação de Segredos & Credenciais (CRED-OMEGA)
+      - name: Verificação Estrita de Segredos & Credenciais (CRED-OMEGA)
         working-directory: ./
         run: |
-          echo "Verificando se existem arquivos .env commitados indevidamente..."
-          if git ls-files | grep -E "^\.env$|\.env\.local$"; then
-            echo "ALERTA CRÍTICO: Arquivo de ambiente sensível detectado no git!"
-            exit 1
-          fi
-          echo "Varredura CRED-OMEGA concluída com sucesso. Zero credenciais expostas."
+          node seguranca/cred_omega_scanner.js
 
       - name: Executar Esteira de Homologação Assistencial
         working-directory: ./
@@ -70,3 +65,10 @@ jobs:
         working-directory: ./
         run: |
           node tests/sprint6_observability_a11y_contracts.spec.js
+
+      - name: Executar Testes E2E Door-to-Door & Smoke Test (Sprint 7)
+        working-directory: ./
+        run: |
+          node tests/sprint7_e2e_doortodoor_smoke.spec.js
+          node tests/patrimonio.spec.js
+
