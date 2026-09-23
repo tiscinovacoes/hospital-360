@@ -98,7 +98,7 @@ export default function ExecutiveDashboardPage() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowModalImportarDespesas(true)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[44px] rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm transition-all cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[44px] rounded-xl bg-[#0E5C4C] hover:bg-[#0A4A3D] text-white text-xs font-bold shadow-sm transition-all cursor-pointer"
             >
               <Upload className="w-4 h-4" />
               <span>Importar Despesas (Hub Ingestor)</span>
