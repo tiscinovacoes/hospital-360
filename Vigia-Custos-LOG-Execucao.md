@@ -659,3 +659,30 @@ Manter o padrão da v2.2, mas trocar o preto pelo azul da identidade visual, ape
 
 ### Próximos Passos Previstos:
 - Validar na prévia do `dev` na Vercel antes de qualquer merge para o `master`.
+
+
+---
+
+## [2026-09-23 21:40] - v2.5.8 (Implantação em Produção: dev → master)
+
+### Data e Hora:
+- 23/09/2026 às 21:40 (Fuso de Campo Grande / MS)
+
+### Versão / Etapa da Alteração:
+- v2.5.8 — Implantação autorizada pelo usuário ("suba para produção") das entregas v2.5.4 a v2.5.7
+
+### O que vai para produção (4 commits do `dev`):
+- `7691895` — responsividade total, WCAG 2.2 e correções de React (v2.5.4)
+- `fc8fcc2` — tipagem dos payloads de API, lint 38 → 0 erros (v2.5.5)
+- `1a7b497` — padrão único de módulo: logo por módulo, menu lateral arredondado, cabeçalho centralizado (v2.5.6)
+- `0e1a88a` — azul da marca no lugar da tinta nas superfícies de identidade (v2.5.7)
+
+### Checagens antes do merge:
+- CI "Hospital 360 - CI/CD Pipeline & Security Scan" com sucesso nos 4 commits
+- Prévia da Vercel do `0e1a88a` pronta (READY), mesmas variáveis de ambiente da produção
+- `master` sem conteúdo exclusivo desde a base `c5c53c6` (só commits de merge) → merge sem conflito
+- Merge no padrão do repositório: commit `merge(deploy): implantacao autorizada ...` no `master`
+
+### Observação:
+- Nenhuma alteração de banco (DDL) nesta implantação — só o app `nucleo/` e documentação.
+- A prévia e a produção usam o mesmo projeto Supabase.
