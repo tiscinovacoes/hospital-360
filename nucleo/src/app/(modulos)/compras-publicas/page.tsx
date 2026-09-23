@@ -6,6 +6,7 @@ import { KpiCard, IconBadge } from '@/components/KpiCard';
 import { ModuloRbacBar } from '@/components/ModuloRbacBar';
 import { PageHeader } from '@/components/PageHeader';
 import { ModuloRole, MODULO_ROLES_CATALOG, hasPermission } from '@/types/rbac';
+import { mensagemErro } from '@/lib/utils';
 import {
   FileText,
   ShoppingCart,
@@ -305,10 +306,10 @@ export default function VigiaComprasPage() {
           texto: data.mensagem || 'Conexão ativa com o catálogo oficial CMED/BPS.'
         });
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       setFeedbackSincronizacao({
         tipo: 'erro',
-        texto: `Falha na requisição de sincronização: ${err.message}`
+        texto: `Falha na requisição de sincronização: ${mensagemErro(err)}`
       });
     } finally {
       setSincronizandoBanco(false);

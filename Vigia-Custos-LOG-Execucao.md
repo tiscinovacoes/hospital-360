@@ -469,3 +469,59 @@ data-criacao: 2026-08-12
 ### Próximos Passos Previstos:
 - Iniciar a sincronização do dashboard do `nucleo/` com os indicadores de déficit SUS apurados pelo parser SIGTAP.
 - Solicitar a permissão de `GRANT EXECUTE` na RPC do Supabase para conexão direta dos satélites sem fallback.
+
+
+---
+
+## [2026-09-23 14:10] - v2.5.4 (Refino do Núcleo em Localhost: Responsividade Total, WCAG 2.2 e Correções de React)
+
+### Data e Hora:
+- 23/09/2026 às 14:10 (Fuso de Campo Grande / MS)
+
+### Versão / Etapa da Alteração:
+- v2.5.4 — Refino do app `nucleo/` a partir da execução real em `localhost:3000` (Next.js 16 / Turbopack)
+
+### Resumo do que foi feito:
+
+1. **Execução e auditoria do app em localhost**:
+   - Subido o `next dev` na porta 3000 com `.env.local` apontando para o projeto Supabase `oogpcdaosexarxmvupiw` (apenas URL + chave anon; nenhum segredo foi versionado — `.env*` está no `.gitignore`).
+   - Auditadas as 21 rotas em navegador headless (Chromium) nas larguras 1440px, 768px e 375px, coletando erros de console, `pageerror`, requisições falhas, overflow horizontal e violações de acessibilidade.
+   - Smoke test das rotas de API: todas respondendo 200 (`/api/ingestao` responde 405 em GET por ser POST-only).
+
+2. **Correção de overflow horizontal em TODAS as rotas (era 21/21 quebradas em 375px)**:
+   - Causa-raiz em `VigiaSidebarLayout`: o grupo esquerdo do header não tinha `min-w-0` (impedindo o `truncate` de encolher) e o grupo direito não tinha `shrink-0`; as ações de página empurravam o header para fora da viewport (até 444px de estouro).
+   - As ações de página passaram a ter faixa própria que encolhe e rola na horizontal, sem estourar a página.
+   - Rótulos longos dos botões de ação colapsam para ícone abaixo de `lg`, preservando o nome acessível via `aria-label`/`title`.
+   - Resultado: **21/21 rotas limpas em 1440px, 768px e 375px**.
+
+3. **Correção de erros de correção do React (React Compiler lint)**:
+   - `medico/page.tsx`: `Date.now()` era chamado durante o render para o `id` do preview FHIR ServiceRequest — render impuro, com risco de divergência na hidratação. O id passou a ser gerado uma vez, na abertura do modal.
+   - `tarefas/page.tsx`: o cronômetro chamava `setState` de forma síncrona no corpo do efeito. Refatorado para manter apenas um relógio no efeito e **derivar** os segundos no render.
+   - `ui/kpi-card.tsx`: o caminho de `prefers-reduced-motion` chamava `setState` síncrono no efeito; agora usa duração 0 e aplica o valor final no primeiro frame.
+
+4. **Acessibilidade WCAG 2.2**:
+   - Nomes acessíveis (4.1.2): 13 toggles de módulo em `/ingestao-modulos` (agora `role="switch"` + `aria-checked` + `aria-label`), checkbox de checklist em `/facilities` e o botão de menu em `/escala-medica`.
+   - Alvos de toque (2.5.8 AA): checkboxes, botões-ícone e links de navegação abaixo de 24px ajustados em 10 telas.
+
+5. **Qualidade de tipos e lint (86 → 38 erros)**:
+   - Novo helper `mensagemErro()` em `src/lib/utils.ts`: os `catch (err: any)` viraram `catch (err: unknown)` em 13 pontos. Antes, um throw que não fosse `Error` fazia a mensagem de erro virar `undefined` justamente no caminho de falha.
+   - `hubDespesasStore`: `globalThis as any` substituído por declaração de tipo global.
+   - Corrigido um gap real de tipo em `/laboratorio`: o union de tubos de coleta não previa `'Verde (Heparina)'`, que a própria seed usava (estava mascarado por `as any`).
+   - Removidos os 13 `prefer-const` e as 10 entidades JSX não escapadas.
+
+### Arquivos Modificados:
+- `nucleo/src/components/VigiaSidebarLayout.tsx`, `nucleo/src/components/KpiCard.tsx`, `nucleo/src/components/ui/kpi-card.tsx`
+- `nucleo/src/lib/utils.ts` (novo helper `mensagemErro`), `nucleo/src/lib/hubDespesasStore.ts`, `nucleo/src/lib/compras/bancoPrecosMedicamentos.ts`
+- `nucleo/src/app/tarefas/page.tsx`, `medico/page.tsx`, `admin/page.tsx`, `facilities/page.tsx`, `login/page.tsx`, `recepcao/page.tsx`, `internacao/page.tsx`, `components/ProfileCard.tsx`
+- `nucleo/src/app/(modulos)/`: `dashboard-executivo`, `financeiro-split`, `ingestao-modulos`, `escala-medica`, `compras-publicas`, `gestao-clinica`, `laboratorio`, `automacao-mensageria`, `admin/perfis-acessos`
+- `nucleo/src/app/api/`: `compras`, `compras-atas`, `contabil/nfse`, `ingestao`, `openemr/atendimento`, `poli/whatsapp`, `tarefas`
+
+### Verificação:
+- `npx tsc --noEmit` → 0 erros
+- `npx next build` → sucesso (60 páginas geradas)
+- Auditoria em navegador → 21/21 rotas limpas em 1440px, 768px e 375px, sem erros de console
+- Cronômetro de `/tarefas` validado em execução (avança corretamente após o refactor)
+
+### Próximos Passos Previstos:
+- Restam **38 erros de `no-explicit-any`**, concentrados em `compras-publicas/page.tsx` (24): são `useState<any>` de payloads de API que exigem modelar as interfaces de dados reais — trabalho de tipagem à parte, não incluído neste refino.
+- Restam 273 warnings de `no-unused-vars` (imports e variáveis órfãs), limpeza mecânica pendente.

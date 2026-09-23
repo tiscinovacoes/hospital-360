@@ -116,18 +116,22 @@ export default function ExecutiveDashboardPage() {
             </button>
             <button
               onClick={() => setShowModalImportarDespesas(true)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[44px] rounded-xl bg-[#0E5C4C] hover:bg-[#0A4A3D] text-white text-xs font-bold shadow-sm transition-all cursor-pointer"
+              className="inline-flex items-center justify-center gap-1.5 px-3 lg:px-3.5 py-2 min-h-[44px] min-w-[44px] shrink-0 rounded-xl bg-[#0E5C4C] hover:bg-[#0A4A3D] text-white text-xs font-bold shadow-sm transition-all cursor-pointer"
+              title="Importar Despesas (Hub Ingestor)"
+              aria-label="Importar Despesas (Hub Ingestor)"
             >
-              <Upload className="w-4 h-4" />
-              <span>Importar Despesas (Hub Ingestor)</span>
+              <Upload className="w-4 h-4 shrink-0" />
+              <span className="hidden lg:inline">Importar Despesas (Hub Ingestor)</span>
             </button>
 
             <button
               onClick={() => setShowSimModal(true)}
-              className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] rounded-xl bg-[#1B1F1C] hover:bg-[#33382F] text-white text-xs font-bold shadow-sm transition-all cursor-pointer"
+              className="inline-flex items-center justify-center gap-1.5 px-3 lg:px-4 py-2 min-h-[44px] min-w-[44px] shrink-0 rounded-xl bg-[#1B1F1C] hover:bg-[#33382F] text-white text-xs font-bold shadow-sm transition-all cursor-pointer"
+              title="Simulador de Leitos"
+              aria-label="Simulador de Leitos"
             >
-              <Sliders className="w-4 h-4" />
-              <span>Simulador de Leitos</span>
+              <Sliders className="w-4 h-4 shrink-0" />
+              <span className="hidden lg:inline">Simulador de Leitos</span>
             </button>
           </div>
         }
@@ -572,7 +576,7 @@ export default function ExecutiveDashboardPage() {
                       onClick={() => markAsRead(n.id)}
                       className="text-[10px] font-bold text-[#1B1F1C] hover:underline mt-2 inline-block"
                     >
-                      Marcar como ciente
+                      <span className="inline-flex items-center min-h-[24px]">Marcar como ciente</span>
                     </button>
                   )}
                 </div>

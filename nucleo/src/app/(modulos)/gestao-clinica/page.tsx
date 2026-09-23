@@ -1563,12 +1563,12 @@ export default function ClinicManagementPage() {
               <div>
                 <label className="font-bold text-[#374151] block mb-1">Mensagem Gerada pela IA:</label>
                 <div className="p-3 bg-slate-50 border border-slate-300 rounded-xl font-mono text-[11px] text-slate-700 leading-relaxed">
-                  "Olá Paulo! Confirmamos sua consulta hoje com o Dr. Ricardo às 16:00 na CardioVida (Sala 204). O estacionamento do Hub está liberado com manobrista cortesia. Por favor, responda 1 para CONFIRMAR ou 2 para REMARCAR."
+                  &quot;Olá Paulo! Confirmamos sua consulta hoje com o Dr. Ricardo às 16:00 na CardioVida (Sala 204). O estacionamento do Hub está liberado com manobrista cortesia. Por favor, responda 1 para CONFIRMAR ou 2 para REMARCAR.&quot;
                 </div>
               </div>
 
               <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-900 text-[11px]">
-                <strong>Gatilho de Encaixe Automático:</strong> Se o paciente responder "2" ou não responder em 45 minutos, o slot é ofertado imediatamente para a lista de espera de 3 pacientes prioritários.
+                <strong>Gatilho de Encaixe Automático:</strong> Se o paciente responder &quot;2&quot; ou não responder em 45 minutos, o slot é ofertado imediatamente para a lista de espera de 3 pacientes prioritários.
               </div>
             </div>
 

@@ -236,17 +236,21 @@ export default function FinanceiroSplitPage() {
             </button>
             <Link
               href="/"
-              className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] text-xs font-bold text-slate-700 bg-white border border-[#E0E0E0] rounded-xl hover:bg-slate-50 transition-all shadow-xs"
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-2 min-h-[44px] min-w-[44px] shrink-0 text-xs font-bold text-slate-700 bg-white border border-[#E0E0E0] rounded-xl hover:bg-slate-50 transition-all shadow-xs"
+              title="Hub Central"
+              aria-label="Hub Central"
             >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Hub Central</span>
+              <ArrowLeft className="w-3.5 h-3.5 shrink-0" />
+              <span className="hidden lg:inline">Hub Central</span>
             </Link>
             <button
               onClick={handleSimulateSplitPayment}
-              className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] text-xs font-bold text-white bg-[#1B1F1C] hover:bg-[#33382F] rounded-xl transition-all shadow-xs touch-manipulation"
+              className="inline-flex items-center justify-center gap-1.5 px-3 lg:px-4 py-2 min-h-[44px] min-w-[44px] shrink-0 text-xs font-bold text-white bg-[#1B1F1C] hover:bg-[#33382F] rounded-xl transition-all shadow-xs touch-manipulation"
+              title="Simular Consulta c/ Split"
+              aria-label="Simular Consulta c/ Split"
             >
-              <Split className="w-4 h-4" />
-              <span>Simular Consulta c/ Split</span>
+              <Split className="w-4 h-4 shrink-0" />
+              <span className="hidden lg:inline">Simular Consulta c/ Split</span>
             </button>
           </div>
         }

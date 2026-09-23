@@ -6,6 +6,7 @@ import { PageHeader } from '@/components/PageHeader';
 import { ModuloRbacBar } from '@/components/ModuloRbacBar';
 import { KpiCard } from '@/components/KpiCard';
 import { ModuloRole, MODULO_ROLES_CATALOG } from '@/types/rbac';
+import { mensagemErro } from '@/lib/utils';
 import {
   UserCheck,
   Calendar,
@@ -169,8 +170,8 @@ export default function EscalaMedicaPage() {
       if (data.success) {
         carregarEscala();
       }
-    } catch (err: any) {
-      setResultadoAcao({ success: false, error: err.message });
+    } catch (err: unknown) {
+      setResultadoAcao({ success: false, error: mensagemErro(err) });
     } finally {
       setProcessando(false);
     }
@@ -201,8 +202,8 @@ export default function EscalaMedicaPage() {
       if (data.success) {
         carregarEscala();
       }
-    } catch (err: any) {
-      setResultadoAcao({ success: false, error: err.message });
+    } catch (err: unknown) {
+      setResultadoAcao({ success: false, error: mensagemErro(err) });
     } finally {
       setProcessando(false);
     }
@@ -231,8 +232,8 @@ export default function EscalaMedicaPage() {
       if (data.success) {
         carregarEscala();
       }
-    } catch (err: any) {
-      setResultadoAcao({ success: false, error: err.message });
+    } catch (err: unknown) {
+      setResultadoAcao({ success: false, error: mensagemErro(err) });
     } finally {
       setProcessando(false);
     }
@@ -265,10 +266,10 @@ export default function EscalaMedicaPage() {
           mensagem: data.error || 'Falha ao sincronizar honorários com o Hub.'
         });
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       setFeedbackExportacao({
         sucesso: false,
-        mensagem: err?.message || 'Erro de conexão com o Hub 360.'
+        mensagem: mensagemErro(err, 'Erro de conexão com o Hub 360.')
       });
     } finally {
       setExportandoHub(false);
@@ -302,6 +303,9 @@ export default function EscalaMedicaPage() {
           </div>
           <button
             onClick={() => setSidebarAberta(!sidebarAberta)}
+            aria-label={sidebarAberta ? 'Recolher menu da Escala Médica' : 'Expandir menu da Escala Médica'}
+            aria-expanded={sidebarAberta}
+            title={sidebarAberta ? 'Recolher menu' : 'Expandir menu'}
             className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl"
           >
             {sidebarAberta ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}

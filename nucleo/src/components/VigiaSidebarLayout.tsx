@@ -185,16 +185,16 @@ export function VigiaSidebarLayout({
   return (
     <div className="min-h-screen bg-[#F6F3EC] flex flex-col text-[#1B1F1C] antialiased font-sans">
       {/* HEADER SUPERIOR UNIFICADO DE PONTA A PONTA */}
-      <header className="h-16 bg-white/95 backdrop-blur-md border-b border-[#1B1F1C]/12 sticky top-0 z-30 px-3 sm:px-6 lg:px-8 flex items-center justify-between flex-shrink-0">
-        <div className="flex items-center gap-3">
+      <header className="h-16 bg-white/95 backdrop-blur-md border-b border-[#1B1F1C]/12 sticky top-0 z-30 px-3 sm:px-6 lg:px-8 flex items-center justify-between gap-2 sm:gap-3 flex-shrink-0">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
           {/* Brand Vigia Saúde 360 */}
-          <Link href="/" className="flex items-center gap-2.5 group cursor-pointer" title="Ir para o Hub de Módulos">
+          <Link href="/" className="flex items-center gap-2.5 group cursor-pointer shrink-0" title="Ir para o Hub de Módulos">
             <div className="w-9 h-9 flex-shrink-0 bg-[#1B1F1C] rounded-xl flex items-center justify-center text-[#F6F3EC] shadow-sm group-hover:bg-[#0E5C4C] transition-colors">
               <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
                 <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-1 6h2v4h4v2h-4v4h-2v-4H7v-2h4V7z" />
               </svg>
             </div>
-            <div className="flex flex-col leading-tight">
+            <div className="hidden sm:flex flex-col leading-tight">
               <span className="font-display font-bold text-sm tracking-tight text-[#1B1F1C]">
                 Vigia <span className="text-[#0E5C4C]">Saúde 360</span>
               </span>
@@ -202,43 +202,51 @@ export function VigiaSidebarLayout({
           </Link>
 
           {/* Separador e Identificação do Módulo Atual */}
-          <span className="text-[#1B1F1C]/25 text-sm font-light">/</span>
+          <span className="text-[#1B1F1C]/25 text-sm font-light hidden sm:inline">/</span>
 
-          <div className="flex items-center gap-2">
-            <h1 className="text-xs sm:text-sm font-bold text-[#1B1F1C] truncate max-w-[240px] sm:max-w-none">
+          <div className="flex items-center gap-2 min-w-0">
+            <h1 className="text-xs sm:text-sm font-bold text-[#1B1F1C] truncate">
               {activeTitle || (isHomePage ? 'Hub de Módulos & Catálogo de Soluções' : currentTheme.nome)}
             </h1>
 
             {!isHomePage && currentTheme.tagRegulatoria && (
               <span
-                className={`text-[9px] font-bold px-2 py-0.5 rounded-full border hidden sm:inline-flex ${currentTheme.lightBg} ${currentTheme.primaryText} ${currentTheme.lightBorder}`}
+                className={`text-[9px] font-bold px-2 py-0.5 rounded-full border hidden sm:inline-flex shrink-0 ${currentTheme.lightBg} ${currentTheme.primaryText} ${currentTheme.lightBorder}`}
               >
                 {currentTheme.tagRegulatoria}
               </span>
             )}
 
             {isHomePage && (
-              <span className="text-[9px] font-bold px-2 py-0.5 rounded-full border bg-emerald-50 text-emerald-800 border-emerald-200 hidden sm:inline-flex">
+              <span className="text-[9px] font-bold px-2 py-0.5 rounded-full border bg-emerald-50 text-emerald-800 border-emerald-200 hidden sm:inline-flex shrink-0">
                 Módulos Independentes
               </span>
             )}
           </div>
         </div>
 
-        {/* Ações do Header (Ações Rápidas, Hub, Notificações, Perfil) */}
-        <div className="flex items-center gap-2 sm:gap-3">
-          {actions}
+        {/* Ações da página: faixa própria que encolhe e rola na horizontal.
+            Sem isto, botões de ação longos empurram o header para além da
+            viewport e provocam scroll horizontal na página inteira no mobile. */}
+        {actions && (
+          <div className="flex items-center gap-2 min-w-0 overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {actions}
+          </div>
+        )}
 
+        {/* Ações fixas do produto (Hub, Notificações, Perfil) */}
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           {!isHomePage && (
             <Link
               href="/"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl bg-white hover:bg-[#F6F3EC] text-[#1B1F1C]/75 hover:text-[#1B1F1C] text-xs font-bold border border-[#1B1F1C]/12 transition-all shadow-2xs"
+              className="inline-flex items-center justify-center gap-1.5 px-2.5 lg:px-3 py-2 min-h-[44px] min-w-[44px] rounded-xl bg-white hover:bg-[#F6F3EC] text-[#1B1F1C]/75 hover:text-[#1B1F1C] text-xs font-bold border border-[#1B1F1C]/12 transition-all shadow-2xs shrink-0"
               title="Abrir o Hub de Módulos em nova aba"
+              aria-label="Abrir o Hub de Módulos em nova aba"
             >
-              <Layers className="w-4 h-4 text-[#0E5C4C]" />
-              <span>Ver Módulos</span>
+              <Layers className="w-4 h-4 text-[#0E5C4C] shrink-0" />
+              <span className="hidden lg:inline">Ver Módulos</span>
             </Link>
           )}
 

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { mensagemErro } from '@/lib/utils';
 
 export interface IngestionPayload {
   tipo: 'FOLHA_RH' | 'DISPENSACAO_FARMACIA' | 'DESPESA_COMPRA' | 'MANUTENCAO_FACILITIES';
@@ -13,7 +14,7 @@ export interface IngestionPayload {
     lote?: string;
     validade?: string;
     data: string;
-    detalhes?: Record<string, any>;
+    detalhes?: Record<string, unknown>;
   }>;
 }
 
@@ -78,12 +79,12 @@ export async function POST(request: NextRequest) {
       },
       { status: 201 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
       {
         success: false,
         data: null,
-        error: error?.message || 'Erro interno ao processar ingestão.',
+        error: mensagemErro(error, 'Erro interno ao processar ingestão.'),
         meta: {
           timestamp: new Date().toISOString(),
           version: 'v1.0-modular',

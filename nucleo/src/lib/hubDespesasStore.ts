@@ -109,8 +109,15 @@ export function inferirEstacaoJornada(origem: ModuloOrigem, centroCusto?: string
   return 5; // 5. Hotelaria, Diárias & Honorários Médicos
 }
 
-// Base de dados em memória inicial (compartilhada no processo do Node.js)
-const globalStore: { despesas: DespesaItem[] } = (globalThis as any).__hospital360_despesasStore || {
+// Base de dados em memória inicial (compartilhada no processo do Node.js).
+// O campo é declarado no globalThis para sobreviver ao hot-reload do dev
+// server sem precisar de `any`.
+declare global {
+  // eslint-disable-next-line no-var
+  var __hospital360_despesasStore: { despesas: DespesaItem[] } | undefined;
+}
+
+const globalStore: { despesas: DespesaItem[] } = globalThis.__hospital360_despesasStore || {
   despesas: [
     {
       id_transacao: 'DSP-CLN-001',
@@ -269,7 +276,7 @@ const globalStore: { despesas: DespesaItem[] } = (globalThis as any).__hospital3
   ]
 };
 
-(globalThis as any).__hospital360_despesasStore = globalStore;
+globalThis.__hospital360_despesasStore = globalStore;
 
 export class HubDespesasService {
   /**

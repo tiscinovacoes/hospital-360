@@ -5,6 +5,7 @@
 // =====================================================================
 
 import { createClient } from '@supabase/supabase-js';
+import { mensagemErro } from '@/lib/utils';
 
 export interface MedicamentoPrecoReferencia {
   id: string;
@@ -389,7 +390,7 @@ export async function semearBancoPrecosMedicamentosSupabase(): Promise<{ success
     }
 
     return { success: true, inseridos: data?.length || rows.length };
-  } catch (err: any) {
-    return { success: false, inseridos: 0, error: err.message };
+  } catch (err: unknown) {
+    return { success: false, inseridos: 0, error: mensagemErro(err) };
   }
 }

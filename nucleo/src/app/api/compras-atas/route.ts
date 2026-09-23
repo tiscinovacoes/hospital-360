@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { validateMedicinePrice, CmedValidationInput } from '../../../lib/compras/cmedValidator';
+import { mensagemErro } from '@/lib/utils';
 import {
   BANCO_CESTAS_LOTE,
   consolidarMetricasCesta,
@@ -269,7 +270,7 @@ export interface LogInteracao {
 // BANCO DE DADOS EM MEMÓRIA (PERSISTÊNCIA OPERACIONAL)
 // =====================================================================
 
-let atasDB: AtaRegistroPreco[] = [
+const atasDB: AtaRegistroPreco[] = [
   {
     id: 'ata-001',
     numero_ata: 'ARP-2026/042-SMS',
@@ -371,7 +372,7 @@ let atasDB: AtaRegistroPreco[] = [
 ];
 
 // Contratos Administrativos (Padrão: 50% do valor da Ata)
-let contratosDB: ContratoAdministrativo[] = [
+const contratosDB: ContratoAdministrativo[] = [
   {
     id: 'cont-001',
     numero_contrato: 'CONT-2026/042-A',
@@ -417,7 +418,7 @@ let contratosDB: ContratoAdministrativo[] = [
 ];
 
 // Notas de Empenho (emitidas do Contrato)
-let empenhosDB: NotaEmpenho[] = [
+const empenhosDB: NotaEmpenho[] = [
   {
     id: 'emp-001',
     numero_empenho: 'EMP-2026/894120',
@@ -475,7 +476,7 @@ let empenhosDB: NotaEmpenho[] = [
 ];
 
 // Pedidos de Compra (PdC)
-let pedidosCompraDB: PedidoCompra[] = [
+const pedidosCompraDB: PedidoCompra[] = [
   {
     id: 'pdc-001',
     numero_pdc: 'PdC-2026-0001',
@@ -563,7 +564,7 @@ let pedidosCompraDB: PedidoCompra[] = [
 ];
 
 // Cotações de Preço & Comparativos Multipolares
-let cotacoesDB: CotacaoPreco[] = [
+const cotacoesDB: CotacaoPreco[] = [
   {
     id: 'cot-001',
     codigo_cotacao: 'COT-2026-089',
@@ -687,7 +688,7 @@ let cotacoesDB: CotacaoPreco[] = [
   }
 ];
 
-let chamadosDB: ChamadoModulo[] = [
+const chamadosDB: ChamadoModulo[] = [
   {
     id: 'chm-001',
     protocolo: 'CHM-COMPRAS-2026-004',
@@ -703,7 +704,7 @@ let chamadosDB: ChamadoModulo[] = [
   }
 ];
 
-let ocorrenciasDB: OcorrenciaModulo[] = [
+const ocorrenciasDB: OcorrenciaModulo[] = [
   {
     id: 'oco-001',
     modulo_origem: 'compras-publicas',
@@ -719,7 +720,7 @@ let ocorrenciasDB: OcorrenciaModulo[] = [
   }
 ];
 
-let logsDB: LogInteracao[] = [
+const logsDB: LogInteracao[] = [
   {
     id: 'log-001',
     modulo: 'compras-publicas',
@@ -1537,7 +1538,7 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ success: false, error: 'Ação não reconhecida.' }, { status: 400 });
-  } catch (err: any) {
-    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+  } catch (err: unknown) {
+    return NextResponse.json({ success: false, error: mensagemErro(err) }, { status: 500 });
   }
 }

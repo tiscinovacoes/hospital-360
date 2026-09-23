@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { mensagemErro } from '@/lib/utils';
 
 export interface TarefaHospitalar {
   id: string;
@@ -24,7 +25,7 @@ export interface TarefaHospitalar {
 }
 
 // Mock inicial com tarefas de diferentes setores da Sprint 2
-let TAREFAS_MEMORIA: TarefaHospitalar[] = [
+const TAREFAS_MEMORIA: TarefaHospitalar[] = [
   {
     id: 'TSK-101',
     titulo: 'Administração de Ceftriaxona 1g IV (FEFO L-9941)',
@@ -195,9 +196,9 @@ export async function POST(request: NextRequest) {
       { success: false, data: null, error: 'Ação inválida.' },
       { status: 400 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { success: false, data: null, error: error?.message || 'Erro interno.' },
+      { success: false, data: null, error: mensagemErro(error, 'Erro interno.') },
       { status: 500 }
     );
   }

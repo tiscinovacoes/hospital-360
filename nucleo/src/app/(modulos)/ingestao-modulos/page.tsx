@@ -348,7 +348,7 @@ export default function IngestaoModulosPage() {
         activeTitle="Gestão de Módulos & Ingestão de Dados Legados"
         activeSubtitle="Configure os módulos ativos ou conecte dados via planilhas CSV e webhooks sem retrabalho manual"
         actions={
-          <div className="flex flex-wrap items-center gap-1.5">
+          <div className="flex flex-nowrap items-center gap-1.5">
             <button
               onClick={() => setSidebarAberta(!sidebarAberta)}
               className="lg:hidden p-2 min-h-[44px] min-w-[44px] rounded-xl text-slate-600 hover:bg-slate-100 transition-all cursor-pointer flex items-center justify-center"
@@ -356,10 +356,10 @@ export default function IngestaoModulosPage() {
             >
               {sidebarAberta ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
             </button>
-            <div className="flex flex-wrap gap-1.5 bg-white p-1 rounded-xl border border-[#E0E0E0]">
+            <div className="flex flex-nowrap gap-1.5 bg-white p-1 rounded-xl border border-[#E0E0E0] shrink-0">
             <button
               onClick={() => handleApplyPreset('FARMACIA_ONLY')}
-              className={`px-3 py-2 min-h-[44px] text-xs font-semibold rounded-lg transition-all ${
+              className={`px-3 py-2 min-h-[44px] shrink-0 whitespace-nowrap text-xs font-semibold rounded-lg transition-all ${
                 activePlan === 'FARMACIA_ONLY'
                   ? 'bg-[#8A6A16]/[0.08] text-[#8A6A16] border border-[#8A6A16]/20 font-bold'
                   : 'text-slate-600 hover:text-slate-900'
@@ -369,7 +369,7 @@ export default function IngestaoModulosPage() {
             </button>
             <button
               onClick={() => handleApplyPreset('ASSISTENCIAL')}
-              className={`px-3 py-2 min-h-[44px] text-xs font-semibold rounded-lg transition-all ${
+              className={`px-3 py-2 min-h-[44px] shrink-0 whitespace-nowrap text-xs font-semibold rounded-lg transition-all ${
                 activePlan === 'ASSISTENCIAL'
                   ? 'bg-[#8A6A16]/[0.08] text-[#8A6A16] border border-[#8A6A16]/20 font-bold'
                   : 'text-slate-600 hover:text-slate-900'
@@ -379,7 +379,7 @@ export default function IngestaoModulosPage() {
             </button>
             <button
               onClick={() => handleApplyPreset('SUITE_360')}
-              className={`px-3 py-2 min-h-[44px] text-xs font-semibold rounded-lg transition-all ${
+              className={`px-3 py-2 min-h-[44px] shrink-0 whitespace-nowrap text-xs font-semibold rounded-lg transition-all ${
                 activePlan === 'SUITE_360'
                   ? 'bg-[#8A6A16] text-white shadow-sm font-bold'
                   : 'text-slate-600 hover:text-slate-900'
@@ -562,6 +562,10 @@ export default function IngestaoModulosPage() {
                   <div className="flex flex-col items-end gap-2">
                     <button
                       onClick={() => handleToggleModule(mod.id)}
+                      role="switch"
+                      aria-checked={mod.enabled}
+                      aria-label={`${mod.enabled ? 'Desativar' : 'Ativar'} o módulo ${mod.name}`}
+                      title={`${mod.enabled ? 'Desativar' : 'Ativar'} o módulo ${mod.name}`}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                         mod.enabled ? 'bg-[#8A6A16]' : 'bg-slate-300'
                       }`}
@@ -585,7 +589,7 @@ export default function IngestaoModulosPage() {
 
                         <button
                           onClick={() => handleDownloadTemplate(mod.id, mod.name)}
-                          className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded border border-slate-200 transition-colors"
+                          className="inline-flex items-center gap-1 px-2 py-0.5 min-h-[24px] text-[10px] text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded border border-slate-200 transition-colors"
                           title="Baixar planilha modelo CSV/Excel para este módulo"
                         >
                           <FileSpreadsheet className="w-3 h-3 text-emerald-600" /> Template CSV

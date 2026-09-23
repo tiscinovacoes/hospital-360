@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { mensagemErro } from '@/lib/utils';
 
 export async function POST(request: NextRequest) {
   try {
@@ -59,9 +60,9 @@ export async function POST(request: NextRequest) {
       message: `NFS-e ${numeroNota} emitida e escriturada com sucesso no HealVista Contábil.`,
       data: nfseEmitida,
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     return NextResponse.json(
-      { success: false, error: 'Falha ao emitir NFS-e no HealVista: ' + err.message },
+      { success: false, error: 'Falha ao emitir NFS-e no HealVista: ' + mensagemErro(err) },
       { status: 500 }
     );
   }

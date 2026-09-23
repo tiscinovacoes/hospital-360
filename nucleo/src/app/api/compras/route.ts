@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { validateMedicinePrice, CmedValidationInput } from '../../../lib/compras/cmedValidator';
+import { mensagemErro } from '@/lib/utils';
 
 // Tipagens do Módulo Compras
 export interface AtaItem {
@@ -75,7 +76,7 @@ export interface LogInteracao {
 }
 
 // Armazenamento em memória com sementes reais enriquecidas
-let atasDB: AtaRegistroPreco[] = [
+const atasDB: AtaRegistroPreco[] = [
   {
     id: 'ata-001',
     numero_ata: 'ARP-2026/042-SMS',
@@ -190,7 +191,7 @@ let atasDB: AtaRegistroPreco[] = [
   }
 ];
 
-let chamadosDB: ChamadoModulo[] = [
+const chamadosDB: ChamadoModulo[] = [
   {
     id: 'chm-001',
     protocolo: 'CHM-COMPRAS-2026-004',
@@ -219,7 +220,7 @@ let chamadosDB: ChamadoModulo[] = [
   }
 ];
 
-let ocorrenciasDB: OcorrenciaModulo[] = [
+const ocorrenciasDB: OcorrenciaModulo[] = [
   {
     id: 'oco-001',
     modulo_origem: 'compras-publicas',
@@ -235,7 +236,7 @@ let ocorrenciasDB: OcorrenciaModulo[] = [
   }
 ];
 
-let logsDB: LogInteracao[] = [
+const logsDB: LogInteracao[] = [
   {
     id: 'log-001',
     modulo: 'compras-publicas',
@@ -480,7 +481,7 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ success: false, error: 'Ação não reconhecida.' }, { status: 400 });
-  } catch (err: any) {
-    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+  } catch (err: unknown) {
+    return NextResponse.json({ success: false, error: mensagemErro(err) }, { status: 500 });
   }
 }

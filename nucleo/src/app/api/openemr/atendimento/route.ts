@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { translateOpenEmrToEstacao1 } from '@/lib/acl/clinicoAcl';
 import { HubDespesasService } from '@/lib/hubDespesasStore';
+import { mensagemErro } from '@/lib/utils';
 
 // Contrato: evento_atendimento_clinico (Sprint 2 - Rodrigo Albuquerque)
 export async function POST(request: Request) {
@@ -123,9 +124,9 @@ export async function POST(request: Request) {
       webhookStatus,
       data: eventoAtendimento,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { success: false, error: 'Erro interno ao processar atendimento OpenEMR: ' + error.message },
+      { success: false, error: 'Erro interno ao processar atendimento OpenEMR: ' + mensagemErro(error) },
       { status: 500 }
     );
   }

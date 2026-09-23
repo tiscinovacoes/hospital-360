@@ -36,7 +36,7 @@ interface LabSample {
   clinicRoom: string;
   exam: string;
   loinc: string;
-  tube: 'Roxo (EDTA)' | 'Amarelo (Gel Separador)' | 'Azul (Citrato)' | 'Cinza (Fluoreto)';
+  tube: 'Roxo (EDTA)' | 'Amarelo (Gel Separador)' | 'Azul (Citrato)' | 'Cinza (Fluoreto)' | 'Verde (Heparina)';
   status: 'Pendente' | 'Em Análise' | 'Liberado';
   tubeColor?: string;
   collectedAt?: string;
@@ -100,7 +100,7 @@ const initialSamples: LabSample[] = [
     clinicRoom: 'Sala 102',
     exam: 'Troponina I Ultrassensível & CPK-MB',
     loinc: '49563-0',
-    tube: 'Verde (Heparina)' as any,
+    tube: 'Verde (Heparina)',
     status: 'Em Análise',
     collectedAt: '18/09/2026 às 08:15',
     results: [

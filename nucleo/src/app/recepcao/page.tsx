@@ -113,7 +113,7 @@ export default function KioskReceptionPage() {
               className="inline-flex items-center gap-1.5 text-xs text-sky-100 hover:text-white mb-1.5 font-semibold transition-colors"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Voltar para Seleção de Módulos</span>
+              <span className="inline-flex items-center min-h-[24px]">Voltar para Seleção de Módulos</span>
             </Link>
             <div className="flex items-center gap-2.5">
               <div className="p-2 bg-sky-800/80 rounded-xl border border-sky-600">

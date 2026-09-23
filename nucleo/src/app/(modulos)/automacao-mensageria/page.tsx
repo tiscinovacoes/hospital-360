@@ -354,8 +354,8 @@ export default function AutomacaoMensageriaPage() {
             <div className="p-4 border border-[#E0E0E0] rounded-xl text-xs space-y-2">
               <strong className="text-slate-900 block">Template Ativo Homologado:</strong>
               <p className="font-mono text-[11px] text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-200">
-                "Olá [Nome]! Confirmamos sua consulta amanhã às [Horário] com o Dr. [Médico] no Hospital 360. 
-                Responda 1 para CONFIRMAR ou 2 para REMARCAR."
+                &quot;Olá [Nome]! Confirmamos sua consulta amanhã às [Horário] com o Dr. [Médico] no Hospital 360. 
+                Responda 1 para CONFIRMAR ou 2 para REMARCAR.&quot;
               </p>
             </div>
           </div>

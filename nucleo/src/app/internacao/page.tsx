@@ -290,7 +290,7 @@ export default function NursingStationPage() {
               className="inline-flex items-center gap-1.5 text-xs text-teal-100 hover:text-white mb-2 transition-colors"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Voltar para Seleção de Módulos</span>
+              <span className="inline-flex items-center min-h-[24px]">Voltar para Seleção de Módulos</span>
             </Link>
             <div className="flex items-center gap-2.5">
               <div className="p-2 bg-teal-800/80 rounded-xl border border-teal-600">
