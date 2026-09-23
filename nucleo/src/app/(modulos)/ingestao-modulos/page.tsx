@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { PageHeader } from '@/components/PageHeader';
 import { ModuloRbacBar } from '@/components/ModuloRbacBar';
+import { ModuloMenuLateral, MenuLateralItem } from '@/components/ModuloMenuLateral';
 import { ModuloRole, MODULO_ROLES_CATALOG, hasPermission } from '@/types/rbac';
 import {
   Layers,
@@ -31,6 +32,8 @@ import {
   Sparkles,
   Search,
   Activity,
+  Menu,
+  X,
 } from 'lucide-react';
 
 interface ModuleConfig {
@@ -195,6 +198,13 @@ export default function IngestaoModulosPage() {
   const roles = MODULO_ROLES_CATALOG['ingestao-modulos'];
   const [activeRole, setActiveRole] = useState<ModuloRole>(roles[0]);
   const [abaAtiva, setAbaAtiva] = useState<'conectores' | 'tabelas-sus' | 'dlq' | 'perfis'>('conectores');
+  const [sidebarAberta, setSidebarAberta] = useState(true);
+  const menuItens: MenuLateralItem[] = [
+    { id: 'conectores', label: 'Conectores & Módulos Legados', icon: Layers },
+    { id: 'tabelas-sus', label: 'Bases Nacionais (SIGTAP/CMED)', icon: FileSpreadsheet },
+    { id: 'dlq', label: 'Fila Dead Letter (DLQ)', icon: RefreshCw },
+    { id: 'perfis', label: 'Perfis & Matriz RBAC', icon: ShieldCheck },
+  ];
   const [modules, setModules] = useState<ModuleConfig[]>(INITIAL_MODULES);
   const [activePlan, setActivePlan] = useState<'CUSTOM' | 'FARMACIA_ONLY' | 'ASSISTENCIAL' | 'SUITE_360'>('CUSTOM');
   const [viewMode, setViewMode] = useState<'PRIVADO' | 'PUBLICO_SUS'>('PRIVADO');
@@ -338,7 +348,15 @@ export default function IngestaoModulosPage() {
         activeTitle="Gestão de Módulos & Ingestão de Dados Legados"
         activeSubtitle="Configure os módulos ativos ou conecte dados via planilhas CSV e webhooks sem retrabalho manual"
         actions={
-          <div className="flex flex-wrap gap-1.5 bg-white p-1 rounded-xl border border-[#E0E0E0]">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <button
+              onClick={() => setSidebarAberta(!sidebarAberta)}
+              className="lg:hidden p-2 min-h-[44px] min-w-[44px] rounded-xl text-slate-600 hover:bg-slate-100 transition-all cursor-pointer flex items-center justify-center"
+              title={sidebarAberta ? 'Recolher menu' : 'Expandir menu'}
+            >
+              {sidebarAberta ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            </button>
+            <div className="flex flex-wrap gap-1.5 bg-white p-1 rounded-xl border border-[#E0E0E0]">
             <button
               onClick={() => handleApplyPreset('FARMACIA_ONLY')}
               className={`px-3 py-2 min-h-[44px] text-xs font-semibold rounded-lg transition-all ${
@@ -369,10 +387,22 @@ export default function IngestaoModulosPage() {
             >
               Suite Completa 360
             </button>
+            </div>
           </div>
         }
       />
 
+      <div className="flex flex-1 overflow-hidden relative">
+        <ModuloMenuLateral
+          titulo="Ingestão & Conectores"
+          categoria="OPERACAO"
+          itens={menuItens}
+          ativoId={abaAtiva}
+          onSelect={(id) => setAbaAtiva(id as typeof abaAtiva)}
+          aberto={sidebarAberta}
+          onFechar={() => setSidebarAberta(false)}
+        />
+        <main className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-6">
       {/* PERFIS & MATRIZ RBAC — só aparece na seção "Perfis" do menu lateral, não em todas as telas */}
       {abaAtiva === 'perfis' && (
         <ModuloRbacBar
@@ -384,33 +414,6 @@ export default function IngestaoModulosPage() {
           lightBorder="border-[#8A6A16]/20"
         />
       )}
-
-      {/* SUB-NAVEGAÇÃO POR ABAS */}
-      <div className="bg-white border border-[#E0E0E0] rounded-2xl p-1.5 mb-6 shadow-xs flex items-center gap-1 overflow-x-auto">
-        {[
-          { id: 'conectores', label: '1. Conectores & Módulos Legados', icon: Layers },
-          { id: 'tabelas-sus', label: '2. Bases Nacionais (SIGTAP/CMED)', icon: FileSpreadsheet },
-          { id: 'dlq', label: '3. Fila Dead Letter (DLQ)', icon: RefreshCw },
-          { id: 'perfis', label: '4. Perfis & Matriz RBAC', icon: ShieldCheck }
-        ].map((tab) => {
-          const Icon = tab.icon;
-          const isActive = abaAtiva === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setAbaAtiva(tab.id as any)}
-              className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap min-h-[44px] touch-manipulation ${
-                isActive
-                  ? 'bg-[#8A6A16] text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-              }`}
-            >
-              <Icon className="w-4 h-4 shrink-0" />
-              <span>{tab.label}</span>
-            </button>
-          );
-        })}
-      </div>
 
       {/* ABA PERFIS */}
       {abaAtiva === 'perfis' && (
@@ -504,7 +507,7 @@ export default function IngestaoModulosPage() {
       )}
 
       {/* Main Grid */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Left Column: Grade de Módulos (7 Cols) */}
         <div className="lg:col-span-7 space-y-4">
           <div className="flex items-center justify-between">
@@ -792,7 +795,9 @@ export default function IngestaoModulosPage() {
             ) : null}
           </div>
         </div>
-      </main>
+      </div>
+        </main>
+      </div>
     </>
   );
 }

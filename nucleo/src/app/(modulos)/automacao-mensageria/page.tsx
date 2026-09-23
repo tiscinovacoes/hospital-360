@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { PageHeader } from '@/components/PageHeader';
 import { ModuloRbacBar } from '@/components/ModuloRbacBar';
+import { ModuloMenuLateral, MenuLateralItem } from '@/components/ModuloMenuLateral';
 import { KpiCard } from '@/components/KpiCard';
 import { ModuloRole, MODULO_ROLES_CATALOG, hasPermission } from '@/types/rbac';
 import {
@@ -27,7 +28,8 @@ import {
   Info,
   Lock,
   Layers,
-  ShieldCheck
+  ShieldCheck,
+  Menu
 } from 'lucide-react';
 
 type AbaMensageria =
@@ -141,6 +143,14 @@ export default function AutomacaoMensageriaPage() {
   const roles = MODULO_ROLES_CATALOG['automacao-mensageria'];
   const [activeRole, setActiveRole] = useState<ModuloRole>(roles[0]);
   const [abaAtiva, setAbaAtiva] = useState<AbaMensageria>('disparos');
+  const [sidebarAberta, setSidebarAberta] = useState(true);
+  const menuItens: MenuLateralItem[] = [
+    { id: 'disparos', label: 'Disparos ao Paciente (WhatsApp)', icon: MessageSquare },
+    { id: 'confirmacao', label: 'Confirmação & Anti-NoShow', icon: CheckCircle2 },
+    { id: 'webhooks', label: 'Barramento n8n & Webhooks', icon: Workflow },
+    { id: 'instancias', label: 'Conexões QR Code (Evolution)', icon: Smartphone },
+    { id: 'perfis', label: 'Perfis & Matriz RBAC', icon: Lock },
+  ];
   const [webhooks, setWebhooks] = useState<WebhookEvent[]>(mockWebhooks);
   const [whatsappSent, setWhatsappSent] = useState<string | null>(null);
 
@@ -164,6 +174,13 @@ export default function AutomacaoMensageriaPage() {
         activeSubtitle="Disparos humanizados via WhatsApp / SMS, barramento n8n e comunicação com paciente"
         actions={
           <div className="flex items-center gap-2.5">
+            <button
+              onClick={() => setSidebarAberta(!sidebarAberta)}
+              className="lg:hidden p-2 min-h-[44px] min-w-[44px] rounded-xl text-slate-600 hover:bg-slate-100 transition-all cursor-pointer flex items-center justify-center"
+              title={sidebarAberta ? 'Recolher menu' : 'Expandir menu'}
+            >
+              {sidebarAberta ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            </button>
             <Link
               href="/"
               className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] text-xs font-bold text-slate-700 bg-white border border-[#E0E0E0] rounded-xl hover:bg-slate-50 transition-all shadow-xs"
@@ -174,6 +191,18 @@ export default function AutomacaoMensageriaPage() {
           </div>
         }
       />
+
+      <div className="flex flex-1 overflow-hidden relative">
+        <ModuloMenuLateral
+          titulo="Automação & Mensageria"
+          categoria="OPERACAO"
+          itens={menuItens}
+          ativoId={abaAtiva}
+          onSelect={(id) => setAbaAtiva(id as AbaMensageria)}
+          aberto={sidebarAberta}
+          onFechar={() => setSidebarAberta(false)}
+        />
+        <main className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-6">
       {/* Feedback de Notificação */}
       {whatsappSent && (
         <div className="mb-4 p-3.5 bg-[#8A6A16]/[0.08] border border-[#8A6A16]/20 rounded-2xl flex items-center justify-between text-xs text-[#6E5511] shadow-sm animate-in fade-in duration-200">
@@ -236,34 +265,6 @@ export default function AutomacaoMensageriaPage() {
           icon={<MessageSquare className="w-5 h-5 text-[#8A6A16]" />}
           trend={{ text: "99.4% Entregues", isPositive: true }}
         />
-      </div>
-
-      {/* SUB-NAVEGAÇÃO POR ABAS */}
-      <div className="bg-white border border-[#E0E0E0] rounded-2xl p-1.5 mb-6 shadow-xs flex items-center gap-1 overflow-x-auto">
-        {[
-          { id: 'disparos', label: '1. Disparos ao Paciente (WhatsApp)', icon: MessageSquare },
-          { id: 'confirmacao', label: '2. Confirmação & Anti-NoShow', icon: CheckCircle2 },
-          { id: 'webhooks', label: '3. Barramento n8n & Webhooks', icon: Workflow },
-          { id: 'instancias', label: '4. Conexões QR Code (Evolution)', icon: Smartphone },
-          { id: 'perfis', label: '5. Perfis & Matriz RBAC', icon: Lock }
-        ].map((tab) => {
-          const Icon = tab.icon;
-          const isActive = abaAtiva === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setAbaAtiva(tab.id as AbaMensageria)}
-              className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap min-h-[44px] touch-manipulation ${
-                isActive
-                  ? 'bg-[#8A6A16] text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-              }`}
-            >
-              <Icon className="w-4 h-4 shrink-0" />
-              <span>{tab.label}</span>
-            </button>
-          );
-        })}
       </div>
 
       {/* ABA 1: DISPAROS AO PACIENTE */}
@@ -470,6 +471,8 @@ export default function AutomacaoMensageriaPage() {
           </div>
         </div>
       )}
+        </main>
+      </div>
     </>
   );
 }

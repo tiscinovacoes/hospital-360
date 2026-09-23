@@ -2,9 +2,9 @@ name: Hospital 360 - CI/CD Pipeline & Security Scan
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, develop, dev, master ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, master ]
 
 jobs:
   validate-and-test:
@@ -55,3 +55,18 @@ jobs:
         run: |
           echo "Simulando teste de esteira assistencial..."
           node integracoes/seguranca_rn_ind_auditoria.js
+
+      - name: Executar Testes de Contrato das ACLs e CMED/BPS (Sprint 4)
+        working-directory: ./
+        run: |
+          node tests/sprint4_acl_cmed_contracts.spec.js
+
+      - name: Executar Testes de Contrato da Sprint 5 (FEFO, Split & Leitos)
+        working-directory: ./
+        run: |
+          node tests/sprint5_fefo_split_leitos_contracts.spec.js
+
+      - name: Executar Testes de Contrato da Sprint 6 (Observabilidade & A11Y WCAG 2.2)
+        working-directory: ./
+        run: |
+          node tests/sprint6_observability_a11y_contracts.spec.js

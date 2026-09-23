@@ -1,0 +1,171 @@
+{
+  "name": "Hospital 360 - Barramento de Eventos Assistenciais com Dead Letter Queue (DLQ)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "hospital360/event-bus",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "node-webhook-inbound",
+      "name": "Webhook Inbound Receptor",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [100, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.body.tipoEvento }}",
+              "operation": "isNotEmpty"
+            },
+            {
+              "value1": "={{ $json.body.paciente.cpf }}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        }
+      },
+      "id": "node-validate-schema",
+      "name": "Validador de Contrato Canônico",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [320, 300]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "key": "={{ 'idempotency:' + ($json.body.eventoId || $json.body.atendimentoId) }}"
+      },
+      "id": "node-redis-idempotency-check",
+      "name": "Redis Idempotency Check",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [540, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:3000/api/hub/despesas/ingestao",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.body }}",
+        "options": {
+          "timeout": 3000
+        }
+      },
+      "id": "node-http-hub-ingestao",
+      "name": "Despacho HTTP Hub Custos 360",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [780, 200]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ status: 'PROCESSADO_SUCESSO', protocolo: $json.protocolo, timestamp: new Date().toISOString() }) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "node-respond-success",
+      "name": "Resposta HTTP 200 Sucesso",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1020, 200]
+    },
+    {
+      "parameters": {
+        "operation": "rpush",
+        "key": "hospital360:dlq:events",
+        "value": "={{ JSON.stringify({ falhaEm: new Date().toISOString(), payload: $json.body, erro: $node[\"Despacho HTTP Hub Custos 360\"].json || 'Erro de Schema ou Conectividade' }) }}"
+      },
+      "id": "node-redis-dlq-push",
+      "name": "Dead Letter Queue (Redis DLQ)",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [780, 440]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:3000/api/poli/whatsapp",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ telefone: '5567999998888', mensagem: '🚨 ALERTA DLQ HOSPITAL 360: Falha na ingestão do evento ' + $json.body.tipoEvento + ' do paciente ' + $json.body.paciente.nome + '. Evento retido na DLQ para retry automático.' }) }}"
+      },
+      "id": "node-notify-admin-poli",
+      "name": "Notificação SRE / Agente Poli",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1020, 440]
+    }
+  ],
+  "connections": {
+    "Webhook Inbound Receptor": {
+      "main": [
+        [
+          {
+            "node": "Validador de Contrato Canônico",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validador de Contrato Canônico": {
+      "main": [
+        [
+          {
+            "node": "Redis Idempotency Check",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Dead Letter Queue (Redis DLQ)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis Idempotency Check": {
+      "main": [
+        [
+          {
+            "node": "Despacho HTTP Hub Custos 360",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Despacho HTTP Hub Custos 360": {
+      "main": [
+        [
+          {
+            "node": "Resposta HTTP 200 Sucesso",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dead Letter Queue (Redis DLQ)": {
+      "main": [
+        [
+          {
+            "node": "Notificação SRE / Agente Poli",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

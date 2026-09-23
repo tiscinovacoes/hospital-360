@@ -1,0 +1,62 @@
+# ============================================================================
+# HOSPITAL 360 - REGRAS DE ALERTA DO PROMETHEUS (SLIs / SLOs & GOLDEN SIGNALS)
+# Padrão: prometheus-configuration (AlertManager Recording & Alert Rules)
+# ============================================================================
+
+groups:
+  - name: hospital360_critical_alerts
+    rules:
+      # 1. Alerta Crítico de Ocupação de UTI (SLO Assistencial)
+      - alert: UTIOcupacaoCritica
+        expr: hospital360_leitos_ocupacao_percent{ala="uti_geral"} > 90
+        for: 5m
+        labels:
+          severity: critical
+          tier: assistencial-nir
+        annotations:
+          summary: "Taxa de Ocupação da UTI Geral acima de 90%"
+          description: "A UTI Geral atingiu {{ $value }}% de ocupação por mais de 5 minutos. Risco iminente de desassistência no Pronto-Socorro. Acionar regulação NIR."
+
+      # 2. Alerta de Vencimento Iminente de Medicamentos (FEFO Anvisa RDC 306)
+      - alert: LoteFEFORiscoVencimento
+        expr: hospital360_fefo_lotes_risco_vencimento{status="critico_urgente"} > 0
+        for: 2m
+        labels:
+          severity: warning
+          tier: farmacia-suprimentos
+        annotations:
+          summary: "Lotes de medicamentos hospitalares próximos do vencimento"
+          description: "Detectados {{ $value }} lotes de medicamentos com validade inferior a 30 dias na Farmácia Central. Priorizar dispensação FEFO imediata."
+
+      # 3. Alerta de Latência da API (Golden Signal: Latency p95 > 250ms)
+      - alert: AltaLatenciaAPIHospitalar
+        expr: histogram_quantile(0.95, sum(rate(hospital360_http_request_duration_seconds_bucket[5m])) by (le)) > 0.25
+        for: 3m
+        labels:
+          severity: warning
+          tier: core-api
+        annotations:
+          summary: "Latência p95 das APIs hospitalares acima de 250ms"
+          description: "O tempo de resposta p95 nas APIs do Hospital 360 é de {{ $value }}s nos últimos 5 minutos."
+
+      # 4. Alerta de Taxa de Erro HTTP 5xx (Golden Signal: Error Rate > 1%)
+      - alert: TaxaErroElevadaHTTP5xx
+        expr: sum(rate(hospital360_http_requests_total{status=~"5.."}[5m])) / sum(rate(hospital360_http_requests_total[5m])) * 100 > 1
+        for: 2m
+        labels:
+          severity: critical
+          tier: core-api
+        annotations:
+          summary: "Taxa de erro 5xx superior a 1% nas APIs do Núcleo"
+          description: "A taxa de erros de servidor está em {{ $value }}% das requisições totais."
+
+      # 5. Alerta de Mensagens Retidas na Dead Letter Queue (DLQ n8n)
+      - alert: ErroIngestaoDLQAcumulada
+        expr: hospital360_n8n_dlq_mensagens_total > 0
+        for: 1m
+        labels:
+          severity: critical
+          tier: automacao-mensageria
+        annotations:
+          summary: "Eventos hospitalares retidos na Dead Letter Queue"
+          description: "Existem {{ $value }} eventos com falha de entrega retidos na DLQ do Redis para reprocessamento manual ou automático."

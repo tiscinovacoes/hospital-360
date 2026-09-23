@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import { translateOpenEmrToEstacao1 } from '@/lib/acl/clinicoAcl';
+import { HubDespesasService } from '@/lib/hubDespesasStore';
 
 // Contrato: evento_atendimento_clinico (Sprint 2 - Rodrigo Albuquerque)
 export async function POST(request: Request) {
@@ -85,7 +87,11 @@ export async function POST(request: Request) {
       statusSincronizacao: 'DESPACHADO_BARRAMENTO_N8N',
     };
 
-    // Tenta despachar para o barramento n8n se disponível
+    // 1. Aciona a ACL Clínica (translateOpenEmrToEstacao1) e ingere na Estação 1 do Hub
+    const payloadHubEstacao1 = translateOpenEmrToEstacao1(eventoAtendimento);
+    const resultadoHub = HubDespesasService.ingerirLote(payloadHubEstacao1);
+
+    // 2. Tenta despachar para o barramento n8n se disponível
     let webhookStatus = 'SIMULADO_LOCAL_BUFFER';
     try {
       const webhookUrl = process.env.N8N_WEBHOOK_BASE_URL || 'http://localhost:5678/webhook/hospital360/atendimento-clinico';
@@ -104,13 +110,16 @@ export async function POST(request: Request) {
         webhookStatus = 'ENVIADO_N8N_SUCESSO';
       }
     } catch {
-      // Barramento n8n offline -> salva em buffer local/Postgres
+      // Barramento n8n offline -> dados seguros no Hub/Postgres
       webhookStatus = 'BUFFER_LOCAL_SALVO_OFFLINE_RESILIENTE';
     }
 
     return NextResponse.json({
       success: true,
-      message: 'Atendimento do OpenEMR registrado e despachado com sucesso.',
+      message: 'Atendimento do OpenEMR registrado e ingerido na Estação 1 com sucesso.',
+      protocoloHub: resultadoHub.protocolo,
+      estacao: 1,
+      valorImputado: resultadoHub.valorTotal,
       webhookStatus,
       data: eventoAtendimento,
     });
