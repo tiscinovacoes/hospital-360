@@ -1,12 +1,14 @@
 # Vigia Saúde 360 — Identidade Visual
 > Sistema Governamental de Custeio, Compras Públicas e Gestão Hospitalar
-> Design System v2.0.0 — substitui a v1.0.0 (paleta azul/Inter)
+> Design System v2.1.0 — substitui a v2.0.0 (cores de categoria saturadas)
 
 ---
 
 ## Nota de versão
 
-A v1.0.0 (`#1A56DB`, Inter, cards multicoloridos por módulo) foi avaliada e descartada por parecer genérica — "SaaS azul de template". Esta v2.0.0 é a direção aprovada a partir do esboço em [https://claude.ai/artifact/Rk8UxQdFTS2HQy8zwn3znH](https://claude.ai/artifact/Rk8UxQdFTS2HQy8zwn3znH) (Hub de Módulos + Compras &amp; Atas).
+A v1.0.0 (`#1A56DB`, Inter, cards multicoloridos por módulo) foi avaliada e descartada por parecer genérica — "SaaS azul de template". A v2.0.0 reduziu para 4 cores de categoria saturadas (que coincidiam numericamente com as cores de ação/status) a partir do esboço em [https://claude.ai/artifact/Rk8UxQdFTS2HQy8zwn3znH](https://claude.ai/artifact/Rk8UxQdFTS2HQy8zwn3znH) (Hub de Módulos + Compras &amp; Atas).
+
+**v2.1.0 (atual)** — as 4 cores de categoria ficam mais leves/menos saturadas e uma delas volta a ser azul (clínico, `#5B84B1`), a pedido explícito, para reforçar a leitura "saúde hospitalar" nos módulos assistenciais. Isso **revisa** a regra da v2.0 de "nunca reintroduzir azul": o que ficou proibido foi o azul institucional saturado `#1A56DB` da v1 dominando a tela inteira, não um tom de categoria pontual e suave. Cores de **ação** (`#0E5C4C` teal, `#C1622D` terracota) e de **status** (`#8A6A16` ocre, `#9C3B2E` tijolo) permanecem exatamente iguais — só a identidade de categoria (dot, tarja, tag regulatória, item de menu) mudou. Ver § 2.1 para a paleta completa e § 8 para o status do rollout nos 13 módulos (concluído).
 
 Princípios da mudança:
 - **Menos cor, mais hierarquia.** Um único acento de ação (teal) e um único acento de destaque (terracota), em vez de uma cor própria por módulo espalhada em ícones, fundos e bordas.
@@ -71,7 +73,7 @@ Inalterado: área livre equivalente à altura do ícone (`x`) em todos os lados.
 | ✅ | Usar somente as variações aprovadas |
 | ✅ | Manter o espaço de proteção sempre |
 | ❌ | Distorcer as proporções do logotipo |
-| ❌ | Reintroduzir azul `#1A56DB` ou verde `#0E9F6E` no ícone |
+| ❌ | Reintroduzir azul `#1A56DB` (institucional v1) ou verde `#0E9F6E` no **ícone do logo** — regra específica do escudo; não se aplica ao azul clínico de categoria (§ 2.1), que é tom diferente e uso diferente |
 | ❌ | Aplicar sobre fundos com baixo contraste |
 | ❌ | Adicionar sombras, gradientes ou contornos externos |
 | ❌ | Recriar o escudo com outros elementos gráficos |
@@ -136,14 +138,18 @@ Os tons de atenção e crítico ficam **dessaturados** de propósito — nada de
 | 🔴 Tijolo | `#9C3B2E` | Falha ou urgência | Ata esgotada, rejeição, dispensa emergencial |
 | ⚫ Tinta | `#1B1F1C` | Categoria "Financeiro/Governança" (neutra) | Dot de categoria, texto padrão |
 
-### Cor por categoria de módulo (dot de 9px, não card colorido)
+### 2.1 Cor por categoria de módulo v2.1 (dot de 9px, não card colorido)
 
-| Categoria | Cor do dot |
-|---|---|
-| Suprimentos & Atas | Teal `#0E5C4C` |
-| Clínico & Assistencial | Terracota `#C1622D` |
-| Pessoas & Operação | Ocre `#8A6A16` |
-| Financeiro & Governança | Tinta 70% `rgba(27,31,28,.7)` |
+Tons suavizados/dessaturados em relação à v2.0 — mesma família de matiz onde aplicável, mais um azul clínico novo. **Nunca usar degradê** — sempre cor sólida. Estes tons são exclusivos de identidade de categoria (dot, tarja de 3px no topo do card, tag regulatória, dot de item de menu); não usar em botões, badges de status ou qualquer elemento de ação.
+
+| Categoria | Cor do dot v2.1 | Cor v2.0 (substituída) | Fundo sutil (12–14%) |
+|---|---|---|---|
+| Suprimentos & Atas | Verde-menta `#4E9B8A` | ~~Teal `#0E5C4C`~~ | `rgba(78,155,138,.12)` |
+| Clínico & Assistencial | Azul clínico `#5B84B1` | ~~Terracota `#C1622D`~~ | `rgba(91,132,177,.12)` |
+| Pessoas & Operação | Dourado `#C99A4A` | ~~Ocre `#8A6A16`~~ | `rgba(201,154,74,.14)` |
+| Financeiro & Governança | Azul-acinzentado `#7C93A3` | ~~Tinta 70%~~ | `rgba(124,147,163,.12)` |
+
+Tons de referência extra (uso pontual em gráficos/ilustrações, não são cor de categoria fixa): Cyan Clínico `#4FA3AE`, Verde-Menta `#5FA88C`, Azul Sereno `#6E92C9`, Lavanda Suave `#8B87BE`.
 
 ---
 
@@ -405,6 +411,16 @@ Novo prefixo `--vs2-*` para não colidir com o `--vs-*` da v1 durante a migraç�
   --vs2-brick:    #9C3B2E;
   --vs2-brick-08: rgba(156,59,46,.08);
 
+  /* ── Categorias v2.1 — identidade de módulo (dot/tarja/tag), não usar em ação/status ── */
+  --vs2-cat-suprimentos:          #4E9B8A;
+  --vs2-cat-suprimentos-subtle:   rgba(78,155,138,.12);
+  --vs2-cat-assistencial:         #5B84B1;
+  --vs2-cat-assistencial-subtle:  rgba(91,132,177,.12);
+  --vs2-cat-operacao:             #C99A4A;
+  --vs2-cat-operacao-subtle:      rgba(201,154,74,.14);
+  --vs2-cat-financeiro:           #7C93A3;
+  --vs2-cat-financeiro-subtle:    rgba(124,147,163,.12);
+
   /* ── Tipografia ── */
   --vs2-font-display: 'Fraunces', Georgia, serif;
   --vs2-font-body:    'Public Sans', -apple-system, sans-serif;
@@ -468,7 +484,14 @@ box-shadow: 0 8px 24px rgba(27,31,28,.10), 0 2px 8px rgba(27,31,28,.05);
 
 ## 8. Como Executar nos Módulos
 
-Ordem sugerida — do centro (que todo módulo herda) para as pontas, para não migrar tela por tela do zero:
+**Status v2.0 → v2.1: concluído.** Os passos 1–3 abaixo foram aplicados em `CATEGORIA_THEME`
+(`ModuloLayoutShell.tsx`), `ModuleCard` (`src/components/ui/module-card.tsx`) e no Hub —
+os 13 módulos herdam a cor de categoria v2.1 automaticamente por consumirem `MODULO_THEMES`,
+sem precisar editar cada `page.tsx`. O que **não** mudou: botões primário/secundário (terracota/teal)
+e badges de status (sucesso/atenção/crítico) dentro de cada módulo — esses continuam usando
+`#0E5C4C`/`#C1622D`/`#8A6A16`/`#9C3B2E` diretamente, porque são cor de AÇÃO/STATUS, não de categoria.
+
+Ordem original (referência histórica) — do centro (que todo módulo herda) para as pontas, para não migrar tela por tela do zero:
 
 1. **`MODULO_THEMES` (`nucleo/src/components/ModuloLayoutShell.tsx`)** — hoje dá uma cor própria (azul, verde, âmbar, roxo...) a cada `moduloId`. Reduzir para: todo módulo herda o mesmo par tinta/papel; o único campo que varia por módulo passa a ser o **dot de categoria** (teal/terracota/ocre/tinta), não mais um `primaryBg`/`lightBg` inteiro por módulo.
 2. **`VigiaSidebarLayout.tsx`** — recolorir escudo, wordmark (Fraunces + teal), fundo da sidebar (`paper-2`), estado ativo do item de navegação (fundo tinta, não mais `currentTheme.primaryBg`).
@@ -490,6 +513,12 @@ TIJOLO (crítico)    #9C3B2E   ████  Erro, esgotado, emergencial
 TINTA               #1B1F1C   ████  Texto, hero escuro, sidebar
 PAPEL               #F6F3EC   ████  Fundo de página
 
+CATEGORIA v2.1 (dot/tarja/tag — nunca em botão/status):
+  SUPRIMENTOS      #4E9B8A   ████  Verde-menta
+  ASSISTENCIAL     #5B84B1   ████  Azul clínico
+  OPERACAO         #C99A4A   ████  Dourado
+  FINANCEIRO       #7C93A3   ████  Azul-acinzentado
+
 FONTE DISPLAY   Fraunces (serifada) — só títulos H1/H2 de destaque
 FONTE CORPO     Public Sans — todo o resto (substitui Inter)
 FONTE MONO      JetBrains Mono — códigos, IDs, valores (mantida)
@@ -499,4 +528,4 @@ RAIO            8px padrão · 12px cards · 16px teto (hero/modal) · pill badg
 
 ---
 
-*Vigia Saúde 360 Design System v2.0.0 — Rede Pública de Saúde*
+*Vigia Saúde 360 Design System v2.1.0 — Rede Pública de Saúde*

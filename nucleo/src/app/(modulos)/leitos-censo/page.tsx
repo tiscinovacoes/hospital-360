@@ -375,7 +375,7 @@ export default function LeitosCensoPage() {
           className={`
             fixed lg:static inset-y-0 left-0 z-50 lg:z-30
             ${sidebarAberta ? 'translate-x-0 w-72 lg:w-64 shadow-xl lg:shadow-none' : '-translate-x-full lg:translate-x-0 lg:w-0 lg:hidden'}
-            shrink-0 bg-gradient-to-b from-[#C1622D]/95 via-white to-[#C1622D]/80 border-r border-[#C1622D]/90 flex flex-col justify-between transition-all duration-200 ease-in-out
+            shrink-0 bg-[#C1622D]/[0.06] border-r border-[#C1622D]/20 flex flex-col justify-between transition-all duration-200 ease-in-out
           `}
         >
           <nav className="p-3 space-y-1.5 flex-1 overflow-y-auto">

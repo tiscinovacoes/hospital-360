@@ -35,52 +35,73 @@ export interface ModuloThemeConfig {
   /** Nome de exibição da categoria (Design System v2 — ver IDENTIDADE_VISUAL). */
   corNome: string;
   categoria: ModuloCategoria;
-  // Classes Tailwind Semânticas — v2: uma cor por CATEGORIA, não mais por módulo.
+  // Classes Tailwind Semânticas — v2.1: primaryBg/lightBg/primaryText/lightBorder
+  // são cor de CATEGORIA (varia por categoria — dot, ícone, tag, menu ativo).
+  // actionBg/actionHoverBg são cor de AÇÃO (fixa — teal, igual em todo módulo,
+  // reservada para o botão de ação principal do cabeçalho). Não confundir as
+  // duas: ver IDENTIDADE_VISUAL (1).md § 2.1.
   primaryBg: string;
   primaryHoverBg: string;
   primaryText: string;
   lightBg: string;
   lightBorder: string;
   ringColor: string;
+  actionBg: string;
+  actionHoverBg: string;
 }
 
 /**
- * Design System v2.0.0 — categoria substitui a cor exclusiva por módulo.
- * Ver IDENTIDADE_VISUAL (1).md § 2 e § 8. As quatro categorias:
- * Suprimentos (teal), Assistencial (terracota), Operação (ocre), Financeiro (tinta).
+ * Design System v2.1.0 — categoria substitui a cor exclusiva por módulo.
+ * Ver IDENTIDADE_VISUAL (1).md § 2.1 e § 8. As quatro categorias, tons
+ * suavizados + azul clínico (v2.1 substitui os tons v2.0 saturados, que
+ * coincidiam numericamente com as cores de AÇÃO — --color-action/--color-primary
+ * continuam as mesmas, só a identidade de categoria mudou):
+ * Suprimentos (verde-menta), Assistencial (azul clínico), Operação (dourado), Financeiro (azul-acinzentado).
  */
+// Cor de AÇÃO — fixa, igual em todo módulo (teal, secundária/recorrente per
+// IDENTIDADE_VISUAL (1).md § 4 Botões). Usada só no botão de ação principal
+// do cabeçalho, nunca varia por categoria.
+const ACTION_COLOR = {
+  actionBg: 'bg-[#0E5C4C]',
+  actionHoverBg: 'hover:bg-[#0A4A3D]'
+};
+
 const CATEGORIA_THEME: Record<ModuloCategoria, Omit<ModuloThemeConfig, 'id' | 'nome' | 'subtitulo' | 'tagRegulatoria' | 'corNome' | 'categoria'>> = {
   SUPRIMENTOS: {
-    primaryBg: 'bg-[#0E5C4C]',
-    primaryHoverBg: 'hover:bg-[#0A4A3D]',
-    primaryText: 'text-[#0E5C4C]',
-    lightBg: 'bg-[#0E5C4C]/[0.08]',
-    lightBorder: 'border-[#0E5C4C]/20',
-    ringColor: 'focus:ring-[#0E5C4C]'
+    primaryBg: 'bg-[#4E9B8A]',
+    primaryHoverBg: 'hover:bg-[#3D7A6C]',
+    primaryText: 'text-[#4E9B8A]',
+    lightBg: 'bg-[#4E9B8A]/[0.12]',
+    lightBorder: 'border-[#4E9B8A]/35',
+    ringColor: 'focus:ring-[#4E9B8A]',
+    ...ACTION_COLOR
   },
   ASSISTENCIAL: {
-    primaryBg: 'bg-[#C1622D]',
-    primaryHoverBg: 'hover:bg-[#A8531F]',
-    primaryText: 'text-[#C1622D]',
-    lightBg: 'bg-[#C1622D]/[0.08]',
-    lightBorder: 'border-[#C1622D]/20',
-    ringColor: 'focus:ring-[#C1622D]'
+    primaryBg: 'bg-[#5B84B1]',
+    primaryHoverBg: 'hover:bg-[#496C92]',
+    primaryText: 'text-[#5B84B1]',
+    lightBg: 'bg-[#5B84B1]/[0.12]',
+    lightBorder: 'border-[#5B84B1]/35',
+    ringColor: 'focus:ring-[#5B84B1]',
+    ...ACTION_COLOR
   },
   OPERACAO: {
-    primaryBg: 'bg-[#8A6A16]',
-    primaryHoverBg: 'hover:bg-[#6E5511]',
-    primaryText: 'text-[#8A6A16]',
-    lightBg: 'bg-[#8A6A16]/[0.10]',
-    lightBorder: 'border-[#8A6A16]/20',
-    ringColor: 'focus:ring-[#8A6A16]'
+    primaryBg: 'bg-[#C99A4A]',
+    primaryHoverBg: 'hover:bg-[#AD803A]',
+    primaryText: 'text-[#C99A4A]',
+    lightBg: 'bg-[#C99A4A]/[0.14]',
+    lightBorder: 'border-[#C99A4A]/35',
+    ringColor: 'focus:ring-[#C99A4A]',
+    ...ACTION_COLOR
   },
   FINANCEIRO: {
-    primaryBg: 'bg-[#1B1F1C]',
-    primaryHoverBg: 'hover:bg-[#33382F]',
-    primaryText: 'text-[#1B1F1C]',
-    lightBg: 'bg-[#1B1F1C]/[0.06]',
-    lightBorder: 'border-[#1B1F1C]/15',
-    ringColor: 'focus:ring-[#1B1F1C]'
+    primaryBg: 'bg-[#7C93A3]',
+    primaryHoverBg: 'hover:bg-[#647A8A]',
+    primaryText: 'text-[#7C93A3]',
+    lightBg: 'bg-[#7C93A3]/[0.12]',
+    lightBorder: 'border-[#7C93A3]/35',
+    ...ACTION_COLOR,
+    ringColor: 'focus:ring-[#7C93A3]'
   }
 };
 
@@ -338,7 +359,7 @@ export function ModuloLayoutShell({
           {botaoAcaoPrincipal && (
             <button
               onClick={botaoAcaoPrincipal.onClick}
-              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold ${theme.primaryBg} ${theme.primaryHoverBg} text-white transition-all shadow-xs cursor-pointer min-h-[36px] focus:outline-none focus:ring-2 ${theme.ringColor}`}
+              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold ${theme.actionBg} ${theme.actionHoverBg} text-white transition-all shadow-xs cursor-pointer min-h-[36px] focus:outline-none focus:ring-2 focus:ring-[#0E5C4C]`}
             >
               {botaoAcaoPrincipal.icon && React.createElement(botaoAcaoPrincipal.icon, { className: 'w-3.5 h-3.5' })}
               <span className="hidden xs:inline">{botaoAcaoPrincipal.label}</span>

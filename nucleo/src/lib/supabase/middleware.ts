@@ -22,6 +22,7 @@ const ROTAS_PUBLICAS = [
   '/financeiro-split',
   '/automacao-mensageria',
   '/tarefas',
+  '/prototipo-identidade',
   '/api',
   ...ROTAS_AUTENTICACAO
 ];

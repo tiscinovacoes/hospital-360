@@ -645,7 +645,7 @@ export default function VigiaEstoqueCentralPage() {
           className={`
             fixed lg:static inset-y-0 left-0 z-50 lg:z-30
             ${sidebarAberta ? 'translate-x-0 w-72 lg:w-64 shadow-xl lg:shadow-none' : '-translate-x-full lg:translate-x-0 lg:w-0 lg:hidden'}
-            shrink-0 bg-gradient-to-b from-[#0E5C4C]/95 via-white to-[#0E5C4C]/80 border-r border-[#0E5C4C]/90 flex flex-col justify-between transition-all duration-200 ease-in-out
+            shrink-0 bg-[#0E5C4C]/[0.06] border-r border-[#0E5C4C]/20 flex flex-col justify-between transition-all duration-200 ease-in-out
           `}
         >
           <nav className="p-3 space-y-1.5 flex-1 overflow-y-auto">

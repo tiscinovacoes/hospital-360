@@ -646,7 +646,7 @@ export default function IngestaoModulosPage() {
                 </div>
 
                 {/* Totalizador de Custo */}
-                <div className="p-4 rounded-xl bg-gradient-to-br from-[#1E293B] to-[#0F172A] text-white">
+                <div className="p-4 rounded-xl bg-[#1E293B] text-white">
                   <span className="text-xs text-slate-300 uppercase tracking-wider font-semibold">Custo Total Apurado</span>
                   <div className="flex items-baseline gap-2 mt-1">
                     <span className="text-3xl font-extrabold text-white">
