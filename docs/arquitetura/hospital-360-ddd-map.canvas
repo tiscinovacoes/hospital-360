@@ -1,0 +1,350 @@
+{
+  "nodes": [
+    {
+      "id": "1c987388cb614c5b",
+      "type": "group",
+      "label": "CORE DOMAIN — Inteligência de Custos Door-to-Door & Hub 360",
+      "x": 600,
+      "y": 0,
+      "width": 640,
+      "height": 520,
+      "color": "4"
+    },
+    {
+      "id": "854a3666d1fa403a",
+      "type": "group",
+      "label": "BOUNDED CONTEXT — Suprimentos, Compras Públicas & Farmácia FEFO",
+      "x": -150,
+      "y": -550,
+      "width": 680,
+      "height": 500,
+      "color": "2"
+    },
+    {
+      "id": "c7117580d7674aa3",
+      "type": "group",
+      "label": "BOUNDED CONTEXT — Assistencial, Clínico & Diagnóstico",
+      "x": 1350,
+      "y": -550,
+      "width": 720,
+      "height": 580,
+      "color": "5"
+    },
+    {
+      "id": "f19922854bbb42bb",
+      "type": "group",
+      "label": "BOUNDED CONTEXT — Fintech, Split Bancário & Faturamento",
+      "x": -150,
+      "y": 600,
+      "width": 680,
+      "height": 450,
+      "color": "6"
+    },
+    {
+      "id": "947e95d3b4494661",
+      "type": "group",
+      "label": "BOUNDED CONTEXT — Mensageria, Agentes IA & Blindagem de Segurança",
+      "x": 1350,
+      "y": 600,
+      "width": 720,
+      "height": 450,
+      "color": "3"
+    },
+    {
+      "id": "1b3888add1b94f29",
+      "type": "text",
+      "text": "### 📥 Hub Central de Ingestão de Despesas\n- **Rota:** `/api/hub/despesas/ingestao`\n- **Padrão:** Published Language (`LoteDespesaHub`)\n- **Protocolo:** `ING-HUB-XXXXXX` (Idempotente)\n- **Validação:** Schema Zod estrito e trilha de auditoria",
+      "x": 640,
+      "y": 50,
+      "width": 260,
+      "height": 180,
+      "color": "4"
+    },
+    {
+      "id": "8d3072a52ba74de6",
+      "type": "text",
+      "text": "### 🏥 Motor de Custeio das 5 Estações Clínicas\n- **E1:** Acolhimento & Triagem\n- **E2:** Apoio Diagnóstico & LIMS\n- **E3:** Insumos & OPME Cirúrgico\n- **E4:** Farmácia Beira-Leito\n- **E5:** Internação UTI & Honorários Médicos",
+      "x": 940,
+      "y": 50,
+      "width": 260,
+      "height": 180,
+      "color": "4"
+    },
+    {
+      "id": "8edfce347a314ac6",
+      "type": "text",
+      "text": "### ⚖️ Confronto TUSS x SIGTAP / SUS\n- Cálculo automático do déficit assistencial\n- Apuração de provisão de glosa (4.5%)\n- Necessidade de subsídio condominial\n- Exportação contábil CSV e JSON canônico",
+      "x": 640,
+      "y": 280,
+      "width": 260,
+      "height": 190,
+      "color": "4"
+    },
+    {
+      "id": "ed3a10fbd83c4b47",
+      "type": "text",
+      "text": "### 📊 Dashboard Executivo & BI Core 360\n- **Rota:** `/dashboard-executivo`\n- Custo unificado do Paciente Door-to-Door\n- Taxa de Ocupação, EBITDA e Margem Líquida\n- Design System v2.0 (Tinta/Papel/Teal/Terracota)",
+      "x": 940,
+      "y": 280,
+      "width": 260,
+      "height": 190,
+      "color": "4"
+    },
+    {
+      "id": "72f750e1ee8946a2",
+      "type": "text",
+      "text": "### 📜 Compras Públicas & Atas ARP\n- **Base:** `D:\\Projetos\\compras` (`erpnext`) + `IA preços medicamentos`\n- Lei 14.133/2021, Pregões e Dispensas\n- Validação de Catmat e Preço Máximo CMED/BPS",
+      "x": -110,
+      "y": -500,
+      "width": 280,
+      "height": 180,
+      "color": "2"
+    },
+    {
+      "id": "64640aa499214d03",
+      "type": "text",
+      "text": "### 📦 Estoque Central & WMS\n- **Base:** `D:\\Projetos\\Estoque` (`openboxes`) + `almoxarifado`\n- Curva ABC de medicamentos e insumos\n- Ponto de pedido automatizado e rastreio de lote",
+      "x": 210,
+      "y": -500,
+      "width": 280,
+      "height": 180,
+      "color": "2"
+    },
+    {
+      "id": "632170f2efc9487c",
+      "type": "text",
+      "text": "### 💊 Farmácia FEFO & Beira-Leito\n- **Base:** `D:\\Projetos\\FeFo` (`P-MACS-Universal`)\n- Regra First-Expired, First-Out (Validade)\n- Dupla checagem e dispensação individualizada",
+      "x": -110,
+      "y": -280,
+      "width": 280,
+      "height": 180,
+      "color": "2"
+    },
+    {
+      "id": "2053da65bc834b91",
+      "type": "text",
+      "text": "### 🛡️ ACL Suprimentos -> Hub Custos\n- **Anti-Corruption Layer:**\n  - Converte baixa de estoque em Custo Estação 3 (OPME)\n  - Converte dispensação em Custo Estação 4 (Medicamentos)\n  - Emite payload `LoteDespesaHub` padronizado",
+      "x": 210,
+      "y": -280,
+      "width": 280,
+      "height": 180,
+      "color": "1"
+    },
+    {
+      "id": "3bac41995e624480",
+      "type": "text",
+      "text": "### 🩺 Gestão Clínica & PEP\n- **Base:** `D:\\Projetos\\gerenciamento clinica` (`openemr`)\n- Prontuário Eletrônico, Prescrição Médica\n- Alertas de Alergias e Interações Farmacológicas",
+      "x": 1390,
+      "y": -500,
+      "width": 300,
+      "height": 160,
+      "color": "5"
+    },
+    {
+      "id": "0cc2b313538b4568",
+      "type": "text",
+      "text": "### 🧪 Laboratório LIS & Diagnóstico\n- **Base:** `D:\\Projetos\\getenciamento de laboratorio` (`senaite.core`)\n- Protocolo ASTM para analisadores bioquímicos\n- Laudos automatizados com assinatura digital",
+      "x": 1730,
+      "y": -500,
+      "width": 300,
+      "height": 160,
+      "color": "5"
+    },
+    {
+      "id": "aff2e11e36604112",
+      "type": "text",
+      "text": "### ⏱️ Escala Médica & Plantões GPS\n- **Base:** `D:\\Projetos\\RH` (`OpenHRApp`)\n- Check-in GPS com raio de geofencing (15m)\n- Validação CFM e apuração de honorários Estação 5",
+      "x": 1390,
+      "y": -300,
+      "width": 300,
+      "height": 160,
+      "color": "5"
+    },
+    {
+      "id": "3c5b0bbaba2e4c37",
+      "type": "text",
+      "text": "### 🛏️ Censo Hospitalar, NIR & Facilities\n- **Base:** `D:\\Projetos\\gerenciamento de leitos` (`bahmni`) + `gerenciamento de tarefas`\n- Taxa de ocupação UTI/Enfermaria\n- Cronômetro de desinfecção terminal Facilities",
+      "x": 1730,
+      "y": -300,
+      "width": 300,
+      "height": 160,
+      "color": "5"
+    },
+    {
+      "id": "492cf7c311dc4164",
+      "type": "text",
+      "text": "### 🛡️ ACL Assistencial -> Hub Custos\n- **Anti-Corruption Layer:**\n  - Converte atendimento em Custo Estação 1\n  - Converte laudo/exame em Custo Estação 2\n  - Converte honorário médico em Custo Estação 5",
+      "x": 1390,
+      "y": -100,
+      "width": 640,
+      "height": 100,
+      "color": "1"
+    },
+    {
+      "id": "56d4918d54f74c6f",
+      "type": "text",
+      "text": "### 💳 Fintech 360 & Split Bancário\n- **Base:** `D:\\Projetos\\Fluxo de pagamento` (`hyperswitch`)\n- Split automático sem bitributação para condomínio\n- Gateway multi-adquirente e conciliação PIX D+0",
+      "x": -110,
+      "y": 660,
+      "width": 280,
+      "height": 180,
+      "color": "6"
+    },
+    {
+      "id": "11a143fc865245ac",
+      "type": "text",
+      "text": "### 📑 Contabilidade, NFS-e & Faturamento\n- **Base:** `D:\\Projetos\\contabil` (`HealVista`)\n- Emissão de NFS-e por clínica locatária\n- Rateio de custos fixos de centro cirúrgico e gases",
+      "x": 210,
+      "y": 660,
+      "width": 280,
+      "height": 180,
+      "color": "6"
+    },
+    {
+      "id": "a33744f3d34443f8",
+      "type": "text",
+      "text": "### 🤝 Shared Kernel Financeiro\n- Entidades compartilhadas: `TenantClinica`, `RateioDespesa`, `RepasseMedico`\n- Integração direta com `/api/hyperswitch/split` e `/api/contabil/nfse`",
+      "x": -110,
+      "y": 880,
+      "width": 600,
+      "height": 130,
+      "color": "6"
+    },
+    {
+      "id": "0d65fd5772cd4675",
+      "type": "text",
+      "text": "### ⚡ Barramento de Eventos & IA\n- **Base:** `D:\\Projetos\\automação` (`langgraph` / n8n)\n- Tópicos assíncronos: `paciente.checkin`, `exame.pronto`, `estoque.alerta_minimo`\n- Dead Letter Queue (DLQ) para tolerância a falhas",
+      "x": 1390,
+      "y": 660,
+      "width": 300,
+      "height": 180,
+      "color": "3"
+    },
+    {
+      "id": "ec6d0c28aa004154",
+      "type": "text",
+      "text": "### 📲 Agente Poli (WhatsApp Oficial)\n- **Base:** `D:\\Projetos\\Poli` (`aiviq-zap-app`)\n- Lembretes cirúrgicos e convocações de plantão\n- Alertas de ruptura de estoque para o gestor",
+      "x": 1730,
+      "y": 660,
+      "width": 300,
+      "height": 180,
+      "color": "3"
+    },
+    {
+      "id": "ac10956b4f144e94",
+      "type": "text",
+      "text": "### 🔒 Blindagem CRED-OMEGA & RBAC\n- Zero segredos expostos no repositório (Git scan CI)\n- Row Level Security (RLS) no Supabase multi-tenant\n- Isolamento regulatório RN-IND (segregação de dados médicos)",
+      "x": 1390,
+      "y": 880,
+      "width": 640,
+      "height": 130,
+      "color": "3"
+    }
+  ],
+  "edges": [
+    {
+      "id": "b77aad0114544511",
+      "fromNode": "1b3888add1b94f29",
+      "toNode": "8d3072a52ba74de6",
+      "fromSide": "right",
+      "toSide": "left",
+      "label": "Alimenta as 5 Estações"
+    },
+    {
+      "id": "9351edec4d764dc5",
+      "fromNode": "8d3072a52ba74de6",
+      "toNode": "8edfce347a314ac6",
+      "fromSide": "bottom",
+      "toSide": "right",
+      "label": "Valores apurados"
+    },
+    {
+      "id": "5dd5f513766a4a5f",
+      "fromNode": "8edfce347a314ac6",
+      "toNode": "ed3a10fbd83c4b47",
+      "fromSide": "right",
+      "toSide": "left",
+      "label": "Consolidação BI"
+    },
+    {
+      "id": "a81d763c56644d9a",
+      "fromNode": "72f750e1ee8946a2",
+      "toNode": "64640aa499214d03",
+      "fromSide": "right",
+      "toSide": "left",
+      "label": "Entrada de NF e Ata"
+    },
+    {
+      "id": "2c299ddb55b14dd9",
+      "fromNode": "64640aa499214d03",
+      "toNode": "632170f2efc9487c",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "label": "Abastecimento WMS"
+    },
+    {
+      "id": "c84443f250684cfa",
+      "fromNode": "632170f2efc9487c",
+      "toNode": "2053da65bc834b91",
+      "fromSide": "right",
+      "toSide": "left",
+      "label": "Baixa FEFO / Lote"
+    },
+    {
+      "id": "0b4599adf968471a",
+      "fromNode": "2053da65bc834b91",
+      "toNode": "1b3888add1b94f29",
+      "fromSide": "right",
+      "toSide": "left",
+      "label": "Customer-Supplier (POST /api/hub/despesas/ingestao)"
+    },
+    {
+      "id": "0069b0f62e314dc6",
+      "fromNode": "3bac41995e624480",
+      "toNode": "492cf7c311dc4164",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "label": "Estação 1"
+    },
+    {
+      "id": "642619e6fd174d7d",
+      "fromNode": "0cc2b313538b4568",
+      "toNode": "492cf7c311dc4164",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "label": "Estação 2"
+    },
+    {
+      "id": "c4434e95ca8e4d5b",
+      "fromNode": "aff2e11e36604112",
+      "toNode": "492cf7c311dc4164",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "label": "Estação 5 (Honorários)"
+    },
+    {
+      "id": "c794248ec3274e99",
+      "fromNode": "492cf7c311dc4164",
+      "toNode": "1b3888add1b94f29",
+      "fromSide": "left",
+      "toSide": "right",
+      "label": "Customer-Supplier (POST /api/hub/despesas/ingestao)"
+    },
+    {
+      "id": "06be865c1b824658",
+      "fromNode": "a33744f3d34443f8",
+      "toNode": "8edfce347a314ac6",
+      "fromSide": "right",
+      "toSide": "left",
+      "label": "Rateio e Repasse"
+    },
+    {
+      "id": "f3440e2b967544c5",
+      "fromNode": "0d65fd5772cd4675",
+      "toNode": "1b3888add1b94f29",
+      "fromSide": "left",
+      "toSide": "bottom",
+      "label": "Webhooks Assíncronos"
+    }
+  ]
+}

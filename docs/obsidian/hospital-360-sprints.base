@@ -1,0 +1,65 @@
+filters:
+  and:
+    - 'file.folder == "hospital-360"'
+formulas:
+  urgencia: 'if(pontos >= 8, "Alta", "Normal")'
+properties:
+  squad:
+    displayName: "Squad de Atuação"
+  responsavel:
+    displayName: "Responsável Nominal"
+  sprint:
+    displayName: "Sprint"
+  status:
+    displayName: "Status Operacional"
+  pontos:
+    displayName: "Story Points"
+  modulo:
+    displayName: "Módulo do Núcleo"
+  formula.urgencia:
+    displayName: "Nível de Urgência"
+views:
+  - type: table
+    name: "Visão Geral das Sprints (Backlog Tech Lead)"
+    order:
+      - file.name
+      - sprint
+      - squad
+      - responsavel
+      - modulo
+      - pontos
+      - formula.urgencia
+      - status
+  - type: cards
+    name: "Quadro por Squad"
+    groupBy:
+      property: squad
+      direction: ASC
+    order:
+      - file.name
+      - sprint
+      - responsavel
+      - status
+      - pontos
+  - type: table
+    name: "Filtro Sprint 4 (Fundação & ACLs)"
+    filters:
+      and:
+        - 'sprint == "Sprint 4"'
+    order:
+      - file.name
+      - responsavel
+      - modulo
+      - pontos
+      - status
+  - type: table
+    name: "Filtro Sprint 5 (FEFO & Split)"
+    filters:
+      and:
+        - 'sprint == "Sprint 5"'
+    order:
+      - file.name
+      - responsavel
+      - modulo
+      - pontos
+      - status
