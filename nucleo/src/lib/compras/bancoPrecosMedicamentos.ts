@@ -270,7 +270,7 @@ export const BANCO_PRECOS_MEDICAMENTOS_OFICIAL: MedicamentoPrecoReferencia[] = [
 // Helper para criar cliente Supabase isolado e resiliente
 function getSupabaseDbClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://oogpcdaosexarxmvupiw.supabase.co';
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vZ3BjZGFvc2V4YXJ4bXZ1cGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1NjIxMjAsImV4cCI6MjEwMjEzODEyMH0.mP9evq5xoSrgjLSiGpVSO75z1Zo0plQnz_XP67xGNXw';
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
   return createClient(url, key);
 }
 
