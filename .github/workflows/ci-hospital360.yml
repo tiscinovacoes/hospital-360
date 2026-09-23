@@ -60,3 +60,8 @@ jobs:
         working-directory: ./
         run: |
           node tests/sprint4_acl_cmed_contracts.spec.js
+
+      - name: Executar Testes de Contrato da Sprint 5 (FEFO, Split & Leitos)
+        working-directory: ./
+        run: |
+          node tests/sprint5_fefo_split_leitos_contracts.spec.js

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { HubDespesasService } from '@/lib/hubDespesasStore';
 
-// Catálogo LIMS homologado (SENAITE LIMS - Sprint 3)
+// Catálogo LIMS homologado (SENAITE LIMS - Sprint 3 & 5)
 const CATALOGO_LIMS: Record<
   string,
   { codigo: string; nome: string; prazoMinutos: number; custoReagentes: number; custoBancada: number; ref: string }
@@ -64,7 +65,13 @@ export async function POST(request: NextRequest) {
     const workorderId = `WO-LIMS-${Date.now()}`;
     const timestamp = new Date().toISOString();
 
-    const resultados: any[] = [];
+    const resultados: Array<{
+      codigoLoinc: string;
+      nome: string;
+      resultado: string;
+      referencia: string;
+      custoApurado: number;
+    }> = [];
     let custoTotalLaboratorio = 0;
 
     for (const codigo of examesSolicitados) {
@@ -88,6 +95,30 @@ export async function POST(request: NextRequest) {
 
     const amostraBarcode = `SAMPLE-LOINC-${Date.now().toString().slice(-6)}`;
 
+    // Ingestão Automática no Hub de Custos: Estação 2 (Apoio Diagnóstico & LIMS)
+    const resultadoIngestaoHub = HubDespesasService.ingerirLote({
+      origem_modulo: 'LABORATORIO_LIMS',
+      cliente_id: 'laboratorio_central_senaite',
+      lote_exportacao_id: `LOTE-LIMS-${Date.now()}`,
+      data_geracao: timestamp,
+      despesas: resultados.map((r, idx) => ({
+        id_transacao: `DSP-LAB-${Date.now()}-${idx}`,
+        paciente_cpf: cpf || '000.000.000-00',
+        paciente_nome: pacienteNome || 'Paciente',
+        prontuario_episodio: workorderId,
+        centro_custo: 'LABORATORIO_CENTRAL_LIS',
+        item_codigo: r.codigoLoinc,
+        item_descricao: r.nome,
+        quantidade: 1,
+        unidade_medida: 'EXAME',
+        valor_unitario_medio: r.custoApurado,
+        valor_total_imputado: r.custoApurado,
+        data_consumo: timestamp,
+        origem_modulo: 'LABORATORIO_LIMS',
+        estacao_jornada: 2 // Estação 2: Apoio Diagnóstico & LIMS
+      }))
+    });
+
     const laudoLiberado = {
       workorderId,
       amostraBarcode,
@@ -109,16 +140,25 @@ export async function POST(request: NextRequest) {
       custoTotalLaboratorio: Number(custoTotalLaboratorio.toFixed(2)),
       pdfLaudoUrl: `/laudos/senaite/${workorderId}.pdf`,
       webhookEnviado: 'lims.laudo_liberado',
+      hubCustos: {
+        protocolo: resultadoIngestaoHub.protocolo,
+        estacao: 2,
+        estacaoNome: 'Estação 2: Apoio Diagnóstico & LIMS',
+        valorImputado: resultadoIngestaoHub.valorTotal
+      }
     };
 
     return NextResponse.json({
       success: true,
       data: laudoLiberado,
-      mensagem: `WorkOrder ${workorderId} processada com sucesso no SENAITE LIMS. Laudo assinado e disponível.`,
+      protocoloHub: resultadoIngestaoHub.protocolo,
+      estacao: 2,
+      mensagem: `WorkOrder ${workorderId} processada com sucesso no SENAITE LIMS. Laudo assinado e custo lançado na Estação 2.`,
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
     return NextResponse.json(
-      { success: false, error: 'Falha ao processar WorkOrder no LIMS: ' + err.message },
+      { success: false, error: 'Falha ao processar WorkOrder no LIMS: ' + msg },
       { status: 500 }
     );
   }
