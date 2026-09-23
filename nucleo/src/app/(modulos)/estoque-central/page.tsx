@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
 import { ModuloRbacBar } from '@/components/ModuloRbacBar';
 import { KpiCard } from '@/components/KpiCard';
 import { PageHeader } from '@/components/PageHeader';
+import { ModuloMenuLateral } from '@/components/ModuloMenuLateral';
 import { ModuloRole, MODULO_ROLES_CATALOG, hasPermission } from '@/types/rbac';
 import {
   Boxes,
@@ -12,7 +12,6 @@ import {
   TrendingUp,
   AlertOctagon,
   Clock,
-  ArrowLeft,
   Plus,
   Snowflake,
   ShieldAlert,
@@ -402,7 +401,7 @@ export default function VigiaEstoqueCentralPage() {
   const roles = MODULO_ROLES_CATALOG['estoque-central'];
   const [activeRole, setActiveRole] = useState<ModuloRole>(roles[0]);
   const [secaoAtiva, setSecaoAtiva] = useState<SecaoModuloEstoque>('visao_geral');
-  const [sidebarAberta, setSidebarAberta] = useState(true);
+  const [sidebarAberta, setSidebarAberta] = useState(false);
   const [busca, setBusca] = useState('');
   const [modalAjuste, setModalAjuste] = useState<ItemEstoque | null>(null);
   const [transferencias, setTransferencias] = useState<TransferenciaCD[]>(TRANSFERENCIAS_MOCK);
@@ -595,119 +594,63 @@ export default function VigiaEstoqueCentralPage() {
             <button
               onClick={() => setSidebarAberta(!sidebarAberta)}
               className="lg:hidden p-2 min-h-[44px] min-w-[44px] rounded-xl text-slate-600 hover:bg-slate-100 transition-all cursor-pointer flex items-center justify-center"
-              title={sidebarAberta ? 'Recolher menu de seções' : 'Expandir menu de seções'}
+              title={sidebarAberta ? 'Recolher menu' : 'Expandir menu'}
+              aria-label={sidebarAberta ? 'Recolher menu' : 'Expandir menu'}
+              aria-expanded={sidebarAberta}
             >
               {sidebarAberta ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
             </button>
 
             <button
+              aria-label="Importar NF-e (XML)"
+              title="Importar NF-e (XML)"
               onClick={() => setSecaoAtiva('nfe')}
               className="flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl text-xs font-bold bg-[#0E5C4C] text-white hover:bg-[#0A4A3D] transition-all shadow-xs cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>Importar NF-e (XML)</span>
+              <span className="hidden lg:inline">Importar NF-e (XML)</span>
             </button>
 
             <button
+              aria-label="Nova Transferência"
+              title="Nova Transferência"
               onClick={() => setSecaoAtiva('transferencias')}
               className="hidden sm:flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-900 text-white transition-all shadow-xs cursor-pointer"
             >
               <ArrowRightLeft className="w-3.5 h-3.5" />
-              <span>Nova Transferência</span>
+              <span className="hidden lg:inline">Nova Transferência</span>
             </button>
 
             <button
+              aria-label="Exportar Despesas Hub"
+              title="Exportar Despesas Hub"
               onClick={() => setSecaoAtiva('despesas_hub')}
               className="hidden md:flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition-all shadow-xs cursor-pointer"
             >
               <FileSpreadsheet className="w-3.5 h-3.5" />
-              <span>Exportar Despesas Hub</span>
+              <span className="hidden lg:inline">Exportar Despesas Hub</span>
             </button>
           </div>
         }
       />
 
-      {/* Backdrop Mobile Transparente com Blur */}
-      {sidebarAberta && (
-        <div
-          onClick={() => setSidebarAberta(false)}
-          className="fixed inset-0 bg-slate-900/20 backdrop-blur-xs z-40 lg:hidden transition-opacity"
-          aria-hidden="true"
-        />
-      )}
 
       {/* ========================================================================= */}
       {/* 2. CORPO PRINCIPAL COM SIDEBAR EXCLUSIVA DO PRODUTO */}
       {/* ========================================================================= */}
-      <div className="flex flex-1 overflow-hidden relative">
-        {/* Menu Lateral Colorido com a Cor do Módulo (Laranja Âmbar Logístico) */}
-        <aside
-          className={`
-            fixed lg:static inset-y-0 left-0 z-50 lg:z-30
-            ${sidebarAberta ? 'translate-x-0 w-72 lg:w-64 shadow-xl lg:shadow-none' : '-translate-x-full lg:translate-x-0 lg:w-0 lg:hidden'}
-            shrink-0 bg-[#0E5C4C]/[0.06] border-r border-[#0E5C4C]/20 flex flex-col justify-between transition-all duration-200 ease-in-out
-          `}
-        >
-          <nav className="p-3 space-y-1.5 flex-1 overflow-y-auto">
-            <div className="px-3 pb-2 text-[10px] font-bold text-[#0E5C4C] uppercase tracking-wider">
-              Menu de Estoque Central &amp; CD
-            </div>
-            {menuItens.map((item) => {
-              const Icone = item.icon;
-              const ativo = secaoAtiva === item.id;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => {
-                    setSecaoAtiva(item.id as SecaoModuloEstoque);
-                    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
-                      setSidebarAberta(false);
-                    }
-                  }}
-                  className={`w-full min-h-[44px] sm:min-h-[38px] flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all text-left cursor-pointer focus:ring-2 focus:ring-[#0E5C4C] focus:outline-none ${
-                    ativo
-                      ? 'bg-[#0E5C4C] text-white font-bold border border-[#0E5C4C] shadow-sm shadow-[#0E5C4C]/25'
-                      : 'text-slate-700 hover:bg-white/90 hover:text-[#0E5C4C] hover:shadow-2xs border border-transparent'
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <Icone
-                      className={`w-4 h-4 shrink-0 transition-colors ${
-                        ativo ? 'text-white' : 'text-[#0E5C4C]/80 group-hover:text-[#0E5C4C]'
-                      }`}
-                    />
-                    <span className="truncate">{item.label}</span>
-                  </div>
-                  {item.badge && (
-                    <span
-                      className={`text-[10px] px-2 py-0.5 rounded-full font-bold ml-2 shrink-0 ${
-                        ativo
-                          ? 'bg-white/20 text-white'
-                          : item.badgeCor || 'bg-[#0E5C4C]/[0.12] text-[#0E5C4C] border border-[#0E5C4C]/20'
-                      }`}
-                    >
-                      {item.badge}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </nav>
-
-          {/* Rodapé do Menu Exclusivo: Saída para o Hub Geral */}
-          <div className="p-3 border-t border-[#0E5C4C]/90 bg-[#0E5C4C]/90 space-y-2">
-            <Link
-              href="/"
-              className="flex items-center justify-center gap-2 w-full py-2.5 px-3 rounded-xl border border-[#0E5C4C]/20 bg-white text-[#0E5C4C] hover:text-[#0E5C4C] hover:bg-[#0A4A3D]/[0.08] text-xs font-bold transition-all shadow-2xs"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Voltar ao Hub de Módulos</span>
-            </Link>
-          </div>
-        </aside>
+      <div className="flex flex-1 relative overflow-x-clip">
+        <ModuloMenuLateral
+          moduloId="estoque-central"
+          titulo="Estoque Central & CD"
+          itens={menuItens}
+          ativoId={secaoAtiva}
+          onSelect={(id) => setSecaoAtiva(id as SecaoModuloEstoque)}
+          aberto={sidebarAberta}
+          onFechar={() => setSidebarAberta(false)}
+        />
 
         {/* Área Central de Conteúdo */}
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-6">
+        <main className="flex-1 min-w-0 p-4 lg:p-6 space-y-6">
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 text-xs text-slate-500 font-medium pb-2 border-b border-[#E0E0E0]">
             <span>Vigia Saúde</span>

@@ -1,6 +1,6 @@
 # Vigia Saúde 360 — Identidade Visual
 > Sistema Governamental de Custeio, Compras Públicas e Gestão Hospitalar
-> Design System v2.1.0 — substitui a v2.0.0 (cores de categoria saturadas)
+> Design System v2.2.0 — logo por módulo, menu lateral e cabeçalho padrão (cores da v2.1.0 inalteradas)
 
 ---
 
@@ -9,6 +9,8 @@
 A v1.0.0 (`#1A56DB`, Inter, cards multicoloridos por módulo) foi avaliada e descartada por parecer genérica — "SaaS azul de template". A v2.0.0 reduziu para 4 cores de categoria saturadas (que coincidiam numericamente com as cores de ação/status) a partir do esboço em [https://claude.ai/artifact/Rk8UxQdFTS2HQy8zwn3znH](https://claude.ai/artifact/Rk8UxQdFTS2HQy8zwn3znH) (Hub de Módulos + Compras &amp; Atas).
 
 **v2.1.0 (atual)** — as 4 cores de categoria ficam mais leves/menos saturadas e uma delas volta a ser azul (clínico, `#5B84B1`), a pedido explícito, para reforçar a leitura "saúde hospitalar" nos módulos assistenciais. Isso **revisa** a regra da v2.0 de "nunca reintroduzir azul": o que ficou proibido foi o azul institucional saturado `#1A56DB` da v1 dominando a tela inteira, não um tom de categoria pontual e suave. Cores de **ação** (`#0E5C4C` teal, `#C1622D` terracota) e de **status** (`#8A6A16` ocre, `#9C3B2E` tijolo) permanecem exatamente iguais — só a identidade de categoria (dot, tarja, tag regulatória, item de menu) mudou. Ver § 2.1 para a paleta completa e § 8 para o status do rollout nos 13 módulos (concluído).
+
+**v2.2.0** — padroniza a moldura de todo módulo, a partir da barra lateral da Escala Médica (a preferida), ajustada às regras deste guia. Três componentes novos em § 4: **Logo de Módulo** (uma marca por módulo, na família da logo Vigia), **Cabeçalho** (centralizado no hub, com a logo do módulo nos módulos) e **Menu lateral de módulo** (painel arredondado único para os 12 módulos). Nenhuma cor muda. Modelo no Figma para os próximos módulos: [Vigia Saúde 360 — Padrão de Módulos](https://www.figma.com/design/oNgeLR3Td97EmqdHqdkTuU).
 
 Princípios da mudança:
 - **Menos cor, mais hierarquia.** Um único acento de ação (teal) e um único acento de destaque (terracota), em vez de uma cor própria por módulo espalhada em ícones, fundos e bordas.
@@ -277,11 +279,51 @@ Substituem os cards com ícone colorido em bloco da v1. Estrutura:
 
 Fundo branco, borda `1px solid rgba(27,31,28,.12)`, raio `12px`, padding `22px`. **Nenhum ícone de card colorido de fundo** — a única cor viva no card é o dot de categoria e a métrica no footer.
 
+**v2.2:** o dot solto dá lugar à **Logo de Módulo** (md, 36px) ao lado do overline — o dot de categoria continua lá, no canto da logo. A logo é tinta, como a logo Vigia, então a regra acima vale: nada de bloco na cor do módulo.
+
 ---
 
 ### Painel de Destaque (hero de módulo central)
 
 Fundo `#1B1F1C` (tinta), texto papel, raio `16px`, padding `40px 48px`. Overline em terracota, H1 em Fraunces papel, CTA primário terracota + CTA outline papel. Usar **no máximo um por tela** — é o elemento que "grita", tudo mais no hub deve ficar quieto ao redor dele.
+
+---
+
+### Logo de Módulo (v2.2)
+
+Cada módulo tem uma marca própria, da **mesma família da logo Vigia Saúde 360**: quadrado em tinta `#1B1F1C` com o símbolo lucide em papel (traço `1.75`) e o **dot de categoria de 9px no canto** (anel branco de 2px). A cor de categoria continua restrita ao dot, como em § 2.1 — o quadrado nunca é pintado com a cor do módulo.
+
+| Tamanho | Lado / raio | Uso |
+|---|---|---|
+| `sm` | 28px / 8px | Cabeçalho do módulo |
+| `md` | 36px / 12px | Cartão de identidade do menu lateral, cards do hub |
+| `lg` | 40px / 12px | Destaques |
+
+Sobre fundo tinta (hero do hub) usa o tom **papel**: quadrado papel, símbolo tinta. Código: `nucleo/src/components/ModuloLogo.tsx` — `MODULO_LOGO_ICONE` é a fonte única módulo → símbolo; cabeçalho, menu lateral e hub leem dali.
+
+---
+
+### Cabeçalho (v2.2)
+
+- **Hub:** o conteúdo do cabeçalho acompanha a coluna central da página (`max-w-7xl`, respiro `16/24/32px`), então a marca começa no mesmo x do conteúdo.
+- **Módulo:** `marca Vigia Saúde 360 | Logo de Módulo sm + título + tag regulatória`, alinhado à borda do menu lateral (16px). A tag usa fundo 12% e borda 35% da categoria com **texto em tinta 75%** (a cor de categoria como texto não passa no contraste AA).
+- **Ações da página:** ícone + rótulo a partir de 1024px; abaixo, só o ícone, com `aria-label`. A faixa de ações encolhe e rola; o bloco de identidade tem largura mínima, então o título nunca vai a zero.
+- **Celular:** a Logo de Módulo ocupa o lugar da marca; "Ver Módulos" some, porque o rodapé do menu lateral já leva ao hub.
+
+---
+
+### Menu lateral de módulo (v2.2)
+
+Painel único para todos os módulos (`nucleo/src/components/ModuloMenuLateral.tsx`), com a estrutura da barra da Escala Médica ajustada a este guia:
+
+- **Painel:** branco, borda tinta 12%, raio `16px` (teto de § 7 — a Escala usava 24px), sombra baixa.
+- **Desktop:** 256px, fixo abaixo do cabeçalho (`top: 80px`, altura `100dvh − 96px`), sempre visível.
+- **Celular:** gaveta flutuante de 288px, **fechada ao abrir a página**, véu tinta 25%, sombra alta, botão fechar; escolher um item fecha a gaveta.
+- **Topo:** cartão de identidade em papel com a Logo de Módulo `md`, o nome em Fraunces e a tag regulatória.
+- **Item:** raio `12px`, 40px (desktop) / 44px (celular); **ativo em tinta com texto branco** (§ 5 — não na cor do módulo, como fazia a Escala); rótulo quebra em até 2 linhas em vez de cortar.
+- **Rodapé:** cartão de status opcional (prop `rodape`) + "Voltar ao Hub de Módulos".
+
+**Novo módulo — checklist:** (1) registrar o id em `ModuloId`/`MODULO_THEMES`; (2) escolher o símbolo em `MODULO_LOGO_ICONE`; (3) usar `<ModuloMenuLateral moduloId … />`; (4) contêiner `flex flex-1 relative overflow-x-clip` e `main` `flex-1 min-w-0 p-4 lg:p-6`; (5) estado do menu começa `false` e o botão de menu leva `aria-expanded`. O mesmo passo a passo, com os componentes prontos, está no [Figma](https://www.figma.com/design/oNgeLR3Td97EmqdHqdkTuU).
 
 ---
 
@@ -362,6 +404,7 @@ Na v1, cada módulo tinha um ícone grande dentro de um bloco colorido (`w-12 h-
 - Estado ativo: ícone em `#FFFFFF` sobre fundo `#1B1F1C` (não mais a cor do módulo).
 - Categoria é sinalizada pelo **dot de 9px** ao lado do label/overline, não pela cor do ícone.
 - Ícones seguem monocromáticos (tinta) em 95% dos casos; cor só aparece em badges/pills e no dot de categoria.
+- **Exceção v2.2 — Logo de Módulo:** o símbolo do módulo vai dentro de um quadrado em **tinta** (nunca na cor do módulo), como a logo Vigia. Vale só para a logo; ícones de navegação continuam sem bloco de fundo.
 
 ### Tamanhos Contextuais (inalterado da v1)
 

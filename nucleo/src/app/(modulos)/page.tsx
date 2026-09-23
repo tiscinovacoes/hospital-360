@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { PageHeader } from '@/components/PageHeader';
 import { MODULO_THEMES, ModuloId } from '@/components/ModuloLayoutShell';
+import { ModuloLogo } from '@/components/ModuloLogo';
 import {
   LayoutDashboard,
   ShoppingCart,
@@ -211,8 +212,11 @@ export default function HubModulosPage() {
       <div className="bg-[#1B1F1C] rounded-2xl p-6 sm:p-8 mb-8">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="max-w-2xl">
-            <span className="text-[11px] font-bold uppercase tracking-widest text-[#C1622D]">
-              Módulo central unificador
+            <span className="flex items-center gap-3">
+              <ModuloLogo moduloId="dashboard-executivo" tamanho="md" tom="papel" />
+              <span className="text-[11px] font-bold uppercase tracking-widest text-[#C1622D]">
+                Módulo central unificador
+              </span>
             </span>
 
             <h2 className="font-display font-semibold text-2xl sm:text-3xl text-[#F6F3EC] leading-tight mt-2">
@@ -328,8 +332,8 @@ export default function HubModulosPage() {
             >
               <div>
                 <div className="flex items-start justify-between gap-3">
-                  <span className="flex items-center gap-2">
-                    <span className={`w-[9px] h-[9px] rounded-full flex-shrink-0 ${theme.primaryBg}`} />
+                  <span className="flex items-center gap-2.5">
+                    <ModuloLogo moduloId={modulo.moduloId} tamanho="md" />
                     <span className="text-[10px] font-bold uppercase tracking-wider text-[#1B1F1C]/45">
                       {modulo.categoria === 'SUPRIMENTOS' && 'Suprimentos'}
                       {modulo.categoria === 'ASSISTENCIAL' && 'Assistencial'}

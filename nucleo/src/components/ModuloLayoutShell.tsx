@@ -27,6 +27,18 @@ export type ModuloId =
 
 export type ModuloCategoria = 'SUPRIMENTOS' | 'ASSISTENCIAL' | 'OPERACAO' | 'FINANCEIRO';
 
+/**
+ * Cor de categoria v2.1 em hex — fonte única para o dot de 9px, a logo de
+ * módulo e o menu lateral (IDENTIDADE_VISUAL (1).md § 2.1). Uso exclusivo de
+ * identidade: nunca em botão, badge de status ou elemento de ação.
+ */
+export const CATEGORIA_COR: Record<ModuloCategoria, string> = {
+  SUPRIMENTOS: '#4E9B8A',
+  ASSISTENCIAL: '#5B84B1',
+  OPERACAO: '#C99A4A',
+  FINANCEIRO: '#7C93A3',
+};
+
 export interface ModuloThemeConfig {
   id: ModuloId;
   nome: string;

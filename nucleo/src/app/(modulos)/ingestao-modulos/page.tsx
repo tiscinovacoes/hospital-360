@@ -199,7 +199,7 @@ export default function IngestaoModulosPage() {
   const roles = MODULO_ROLES_CATALOG['ingestao-modulos'];
   const [activeRole, setActiveRole] = useState<ModuloRole>(roles[0]);
   const [abaAtiva, setAbaAtiva] = useState<'conectores' | 'tabelas-sus' | 'dlq' | 'perfis'>('conectores');
-  const [sidebarAberta, setSidebarAberta] = useState(true);
+  const [sidebarAberta, setSidebarAberta] = useState(false);
   const menuItens: MenuLateralItem[] = [
     { id: 'conectores', label: 'Conectores & Módulos Legados', icon: Layers },
     { id: 'tabelas-sus', label: 'Bases Nacionais (SIGTAP/CMED)', icon: FileSpreadsheet },
@@ -354,6 +354,8 @@ export default function IngestaoModulosPage() {
               onClick={() => setSidebarAberta(!sidebarAberta)}
               className="lg:hidden p-2 min-h-[44px] min-w-[44px] rounded-xl text-slate-600 hover:bg-slate-100 transition-all cursor-pointer flex items-center justify-center"
               title={sidebarAberta ? 'Recolher menu' : 'Expandir menu'}
+              aria-label={sidebarAberta ? 'Recolher menu' : 'Expandir menu'}
+              aria-expanded={sidebarAberta}
             >
               {sidebarAberta ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
             </button>
@@ -393,17 +395,17 @@ export default function IngestaoModulosPage() {
         }
       />
 
-      <div className="flex flex-1 overflow-hidden relative">
+      <div className="flex flex-1 relative overflow-x-clip">
         <ModuloMenuLateral
           titulo="Ingestão & Conectores"
-          categoria="OPERACAO"
+          moduloId="ingestao-modulos"
           itens={menuItens}
           ativoId={abaAtiva}
           onSelect={(id) => setAbaAtiva(id as typeof abaAtiva)}
           aberto={sidebarAberta}
           onFechar={() => setSidebarAberta(false)}
         />
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-6">
+        <main className="flex-1 min-w-0 p-4 lg:p-6 space-y-6">
       {/* PERFIS & MATRIZ RBAC — só aparece na seção "Perfis" do menu lateral, não em todas as telas */}
       {abaAtiva === 'perfis' && (
         <ModuloRbacBar

@@ -113,7 +113,6 @@ export function inferirEstacaoJornada(origem: ModuloOrigem, centroCusto?: string
 // O campo é declarado no globalThis para sobreviver ao hot-reload do dev
 // server sem precisar de `any`.
 declare global {
-  // eslint-disable-next-line no-var
   var __hospital360_despesasStore: { despesas: DespesaItem[] } | undefined;
 }
 

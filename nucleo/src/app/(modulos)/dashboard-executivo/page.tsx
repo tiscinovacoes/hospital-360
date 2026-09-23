@@ -53,7 +53,7 @@ export default function ExecutiveDashboardPage() {
   const roles = MODULO_ROLES_CATALOG['dashboard-executivo'];
   const [activeRole, setActiveRole] = useState<ModuloRole>(roles[0]);
   const [abaAtiva, setAbaAtiva] = useState<AbaExecutiva>('jornada');
-  const [sidebarAberta, setSidebarAberta] = useState(true);
+  const [sidebarAberta, setSidebarAberta] = useState(false);
   const menuItens: MenuLateralItem[] = [
     { id: 'jornada', label: 'Custo Door-to-Door & Jornada 360°', icon: Activity },
     { id: 'desfechos', label: 'Desfechos Clínicos & ONA', icon: Stethoscope },
@@ -111,6 +111,8 @@ export default function ExecutiveDashboardPage() {
               onClick={() => setSidebarAberta(!sidebarAberta)}
               className="lg:hidden p-2 min-h-[44px] min-w-[44px] rounded-xl text-slate-600 hover:bg-slate-100 transition-all cursor-pointer flex items-center justify-center"
               title={sidebarAberta ? 'Recolher menu' : 'Expandir menu'}
+              aria-label={sidebarAberta ? 'Recolher menu' : 'Expandir menu'}
+              aria-expanded={sidebarAberta}
             >
               {sidebarAberta ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
             </button>
@@ -137,17 +139,17 @@ export default function ExecutiveDashboardPage() {
         }
       />
 
-      <div className="flex flex-1 overflow-hidden relative">
+      <div className="flex flex-1 relative overflow-x-clip">
         <ModuloMenuLateral
           titulo="Custo do Paciente"
-          categoria="FINANCEIRO"
+          moduloId="dashboard-executivo"
           itens={menuItens}
           ativoId={abaAtiva}
           onSelect={(id) => setAbaAtiva(id as AbaExecutiva)}
           aberto={sidebarAberta}
           onFechar={() => setSidebarAberta(false)}
         />
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-6">
+        <main className="flex-1 min-w-0 p-4 lg:p-6 space-y-6">
       {/* Toast Flutuante Asséptico (Sem preto) */}
       {toastMessage && (
         <div className="fixed top-20 right-6 z-50 bg-white text-slate-800 px-5 py-3.5 rounded-xl shadow-xl border border-[#1B1F1C]/30 flex items-center gap-3 animate-fadeIn">

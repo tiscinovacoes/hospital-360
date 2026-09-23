@@ -126,7 +126,7 @@ export default function LabHubPage() {
   const roles = MODULO_ROLES_CATALOG['laboratorio'];
   const [activeRole, setActiveRole] = useState<ModuloRole>(roles[0]);
   const [abaAtiva, setAbaAtiva] = useState<'bancada' | 'panico' | 'fhir' | 'perfis'>('bancada');
-  const [sidebarAberta, setSidebarAberta] = useState(true);
+  const [sidebarAberta, setSidebarAberta] = useState(false);
   const menuItens: MenuLateralItem[] = [
     { id: 'bancada', label: 'Bancada Técnica & Amostras', icon: FlaskConical },
     { id: 'panico', label: 'Valores de Pânico', icon: AlertCircle },
@@ -188,24 +188,28 @@ export default function LabHubPage() {
               onClick={() => setSidebarAberta(!sidebarAberta)}
               className="lg:hidden p-2 min-h-[44px] min-w-[44px] rounded-xl text-slate-600 hover:bg-slate-100 transition-all cursor-pointer flex items-center justify-center"
               title={sidebarAberta ? 'Recolher menu' : 'Expandir menu'}
+              aria-label={sidebarAberta ? 'Recolher menu' : 'Expandir menu'}
+              aria-expanded={sidebarAberta}
             >
               {sidebarAberta ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
             </button>
             <button
+              aria-label="Ver Payload FHIR R4"
+              title="Ver Payload FHIR R4"
               onClick={() => setShowFhirJsonModal(true)}
               className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] text-xs font-bold text-slate-700 bg-white border border-[#E0E0E0] rounded-xl hover:bg-slate-50 transition-all shadow-sm"
             >
               <Sparkles className="w-4 h-4 text-[#C1622D]" />
-              <span>Ver Payload FHIR R4</span>
+              <span className="hidden lg:inline">Ver Payload FHIR R4</span>
             </button>
           </div>
         }
       />
 
-      <div className="flex flex-1 overflow-hidden relative">
+      <div className="flex flex-1 relative overflow-x-clip">
         <ModuloMenuLateral
           titulo="Laboratório & LIS"
-          categoria="ASSISTENCIAL"
+          moduloId="laboratorio"
           itens={menuItens}
           ativoId={abaAtiva}
           onSelect={(id) => setAbaAtiva(id as typeof abaAtiva)}
@@ -213,7 +217,7 @@ export default function LabHubPage() {
           onFechar={() => setSidebarAberta(false)}
         />
 
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-6">
+        <main className="flex-1 min-w-0 p-4 lg:p-6 space-y-6">
       {/* PERFIS & MATRIZ RBAC — só aparece na seção "Perfis" do menu lateral, não em todas as telas */}
       {abaAtiva === 'perfis' && (
         <ModuloRbacBar

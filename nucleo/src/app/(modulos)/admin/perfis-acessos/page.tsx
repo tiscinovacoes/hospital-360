@@ -155,12 +155,12 @@ export default function CentralPerfisAcessosPage() {
       <div className="bg-white rounded-2xl border border-[#E0E0E0] p-4 mb-6 shadow-xs flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
           {/* Seletor Módulo */}
-          <div className="flex items-center gap-1.5 text-xs">
+          <div className="flex items-center gap-1.5 text-xs min-w-0 max-w-full">
             <span className="font-bold text-slate-600">Módulo:</span>
             <select
               value={moduloFiltro}
               onChange={e => setModuloFiltro(e.target.value)}
-              className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 outline-none min-h-[44px]"
+              className="min-w-0 max-w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 outline-none min-h-[44px]"
             >
               <option value="TODOS">Todos os Módulos (12)</option>
               {MODULOS_INFO.map(m => (
@@ -175,7 +175,7 @@ export default function CentralPerfisAcessosPage() {
             <select
               value={nivelFiltro}
               onChange={e => setNivelFiltro(e.target.value)}
-              className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 outline-none min-h-[44px]"
+              className="min-w-0 max-w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 outline-none min-h-[44px]"
             >
               <option value="TODOS">Todos os Níveis</option>
               <option value="operacional">Operacional</option>

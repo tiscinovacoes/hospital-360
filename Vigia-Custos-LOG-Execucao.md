@@ -565,3 +565,53 @@ data-criacao: 2026-08-12
 
 ### Próximos Passos Previstos:
 - Restam 273 warnings de `no-unused-vars` (imports e variáveis órfãs) — limpeza mecânica, sem erro associado.
+
+
+---
+
+## [2026-09-23 18:40] - v2.5.6 (Padrão Único de Módulo: Logo por Módulo, Menu Lateral Arredondado e Cabeçalho Centralizado + Modelo no Figma)
+
+### Data e Hora:
+- 23/09/2026 às 18:40 (Fuso de Campo Grande / MS)
+
+### Versão / Etapa da Alteração:
+- v2.5.6 — Design System v2.2.0: moldura padrão para todos os módulos do `nucleo/`, modelada no Figma para os próximos
+
+### Pedido:
+Usar o Figma para ajustar e modelar os próximos módulos; centralizar o cabeçalho; vincular uma logo a cada módulo; manter o padrão arredondado (o da Escala Médica) em todos os menus de módulo; padronizar os módulos.
+
+### Resumo do que foi feito:
+
+1. **Diagnóstico — três padrões de menu convivendo**:
+   - 7 módulos usavam o componente `ModuloMenuLateral` (reto, colado na borda); 5 (Compras, Escala, Estoque, Farmácia, Leitos) tinham barra própria escrita à mão, cada uma com cores diferentes.
+   - A barra da Escala Médica (a referência) violava 3 regras do guia: raio 24px (teto é 16px), item ativo na cor do módulo (guia: tinta) e dourado `#8A6A16` da v2.0 (substituído).
+   - **Bug de UX em 11 dos 12 módulos:** no celular a gaveta do menu abria já aberta, cobrindo o conteúdo (`useState(true)`).
+
+2. **Logo de Módulo** (`nucleo/src/components/ModuloLogo.tsx`, novo): quadrado em tinta + símbolo lucide em papel + dot de categoria de 9px no canto, na família da logo Vigia. Registro único `MODULO_LOGO_ICONE` (14 módulos, incluindo Perfis & Acessos). Usada no cabeçalho, no menu lateral, nos cards e no painel de destaque do hub.
+
+3. **Menu lateral padrão** (`ModuloMenuLateral.tsx`, reescrito): painel flutuante arredondado (raio 16px) com cartão de identidade (logo + nome + tag regulatória), itens com raio 12px, ativo em tinta, rótulos quebrando em até 2 linhas, rodapé com status opcional. Desktop: fixo abaixo do cabeçalho enquanto a página rola. Celular: gaveta flutuante fechada por padrão, com botão fechar. **Os 12 módulos migrados**; os 5 menus avulsos foram removidos.
+
+4. **Cabeçalho** (`VigiaSidebarLayout.tsx`): no hub, o conteúdo do cabeçalho passou a acompanhar a coluna central da página; nos módulos, a logo do módulo entrou no lugar do separador "/". Corrigidos: o título do módulo sumia no celular quando havia ações na página; a rota `/admin/perfis-acessos` exibia o tema e a tag de Compras (caía no fallback); tag regulatória com contraste insuficiente (texto em cor de categoria → tinta 75%).
+
+5. **Padronização das ações do cabeçalho**: rótulo visível a partir de 1024px, só ícone abaixo disso (com `aria-label`) — 11 botões em 6 módulos alinhados ao que 3 módulos já faziam. Botão de menu com texto único e `aria-expanded` nos 12.
+
+6. **Figma — modelo para os próximos módulos**: arquivo [Vigia Saúde 360 — Padrão de Módulos](https://www.figma.com/design/oNgeLR3Td97EmqdHqdkTuU) com: variáveis de cor do guia (incluindo tokens de alfa e o modo de superfície clara/escura do traço dos ícones), 27 símbolos, componente **Logo de Módulo** (categoria × tamanho, símbolo trocável) e a folha com as 14 logos, componentes **Item de Menu** e **Menu Lateral de Módulo**, template de módulo desktop 1440 e celular 390, e as regras com o checklist de novo módulo.
+
+7. **Guia de identidade** (`IDENTIDADE_VISUAL (1).md`): v2.2.0 com as seções Logo de Módulo, Cabeçalho e Menu lateral de módulo em § 4, exceção da logo em § 5 e link para o Figma.
+
+8. **Refluxo WCAG em 320px**: o seletor de filtro de Perfis & Acessos estourava a largura (269px num viewport de 320px); corrigido.
+
+### Arquivos Modificados/Criados:
+- `nucleo/src/components/ModuloLogo.tsx` (novo), `ModuloMenuLateral.tsx` (reescrito), `VigiaSidebarLayout.tsx`, `ModuloLayoutShell.tsx` (`CATEGORIA_COR` exportado)
+- `nucleo/src/app/(modulos)/page.tsx` (hub) e os 12 módulos em `nucleo/src/app/(modulos)/*/page.tsx`, mais `admin/perfis-acessos/page.tsx`
+- `nucleo/src/lib/hubDespesasStore.ts` (diretiva de lint desnecessária removida)
+- `IDENTIDADE_VISUAL (1).md`, `Vigia-Custos-LOG-Execucao.md`
+
+### Verificação:
+- `tsc --noEmit` → 0 erros; ESLint → 0 erros (avisos: 273, os mesmos de antes — nenhum novo); `next build` → sucesso
+- Navegador: 21/21 rotas sem erro de console e sem estouro horizontal em 1440, 768 e 375px; cabeçalho sem falhas em 320, 390, 768, 1024 e 1440px; WCAG (alvos ≥ 24px e nomes acessíveis) sem ofensores
+- Interação do menu nos 12 módulos: fechado ao abrir, abre pelo botão com `aria-expanded`, fecha no X e ao escolher um item, item ativo marcado, painel fixo a 80px ao rolar no desktop — 12/12
+
+### Próximos Passos Previstos:
+- Decisão pendente com o usuário: "centralizar o cabeçalho" foi aplicado como alinhar o cabeçalho do hub à coluna central. A alternativa (título centralizado entre marca e ações) fica registrada caso seja essa a intenção.
+- Restam os 273 avisos de `no-unused-vars` anteriores a esta entrega.

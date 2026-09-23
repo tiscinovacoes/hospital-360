@@ -25,7 +25,8 @@ import {
   Layers,
   UserCog
 } from 'lucide-react';
-import { ModuloId, MODULO_THEMES } from './ModuloLayoutShell';
+import { CATEGORIA_COR, ModuloId, MODULO_THEMES } from './ModuloLayoutShell';
+import { ModuloLogo, ModuloLogoId, categoriaDoModulo } from './ModuloLogo';
 
 interface NavItem {
   id: ModuloId | 'home' | 'admin-perfis';
@@ -168,109 +169,127 @@ export function VigiaSidebarLayout({
   const pathname = usePathname();
   const isHomePage = pathname === '/';
 
-  // Determina o tema do módulo atual (por prop ou pathname)
-  const resolvedModuloId: ModuloId = React.useMemo(() => {
-    if (moduloId && MODULO_THEMES[moduloId]) return moduloId;
-    if (pathname) {
-      const match = (Object.keys(MODULO_THEMES) as ModuloId[]).find(
-        (id) => pathname === `/${id}` || pathname.startsWith(`/${id}/`)
-      );
-      if (match) return match;
-    }
-    return 'compras-publicas';
+  // Módulo atual: pela prop ou pelo href do registro. Casar pelo href (e não
+  // pelo id) cobre rotas aninhadas como /admin/perfis-acessos. Antes, rota sem
+  // correspondência caía em "compras-publicas" e mostrava a tag errada.
+  const moduloAtual = React.useMemo(() => {
+    if (moduloId) return MODULOS_SISTEMA.find((m) => m.id === moduloId);
+    return MODULOS_SISTEMA.find(
+      (m) => m.href !== '/' && (pathname === m.href || pathname?.startsWith(`${m.href}/`))
+    );
   }, [moduloId, pathname]);
 
-  const currentTheme = MODULO_THEMES[resolvedModuloId] || MODULO_THEMES['compras-publicas'];
+  const logoId = moduloAtual && moduloAtual.id !== 'home' ? (moduloAtual.id as ModuloLogoId) : null;
+  const tema = logoId && logoId !== 'admin-perfis' ? MODULO_THEMES[logoId] : null;
+  const tagModulo = tema?.tagRegulatoria ?? (logoId === 'admin-perfis' ? 'LGPD / RBAC' : undefined);
+  const corCategoria = logoId ? CATEGORIA_COR[categoriaDoModulo(logoId)] : null;
+  const tituloAtual =
+    activeTitle || tema?.nome || moduloAtual?.name || 'Hub de Módulos & Catálogo de Soluções';
 
   return (
     <div className="min-h-screen bg-[#F6F3EC] flex flex-col text-[#1B1F1C] antialiased font-sans">
       {/* HEADER SUPERIOR UNIFICADO DE PONTA A PONTA */}
-      <header className="h-16 bg-white/95 backdrop-blur-md border-b border-[#1B1F1C]/12 sticky top-0 z-30 px-3 sm:px-6 lg:px-8 flex items-center justify-between gap-2 sm:gap-3 flex-shrink-0">
-        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-          {/* Brand Vigia Saúde 360 */}
-          <Link href="/" className="flex items-center gap-2.5 group cursor-pointer shrink-0" title="Ir para o Hub de Módulos">
-            <div className="w-9 h-9 flex-shrink-0 bg-[#1B1F1C] rounded-xl flex items-center justify-center text-[#F6F3EC] shadow-sm group-hover:bg-[#0E5C4C] transition-colors">
-              <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-                <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-1 6h2v4h4v2h-4v4h-2v-4H7v-2h4V7z" />
-              </svg>
-            </div>
-            <div className="hidden sm:flex flex-col leading-tight">
-              <span className="font-display font-bold text-sm tracking-tight text-[#1B1F1C]">
-                Vigia <span className="text-[#0E5C4C]">Saúde 360</span>
-              </span>
-            </div>
-          </Link>
-
-          {/* Separador e Identificação do Módulo Atual */}
-          <span className="text-[#1B1F1C]/25 text-sm font-light hidden sm:inline">/</span>
-
-          <div className="flex items-center gap-2 min-w-0">
-            <h1 className="text-xs sm:text-sm font-bold text-[#1B1F1C] truncate">
-              {activeTitle || (isHomePage ? 'Hub de Módulos & Catálogo de Soluções' : currentTheme.nome)}
-            </h1>
-
-            {!isHomePage && currentTheme.tagRegulatoria && (
-              <span
-                className={`text-[9px] font-bold px-2 py-0.5 rounded-full border hidden sm:inline-flex shrink-0 ${currentTheme.lightBg} ${currentTheme.primaryText} ${currentTheme.lightBorder}`}
-              >
-                {currentTheme.tagRegulatoria}
-              </span>
-            )}
-
-            {isHomePage && (
-              <span className="text-[9px] font-bold px-2 py-0.5 rounded-full border bg-emerald-50 text-emerald-800 border-emerald-200 hidden sm:inline-flex shrink-0">
-                Módulos Independentes
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* Ações da página: faixa própria que encolhe e rola na horizontal.
-            Sem isto, botões de ação longos empurram o header para além da
-            viewport e provocam scroll horizontal na página inteira no mobile. */}
-        {actions && (
-          <div className="flex items-center gap-2 min-w-0 overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {actions}
-          </div>
-        )}
-
-        {/* Ações fixas do produto (Hub, Notificações, Perfil) */}
-        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-          {!isHomePage && (
+      <header className="h-16 bg-white/95 backdrop-blur-md border-b border-[#1B1F1C]/12 sticky top-0 z-30 flex-shrink-0">
+        <div
+          className={`h-full flex items-center justify-between gap-2 sm:gap-3 ${
+            isHomePage ? 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8' : 'px-3 sm:px-4'
+          }`}
+        >
+          <div
+            className={`flex items-center gap-2 sm:gap-3 flex-1 ${
+              logoId ? 'min-w-[8.5rem] sm:min-w-[13rem] lg:min-w-[20rem]' : 'min-w-0'
+            }`}
+          >
+            {/* Brand Vigia Saúde 360 */}
             <Link
               href="/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-1.5 px-2.5 lg:px-3 py-2 min-h-[44px] min-w-[44px] rounded-xl bg-white hover:bg-[#F6F3EC] text-[#1B1F1C]/75 hover:text-[#1B1F1C] text-xs font-bold border border-[#1B1F1C]/12 transition-all shadow-2xs shrink-0"
-              title="Abrir o Hub de Módulos em nova aba"
-              aria-label="Abrir o Hub de Módulos em nova aba"
+              className={`items-center gap-2.5 group cursor-pointer shrink-0 ${logoId ? 'hidden sm:flex' : 'flex'}`}
+              title="Ir para o Hub de Módulos"
             >
-              <Layers className="w-4 h-4 text-[#0E5C4C] shrink-0" />
-              <span className="hidden lg:inline">Ver Módulos</span>
+              <div className="w-9 h-9 flex-shrink-0 bg-[#1B1F1C] rounded-xl flex items-center justify-center text-[#F6F3EC] shadow-sm group-hover:bg-[#0E5C4C] transition-colors">
+                <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+                  <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-1 6h2v4h4v2h-4v4h-2v-4H7v-2h4V7z" />
+                </svg>
+              </div>
+              <div className={`${logoId ? 'hidden lg:flex' : 'hidden sm:flex'} flex-col leading-tight`}>
+                <span className="font-display font-bold text-sm tracking-tight text-[#1B1F1C]">
+                  Vigia <span className="text-[#0E5C4C]">Saúde 360</span>
+                </span>
+              </div>
             </Link>
-          )}
 
-          <div className="h-5 w-px bg-[#1B1F1C]/12 hidden sm:block" />
+            {/* Separador + identidade do módulo: logo, título e tag regulatória */}
+            <span className="hidden sm:block h-6 w-px bg-[#1B1F1C]/12 shrink-0" aria-hidden="true" />
 
-          {/* Sino de Notificações com touch target 44px */}
-          <div className="relative">
-            <button
-              className="w-10 h-10 min-w-[40px] min-h-[40px] sm:min-w-[44px] sm:min-h-[44px] rounded-xl bg-white hover:bg-[#F6F3EC] border border-[#1B1F1C]/12 text-[#1B1F1C]/70 flex items-center justify-center transition-colors cursor-pointer"
-              title="Notificações Operacionais"
-            >
-              <Bell className="w-4 h-4" />
-              <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#9C3B2E] ring-2 ring-white animate-pulse" />
-            </button>
+            <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+              {logoId && <ModuloLogo moduloId={logoId} tamanho="sm" />}
+
+              <h1 className="text-xs sm:text-sm font-bold text-[#1B1F1C] truncate">{tituloAtual}</h1>
+
+              {tagModulo && corCategoria && (
+                <span
+                  className="text-[10px] font-semibold px-2 py-0.5 rounded-full border hidden xl:inline-flex shrink-0 text-[#1B1F1C]/75"
+                  style={{ backgroundColor: `${corCategoria}1F`, borderColor: `${corCategoria}59` }}
+                >
+                  {tagModulo}
+                </span>
+              )}
+
+              {isHomePage && (
+                <span className="text-[9px] font-bold px-2 py-0.5 rounded-full border bg-emerald-50 text-emerald-800 border-emerald-200 hidden sm:inline-flex shrink-0">
+                  Módulos Independentes
+                </span>
+              )}
+            </div>
           </div>
 
-          {/* Avatar do Usuário Conectado */}
-          <div className="flex items-center gap-2 pl-1 sm:pl-2">
-            <div className="w-9 h-9 min-w-[36px] min-h-[36px] sm:w-10 sm:h-10 rounded-xl bg-[#1B1F1C] text-[#F6F3EC] font-black text-xs flex items-center justify-center shadow-sm">
-              JS
+          {/* Ações da página: faixa própria que encolhe e rola na horizontal.
+              Sem isto, botões de ação longos empurram o header para além da
+              viewport e provocam scroll horizontal na página inteira no mobile. */}
+          {actions && (
+            <div className="flex items-center gap-2 min-w-0 overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {actions}
             </div>
-            <div className="hidden xl:block text-left leading-tight">
-              <span className="text-xs font-bold text-[#1B1F1C] block">João Silva</span>
-              <span className="text-[10px] text-[#1B1F1C]/45 block">Gestor Hospitalar</span>
+          )}
+
+          {/* Ações fixas do produto (Hub, Notificações, Perfil) */}
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            {!isHomePage && (
+              <Link
+                href="/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hidden sm:inline-flex items-center justify-center gap-1.5 px-2.5 lg:px-3 py-2 min-h-[44px] min-w-[44px] rounded-xl bg-white hover:bg-[#F6F3EC] text-[#1B1F1C]/75 hover:text-[#1B1F1C] text-xs font-bold border border-[#1B1F1C]/12 transition-all shadow-2xs shrink-0"
+                title="Abrir o Hub de Módulos em nova aba"
+                aria-label="Abrir o Hub de Módulos em nova aba"
+              >
+                <Layers className="w-4 h-4 text-[#0E5C4C] shrink-0" />
+                <span className="hidden lg:inline">Ver Módulos</span>
+              </Link>
+            )}
+
+            <div className="h-5 w-px bg-[#1B1F1C]/12 hidden sm:block" />
+
+            {/* Sino de Notificações com touch target 44px */}
+            <div className="relative">
+              <button
+                className="w-10 h-10 min-w-[40px] min-h-[40px] sm:min-w-[44px] sm:min-h-[44px] rounded-xl bg-white hover:bg-[#F6F3EC] border border-[#1B1F1C]/12 text-[#1B1F1C]/70 flex items-center justify-center transition-colors cursor-pointer"
+                title="Notificações Operacionais"
+              >
+                <Bell className="w-4 h-4" />
+                <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#9C3B2E] ring-2 ring-white animate-pulse" />
+              </button>
+            </div>
+
+            {/* Avatar do Usuário Conectado */}
+            <div className="flex items-center gap-2 pl-1 sm:pl-2">
+              <div className="w-9 h-9 min-w-[36px] min-h-[36px] sm:w-10 sm:h-10 rounded-xl bg-[#1B1F1C] text-[#F6F3EC] font-black text-xs flex items-center justify-center shadow-sm">
+                JS
+              </div>
+              <div className="hidden xl:block text-left leading-tight">
+                <span className="text-xs font-bold text-[#1B1F1C] block">João Silva</span>
+                <span className="text-[10px] text-[#1B1F1C]/45 block">Gestor Hospitalar</span>
+              </div>
             </div>
           </div>
         </div>
