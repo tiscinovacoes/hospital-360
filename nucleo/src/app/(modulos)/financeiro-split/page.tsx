@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { PageHeader } from '@/components/PageHeader';
 import { ModuloRbacBar } from '@/components/ModuloRbacBar';
+import { ModuloMenuLateral, MenuLateralItem } from '@/components/ModuloMenuLateral';
 import { KpiCard } from '@/components/KpiCard';
 import { ModuloRole, MODULO_ROLES_CATALOG, hasPermission } from '@/types/rbac';
 import {
@@ -28,7 +29,8 @@ import {
   Lock,
   X,
   Info,
-  Check
+  Check,
+  Menu
 } from 'lucide-react';
 
 type AbaFinanceiro = 
@@ -173,6 +175,15 @@ export default function FinanceiroSplitPage() {
   const roles = MODULO_ROLES_CATALOG['financeiro-split'];
   const [activeRole, setActiveRole] = useState<ModuloRole>(roles[0]);
   const [abaAtiva, setAbaAtiva] = useState<AbaFinanceiro>('split');
+  const [sidebarAberta, setSidebarAberta] = useState(true);
+  const menuItens: MenuLateralItem[] = [
+    { id: 'split', label: 'Split de Honorários (PIX D+0)', icon: Split },
+    { id: 'faturamento-sus', label: 'Faturamento SUS (BPA / AIH)', icon: FileText },
+    { id: 'glosas', label: 'Auditoria & Recursos de Glosas', icon: ShieldAlert },
+    { id: 'centro-custos', label: 'Centro de Custos & Rateio', icon: DollarSign },
+    { id: 'conciliacao', label: 'Conciliação Bancária (CNAB 240)', icon: CheckCircle2 },
+    { id: 'perfis', label: 'Perfis & Matriz RBAC', icon: Lock },
+  ];
   const [transactions, setTransactions] = useState<TransactionSplit[]>(mockTransactions);
   const [successNotice, setSuccessNotice] = useState<string | null>(null);
 
@@ -216,6 +227,13 @@ export default function FinanceiroSplitPage() {
         activeSubtitle="Split instantâneo Hyperswitch (85/15%), faturamento BPA/AIH SIGTAP e gestão de glosas"
         actions={
           <div className="flex items-center gap-2.5">
+            <button
+              onClick={() => setSidebarAberta(!sidebarAberta)}
+              className="lg:hidden p-2 min-h-[44px] min-w-[44px] rounded-xl text-slate-600 hover:bg-slate-100 transition-all cursor-pointer flex items-center justify-center"
+              title={sidebarAberta ? 'Recolher menu' : 'Expandir menu'}
+            >
+              {sidebarAberta ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            </button>
             <Link
               href="/"
               className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] text-xs font-bold text-slate-700 bg-white border border-[#E0E0E0] rounded-xl hover:bg-slate-50 transition-all shadow-xs"
@@ -233,6 +251,18 @@ export default function FinanceiroSplitPage() {
           </div>
         }
       />
+
+      <div className="flex flex-1 overflow-hidden relative">
+        <ModuloMenuLateral
+          titulo="Financeiro & Split"
+          categoria="FINANCEIRO"
+          itens={menuItens}
+          ativoId={abaAtiva}
+          onSelect={(id) => setAbaAtiva(id as AbaFinanceiro)}
+          aberto={sidebarAberta}
+          onFechar={() => setSidebarAberta(false)}
+        />
+        <main className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-6">
       {/* Feedback de Notificação */}
       {successNotice && (
         <div className="mb-4 p-3.5 bg-[#1B1F1C]/[0.08] border border-[#1B1F1C]/30 rounded-2xl flex items-center justify-between text-xs text-[#33382F] shadow-sm animate-in fade-in duration-200">
@@ -295,35 +325,6 @@ export default function FinanceiroSplitPage() {
           icon={<Receipt className="w-5 h-5 text-[#1B1F1C]" />}
           trend={{ text: "100% Escrituradas", isPositive: true }}
         />
-      </div>
-
-      {/* SUB-NAVEGAÇÃO POR ABAS */}
-      <div className="bg-white border border-[#E0E0E0] rounded-2xl p-1.5 mb-6 shadow-xs flex items-center gap-1 overflow-x-auto">
-        {[
-          { id: 'split', label: '1. Split de Honorários (PIX D+0)', icon: Split },
-          { id: 'faturamento-sus', label: '2. Faturamento SUS (BPA / AIH)', icon: FileText },
-          { id: 'glosas', label: '3. Auditoria & Recursos de Glosas', icon: ShieldAlert },
-          { id: 'centro-custos', label: '4. Centro de Custos & Rateio', icon: DollarSign },
-          { id: 'conciliacao', label: '5. Conciliação Bancária (CNAB 240)', icon: CheckCircle2 },
-          { id: 'perfis', label: '6. Perfis & Matriz RBAC', icon: Lock }
-        ].map((tab) => {
-          const Icon = tab.icon;
-          const isActive = abaAtiva === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setAbaAtiva(tab.id as AbaFinanceiro)}
-              className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap min-h-[44px] touch-manipulation ${
-                isActive
-                  ? 'bg-[#1B1F1C] text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-              }`}
-            >
-              <Icon className="w-4 h-4 shrink-0" />
-              <span>{tab.label}</span>
-            </button>
-          );
-        })}
       </div>
 
       {/* ABA 1: SPLIT DE HONORÁRIOS */}
@@ -581,6 +582,8 @@ export default function FinanceiroSplitPage() {
           </div>
         </div>
       )}
+        </main>
+      </div>
     </>
   );
 }

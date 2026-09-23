@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { PageHeader } from '@/components/PageHeader';
 import { ModuloRbacBar } from '@/components/ModuloRbacBar';
+import { ModuloMenuLateral, MenuLateralItem } from '@/components/ModuloMenuLateral';
 import { KpiCard } from '@/components/KpiCard';
 import { ModuloRole, MODULO_ROLES_CATALOG, hasPermission } from '@/types/rbac';
 import {
@@ -36,7 +37,8 @@ import {
   Lock,
   Layers,
   Upload,
-  RefreshCw
+  RefreshCw,
+  Menu
 } from 'lucide-react';
 
 type AbaExecutiva = 
@@ -51,6 +53,15 @@ export default function ExecutiveDashboardPage() {
   const roles = MODULO_ROLES_CATALOG['dashboard-executivo'];
   const [activeRole, setActiveRole] = useState<ModuloRole>(roles[0]);
   const [abaAtiva, setAbaAtiva] = useState<AbaExecutiva>('jornada');
+  const [sidebarAberta, setSidebarAberta] = useState(true);
+  const menuItens: MenuLateralItem[] = [
+    { id: 'jornada', label: 'Custo Door-to-Door & Jornada 360°', icon: Activity },
+    { id: 'desfechos', label: 'Desfechos Clínicos & ONA', icon: Stethoscope },
+    { id: 'compras', label: 'Eficiência em Compras vs CMED', icon: TrendingUp },
+    { id: 'simulador', label: 'Simulador Estratégico', icon: Sliders },
+    { id: 'conectores_hub', label: 'Ingestor & Conectores de Módulos', icon: FileSpreadsheet },
+    { id: 'perfis', label: 'Perfis & Matriz RBAC', icon: Lock },
+  ];
   const [showModalImportarDespesas, setShowModalImportarDespesas] = useState(false);
   const [arquivoUploadNome, setArquivoUploadNome] = useState<string | null>(null);
   const [importando, setImportando] = useState(false);
@@ -97,6 +108,13 @@ export default function ExecutiveDashboardPage() {
         actions={
           <div className="flex items-center gap-2">
             <button
+              onClick={() => setSidebarAberta(!sidebarAberta)}
+              className="lg:hidden p-2 min-h-[44px] min-w-[44px] rounded-xl text-slate-600 hover:bg-slate-100 transition-all cursor-pointer flex items-center justify-center"
+              title={sidebarAberta ? 'Recolher menu' : 'Expandir menu'}
+            >
+              {sidebarAberta ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            </button>
+            <button
               onClick={() => setShowModalImportarDespesas(true)}
               className="inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[44px] rounded-xl bg-[#0E5C4C] hover:bg-[#0A4A3D] text-white text-xs font-bold shadow-sm transition-all cursor-pointer"
             >
@@ -114,6 +132,18 @@ export default function ExecutiveDashboardPage() {
           </div>
         }
       />
+
+      <div className="flex flex-1 overflow-hidden relative">
+        <ModuloMenuLateral
+          titulo="Custo do Paciente"
+          categoria="FINANCEIRO"
+          itens={menuItens}
+          ativoId={abaAtiva}
+          onSelect={(id) => setAbaAtiva(id as AbaExecutiva)}
+          aberto={sidebarAberta}
+          onFechar={() => setSidebarAberta(false)}
+        />
+        <main className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-6">
       {/* Toast Flutuante Asséptico (Sem preto) */}
       {toastMessage && (
         <div className="fixed top-20 right-6 z-50 bg-white text-slate-800 px-5 py-3.5 rounded-xl shadow-xl border border-[#1B1F1C]/30 flex items-center gap-3 animate-fadeIn">
@@ -136,35 +166,6 @@ export default function ExecutiveDashboardPage() {
           lightBorder="border-[#1B1F1C]/20"
         />
       )}
-
-      {/* SUB-NAVEGAÇÃO POR ABAS */}
-      <div className="bg-white border border-[#E0E0E0] rounded-2xl p-1.5 mb-6 shadow-xs flex items-center gap-1 overflow-x-auto">
-        {[
-          { id: 'jornada', label: '1. Custo Door-to-Door & Jornada 360°', icon: Activity },
-          { id: 'desfechos', label: '2. Desfechos Clínicos & ONA', icon: Stethoscope },
-          { id: 'compras', label: '3. Eficiência em Compras vs CMED', icon: TrendingUp },
-          { id: 'simulador', label: '4. Simulador Estratégico', icon: Sliders },
-          { id: 'conectores_hub', label: '5. Ingestor & Conectores de Módulos', icon: FileSpreadsheet },
-          { id: 'perfis', label: '6. Perfis & Matriz RBAC', icon: Lock }
-        ].map((tab) => {
-          const Icon = tab.icon;
-          const isActive = abaAtiva === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setAbaAtiva(tab.id as any)}
-              className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap min-h-[44px] touch-manipulation ${
-                isActive
-                  ? 'bg-[#1B1F1C] text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-              }`}
-            >
-              <Icon className="w-4 h-4 shrink-0" />
-              <span>{tab.label}</span>
-            </button>
-          );
-        })}
-      </div>
 
       {/* ABA PERFIS */}
       {abaAtiva === 'perfis' && (
@@ -790,6 +791,8 @@ export default function ExecutiveDashboardPage() {
           </div>
         </div>
       )}
+        </main>
+      </div>
     </>
   );
 }

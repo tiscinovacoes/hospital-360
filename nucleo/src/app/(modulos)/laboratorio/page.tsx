@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { PageHeader } from '@/components/PageHeader';
 import { ModuloRbacBar } from '@/components/ModuloRbacBar';
+import { ModuloMenuLateral, MenuLateralItem } from '@/components/ModuloMenuLateral';
 import { ModuloRole, MODULO_ROLES_CATALOG, hasPermission } from '@/types/rbac';
 import {
   FlaskConical,
@@ -18,6 +19,7 @@ import {
   Check,
   Send,
   X,
+  Menu,
   Sparkles,
   QrCode,
   ShieldCheck,
@@ -124,6 +126,12 @@ export default function LabHubPage() {
   const roles = MODULO_ROLES_CATALOG['laboratorio'];
   const [activeRole, setActiveRole] = useState<ModuloRole>(roles[0]);
   const [abaAtiva, setAbaAtiva] = useState<'bancada' | 'panico' | 'fhir' | 'perfis'>('bancada');
+  const [sidebarAberta, setSidebarAberta] = useState(true);
+  const menuItens: MenuLateralItem[] = [
+    { id: 'bancada', label: 'Bancada Técnica & Amostras', icon: FlaskConical },
+    { id: 'panico', label: 'Valores de Pânico', icon: AlertCircle },
+    { id: 'perfis', label: 'Perfis & Matriz RBAC', icon: ShieldCheck },
+  ];
   const [samples, setSamples] = useState<LabSample[]>(initialSamples);
   const [selectedSample, setSelectedSample] = useState<LabSample | null>(null);
   const [statusFilter, setStatusFilter] = useState<'Todos' | 'Pendente' | 'Em Análise' | 'Liberado'>('Todos');
@@ -177,6 +185,13 @@ export default function LabHubPage() {
         actions={
           <div className="flex items-center gap-2.5">
             <button
+              onClick={() => setSidebarAberta(!sidebarAberta)}
+              className="lg:hidden p-2 min-h-[44px] min-w-[44px] rounded-xl text-slate-600 hover:bg-slate-100 transition-all cursor-pointer flex items-center justify-center"
+              title={sidebarAberta ? 'Recolher menu' : 'Expandir menu'}
+            >
+              {sidebarAberta ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            </button>
+            <button
               onClick={() => setShowFhirJsonModal(true)}
               className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] text-xs font-bold text-slate-700 bg-white border border-[#E0E0E0] rounded-xl hover:bg-slate-50 transition-all shadow-sm"
             >
@@ -186,6 +201,19 @@ export default function LabHubPage() {
           </div>
         }
       />
+
+      <div className="flex flex-1 overflow-hidden relative">
+        <ModuloMenuLateral
+          titulo="Laboratório & LIS"
+          categoria="ASSISTENCIAL"
+          itens={menuItens}
+          ativoId={abaAtiva}
+          onSelect={(id) => setAbaAtiva(id as typeof abaAtiva)}
+          aberto={sidebarAberta}
+          onFechar={() => setSidebarAberta(false)}
+        />
+
+        <main className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-6">
       {/* PERFIS & MATRIZ RBAC — só aparece na seção "Perfis" do menu lateral, não em todas as telas */}
       {abaAtiva === 'perfis' && (
         <ModuloRbacBar
@@ -197,32 +225,6 @@ export default function LabHubPage() {
           lightBorder="border-[#C1622D]/20"
         />
       )}
-
-      {/* SUB-NAVEGAÇÃO POR ABAS */}
-      <div className="bg-white border border-[#E0E0E0] rounded-2xl p-1.5 mb-6 shadow-xs flex items-center gap-1 overflow-x-auto">
-        {[
-          { id: 'bancada', label: '1. Bancada Técnica & Amostras', icon: FlaskConical },
-          { id: 'panico', label: '2. Valores de Pânico (Critical Values)', icon: AlertCircle },
-          { id: 'perfis', label: '3. Perfis & Matriz RBAC', icon: ShieldCheck }
-        ].map((tab) => {
-          const Icon = tab.icon;
-          const isActive = abaAtiva === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setAbaAtiva(tab.id as any)}
-              className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap min-h-[44px] touch-manipulation ${
-                isActive
-                  ? 'bg-[#C1622D] text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-              }`}
-            >
-              <Icon className="w-4 h-4 shrink-0" />
-              <span>{tab.label}</span>
-            </button>
-          );
-        })}
-      </div>
 
       {actionSuccess && (
         <div className="mb-6 p-4 bg-[#C1622D]/[0.08] border border-[#C1622D]/20 rounded-2xl flex items-center justify-between text-xs text-[#A8531F] animate-in fade-in">
@@ -656,6 +658,8 @@ export default function LabHubPage() {
           </div>
         </div>
       )}
+        </main>
+      </div>
     </>
   );
 }

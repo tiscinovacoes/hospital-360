@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { PageHeader } from '@/components/PageHeader';
 import { ModuloRbacBar } from '@/components/ModuloRbacBar';
+import { ModuloMenuLateral, MenuLateralItem } from '@/components/ModuloMenuLateral';
 import { KpiCard } from '@/components/KpiCard';
 import { ModuloRole, MODULO_ROLES_CATALOG, hasPermission } from '@/types/rbac';
 import {
@@ -28,7 +29,8 @@ import {
   X,
   Info,
   ShieldAlert,
-  Download
+  Download,
+  Menu
 } from 'lucide-react';
 
 type AbaSeguranca = 
@@ -118,6 +120,14 @@ export default function ArchitectureSecurityPage() {
   const roles = MODULO_ROLES_CATALOG['arquitetura-seguranca'];
   const [activeRole, setActiveRole] = useState<ModuloRole>(roles[0]);
   const [abaAtiva, setAbaAtiva] = useState<AbaSeguranca>('isolamento');
+  const [sidebarAberta, setSidebarAberta] = useState(true);
+  const menuItens: MenuLateralItem[] = [
+    { id: 'isolamento', label: 'Isolamento Financeiro (RN-IND)', icon: Database },
+    { id: 'lgpd', label: 'Trilhas de Auditoria LGPD', icon: ShieldCheck },
+    { id: 'certificados', label: 'Certificados ICP-Brasil', icon: FileBadge },
+    { id: 'sessoes', label: 'Monitoramento & WAF', icon: Lock },
+    { id: 'perfis', label: 'Perfis & Matriz RBAC', icon: Key },
+  ];
   const [notice, setNotice] = useState<string | null>(null);
 
   const triggerNotice = (msg: string) => {
@@ -132,6 +142,13 @@ export default function ArchitectureSecurityPage() {
         activeSubtitle="Auditoria LGPD em prontuários, isolamento de dados RN-IND e certificados ICP-Brasil"
         actions={
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => setSidebarAberta(!sidebarAberta)}
+              className="lg:hidden p-2 min-h-[44px] min-w-[44px] rounded-xl text-slate-600 hover:bg-slate-100 transition-all cursor-pointer flex items-center justify-center"
+              title={sidebarAberta ? 'Recolher menu' : 'Expandir menu'}
+            >
+              {sidebarAberta ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            </button>
             <span className="px-3 py-2 min-h-[44px] rounded-xl text-xs font-mono font-medium bg-[#1B1F1C]/[0.08] border border-[#1B1F1C]/20 text-[#1B1F1C] flex items-center gap-1.5 shadow-xs">
               <CheckCircle2 className="w-3.5 h-3.5 text-[#1B1F1C]" />
               TLS 1.3 • AES-256-GCM
@@ -139,6 +156,18 @@ export default function ArchitectureSecurityPage() {
           </div>
         }
       />
+
+      <div className="flex flex-1 overflow-hidden relative">
+        <ModuloMenuLateral
+          titulo="Blindagem & Auditoria"
+          categoria="FINANCEIRO"
+          itens={menuItens}
+          ativoId={abaAtiva}
+          onSelect={(id) => setAbaAtiva(id as AbaSeguranca)}
+          aberto={sidebarAberta}
+          onFechar={() => setSidebarAberta(false)}
+        />
+        <main className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-6">
       {/* Toast Notice */}
       {notice && (
         <div className="mb-4 p-3.5 bg-[#1B1F1C]/[0.08] border border-[#1B1F1C]/20 rounded-2xl flex items-center justify-between text-xs text-[#33382F] shadow-sm animate-in fade-in duration-200">
@@ -201,34 +230,6 @@ export default function ArchitectureSecurityPage() {
           icon={<ShieldAlert className="w-5 h-5 text-rose-600" />}
           trend={{ text: "100% Neutralizadas", isPositive: true }}
         />
-      </div>
-
-      {/* SUB-NAVEGAÇÃO POR ABAS */}
-      <div className="bg-white border border-[#E0E0E0] rounded-2xl p-1.5 mb-6 shadow-xs flex items-center gap-1 overflow-x-auto">
-        {[
-          { id: 'isolamento', label: '1. Isolamento Financeiro (RN-IND)', icon: Database },
-          { id: 'lgpd', label: '2. Trilhas de Auditoria LGPD', icon: ShieldCheck },
-          { id: 'certificados', label: '3. Certificados ICP-Brasil', icon: FileBadge },
-          { id: 'sessoes', label: '4. Monitoramento & WAF', icon: Lock },
-          { id: 'perfis', label: '5. Perfis & Matriz RBAC', icon: Key }
-        ].map((tab) => {
-          const Icon = tab.icon;
-          const isActive = abaAtiva === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setAbaAtiva(tab.id as AbaSeguranca)}
-              className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap min-h-[44px] touch-manipulation ${
-                isActive
-                  ? 'bg-[#1B1F1C] text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-              }`}
-            >
-              <Icon className="w-4 h-4 shrink-0" />
-              <span>{tab.label}</span>
-            </button>
-          );
-        })}
       </div>
 
       {/* ABA 1: ISOLAMENTO RN-IND */}
@@ -460,6 +461,8 @@ export default function ArchitectureSecurityPage() {
           </div>
         </div>
       )}
+        </main>
+      </div>
     </>
   );
 }

@@ -65,3 +65,8 @@ jobs:
         working-directory: ./
         run: |
           node tests/sprint5_fefo_split_leitos_contracts.spec.js
+
+      - name: Executar Testes de Contrato da Sprint 6 (Observabilidade & A11Y WCAG 2.2)
+        working-directory: ./
+        run: |
+          node tests/sprint6_observability_a11y_contracts.spec.js

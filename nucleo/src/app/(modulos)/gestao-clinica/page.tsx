@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { PageHeader } from '@/components/PageHeader';
 import { ModuloRbacBar } from '@/components/ModuloRbacBar';
+import { ModuloMenuLateral, MenuLateralItem } from '@/components/ModuloMenuLateral';
 import { KpiCard } from '@/components/KpiCard';
 import { ModuloRole, MODULO_ROLES_CATALOG, hasPermission } from '@/types/rbac';
 import {
@@ -34,6 +35,7 @@ import {
   Download,
   AlertTriangle,
   FileCheck,
+  Menu,
 } from 'lucide-react';
 
 interface MarketplaceItem {
@@ -59,6 +61,14 @@ export default function ClinicManagementPage() {
   const roles = MODULO_ROLES_CATALOG['gestao-clinica'];
   const [activeRole, setActiveRole] = useState<ModuloRole>(roles[0]);
   const [activeTab, setActiveTab] = useState<'painel' | 'agenda' | 'financeiro' | 'fila-openemr' | 'perfis'>('painel');
+  const [sidebarAberta, setSidebarAberta] = useState(true);
+  const menuItens: MenuLateralItem[] = [
+    { id: 'painel', label: 'Visão Geral & DRE', icon: DollarSign },
+    { id: 'agenda', label: 'Agenda Preditiva & No-Show (IA)', icon: Calendar },
+    { id: 'financeiro', label: 'Fintech 360 & Antecipação D+0', icon: CreditCard },
+    { id: 'fila-openemr', label: 'Fila da Clínica & OpenEMR (n8n)', icon: Users },
+    { id: 'perfis', label: 'Perfis & Matriz RBAC', icon: ShieldCheck },
+  ];
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Estados da Fila & Atendimento OpenEMR (n8n)
@@ -352,6 +362,13 @@ export default function ClinicManagementPage() {
         activeSubtitle="Prontuário Eletrônico do Paciente (PEP) • Especialidade: Cardiologia (Sala 204)"
         actions={
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => setSidebarAberta(!sidebarAberta)}
+              className="lg:hidden p-2 min-h-[44px] min-w-[44px] rounded-xl text-slate-600 hover:bg-slate-100 transition-all cursor-pointer flex items-center justify-center"
+              title={sidebarAberta ? 'Recolher menu' : 'Expandir menu'}
+            >
+              {sidebarAberta ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            </button>
             <span className="px-3 py-2 min-h-[44px] rounded-xl text-xs font-semibold bg-[#C1622D]/[0.08] border border-[#C1622D]/20 text-[#C1622D] flex items-center gap-1.5 shadow-sm">
               <Lock className="w-3.5 h-3.5 text-[#C1622D]" />
               RN-IND: Multi-Tenant
@@ -359,6 +376,18 @@ export default function ClinicManagementPage() {
           </div>
         }
       />
+
+      <div className="flex flex-1 overflow-hidden relative">
+        <ModuloMenuLateral
+          titulo="Consultório & Clínica"
+          categoria="ASSISTENCIAL"
+          itens={menuItens}
+          ativoId={activeTab}
+          onSelect={(id) => setActiveTab(id as typeof activeTab)}
+          aberto={sidebarAberta}
+          onFechar={() => setSidebarAberta(false)}
+        />
+        <main className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-6">
       {/* Toast Flutuante Asséptico (Sem preto/escuro) */}
       {toastMessage && (
         <div className="fixed top-20 right-6 z-50 bg-white text-slate-800 px-5 py-3.5 rounded-xl shadow-xl border border-[#C1622D]/30 flex items-center gap-3 animate-in slide-in-from-top-4 duration-300">
@@ -381,33 +410,6 @@ export default function ClinicManagementPage() {
           lightBorder="border-[#C1622D]/20"
         />
       )}
-
-      {/* Abas Superiores Padronizadas com Touch Target HIG >= 44px */}
-      <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-1 custom-scrollbar">
-        {[
-          { id: 'painel', label: 'Visão Geral & DRE', icon: DollarSign },
-          { id: 'agenda', label: 'Agenda Preditiva & No-Show (IA)', icon: Calendar },
-          { id: 'financeiro', label: 'Fintech 360 & Antecipação D+0', icon: CreditCard },
-          { id: 'fila-openemr', label: 'Fila da Clínica & OpenEMR (n8n)', icon: Users },
-          { id: 'perfis', label: 'Perfis & Matriz RBAC', icon: ShieldCheck },
-        ].map((tab) => {
-          const Icon = tab.icon;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={`px-4 py-2.5 min-h-[44px] rounded-xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap ${
-                activeTab === tab.id
-                  ? 'bg-[#C1622D] text-white shadow-sm'
-                  : 'bg-white text-slate-700 border border-[#E0E0E0] hover:bg-slate-50'
-              }`}
-            >
-              <Icon className="w-4 h-4" />
-              {tab.label}
-            </button>
-          );
-        })}
-      </div>
 
       {/* Conteúdo Principal */}
       <div className="space-y-6">
@@ -1626,6 +1628,8 @@ export default function ClinicManagementPage() {
             </div>
           </div>
         )}
+      </div>
+        </main>
       </div>
     </>
   );
