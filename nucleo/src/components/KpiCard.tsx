@@ -100,7 +100,7 @@ export function KpiCard({
     <div className="relative bg-white rounded-2xl border border-[#E0E0E0] p-5 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
       {/* Linha 1: Título e Ícone Padronizado / Tooltip */}
       <div className="flex items-center justify-between gap-2">
-        <span className="text-xs font-bold text-slate-500 uppercase tracking-wide truncate">
+        <span className="min-w-0 flex-1 text-xs font-bold text-slate-500 uppercase tracking-wide truncate" title={title}>
           {title}
         </span>
 

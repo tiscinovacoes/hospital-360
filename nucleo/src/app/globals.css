@@ -1,87 +1,83 @@
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
-:root {
-  /* ── Design System v2.0.0 — ver IDENTIDADE_VISUAL (1).md ──
-     Nomes --vs-* mantidos por compatibilidade; valores agora seguem a v2
-     (tinta/papel + teal/terracota), não mais o azul/verde da v1. */
+/*
+ * Design System v2.0.0 — ver IDENTIDADE_VISUAL (1).md
+ * Tokens semânticos (Tailwind v4 @theme): nomes descrevem a FUNÇÃO da cor
+ * (surface/foreground/action/primary/warning/critical), não o tom visual
+ * ("blue", "green"...) — os nomes antigos (--vs-blue-900 e --vs-green)
+ * chamavam "azul" a cor teal e "verde" a cor terracota, o que confundia quem lê o
+ * código sem saber da migração de paleta v1 -> v2.
+ */
+@theme {
+  /* ── Superfícies & Fundo ── */
+  --color-surface: #F6F3EC;            /* Papel — fundo da página */
+  --color-surface-subtle: #EFEAE0;     /* Papel 2 — sidebar/painéis secundários */
+  --color-surface-elevated: #FFFFFF;   /* Cards, modais, inputs */
 
-  /* ── Teal — ação / confiança (substitui o azul institucional) ── */
-  --vs-blue-900: #1B1F1C;   /* Tinta — sidebar, headers escuros, hero de destaque */
-  --vs-blue-700: #0E5C4C;   /* Teal — cor de ação, links, estados ativos */
-  --vs-blue-500: #0A4A3D;   /* Teal escuro — hover de elementos de ação */
-  --vs-blue-100: rgba(14, 92, 76, 0.08);  /* Fundo de badge/pill "ativo" */
-  --vs-blue-50:  #EFEAE0;   /* Papel 2 — fundo de seções/sidebar secundária */
+  /* ── Textos & Tintas ── */
+  --color-foreground: #1B1F1C;                         /* Tinta — texto principal, títulos */
+  --color-foreground-muted: rgba(27, 31, 28, 0.70);    /* Texto secundário */
+  --color-foreground-subtle: rgba(27, 31, 28, 0.45);   /* Labels, captions, placeholders */
+  --color-border: rgba(27, 31, 28, 0.12);              /* Bordas de cards e divisores */
+  --color-border-subtle: rgba(27, 31, 28, 0.08);       /* Linhas de tabela, footer de card */
+  --color-input-border: rgba(27, 31, 28, 0.18);        /* Borda de input em repouso */
 
-  /* ── Terracota — destaque / CTA primário (substitui o verde sucesso) ── */
-  --vs-green:    #C1622D;   /* Terracota — CTA primário, único destaque por tela */
-  --vs-green-dk: #A8531F;   /* Hover do CTA primário */
-  --vs-green-lt: rgba(193, 98, 45, 0.08);  /* Fundo de badge/hover sutil de destaque */
+  /* ── Ação Institucional (Teal) ── */
+  --color-action: #0E5C4C;                     /* Cor primária de ação, links, estados ativos */
+  --color-action-hover: #0A4A3D;
+  --color-action-subtle: rgba(14, 92, 76, 0.08);       /* Fundo de badge "ativo" */
 
-  /* ── Ocre — atenção (substitui o amarelo) ── */
-  --vs-yellow:    #8A6A16;  /* Atenção, pendente, prazo próximo */
-  --vs-yellow-dk: #6E5511;  /* Texto de aviso em fundo claro */
-  --vs-yellow-lt: rgba(138, 106, 22, 0.10);  /* Background de alertas de atenção */
+  /* ── Destaque / CTA Primário (Terracota) ── */
+  --color-primary: #C1622D;                    /* Único destaque quente por tela */
+  --color-primary-hover: #A8531F;
+  --color-primary-subtle: rgba(193, 98, 45, 0.08);
 
-  /* ── Tijolo — crítico (substitui o vermelho) ── */
-  --vs-red:    #9C3B2E;     /* Erro, rejeição, esgotado, emergência */
-  --vs-red-dk: #7E2F24;     /* Texto de erro em fundo claro */
-  --vs-red-lt: rgba(156, 59, 46, 0.08);  /* Background de alertas críticos */
+  /* ── Status Semânticos ── */
+  --color-warning: #8A6A16;                    /* Ocre — atenção / em análise */
+  --color-warning-hover: #6E5511;
+  --color-warning-subtle: rgba(138, 106, 22, 0.10);
+  --color-critical: #9C3B2E;                   /* Tijolo — erro / crítico */
+  --color-critical-hover: #7E2F24;
+  --color-critical-subtle: rgba(156, 59, 46, 0.08);
 
-  /* ── Tinta & Papel — Neutral (substitui o cinza-azulado slate) ── */
-  --vs-gray-900: #1B1F1C;   /* Tinta — texto principal, títulos */
-  --vs-gray-700: rgba(27, 31, 28, 0.70);   /* Texto secundário, labels */
-  --vs-gray-500: rgba(27, 31, 28, 0.45);   /* Placeholders, captions, ícones suaves */
-  --vs-gray-300: rgba(27, 31, 28, 0.18);   /* Bordas de inputs */
-  --vs-gray-200: rgba(27, 31, 28, 0.12);   /* Bordas de cards, divisores */
-  --vs-gray-100: rgba(27, 31, 28, 0.08);   /* Fundo de inputs, cabeçalho de tabelas */
-  --vs-gray-50:  #F6F3EC;   /* Papel — background da página */
-  --white:       #FFFFFF;
+  /* ── Categorias de Módulo v2.1 (dots, tags secundárias, item de menu) ──
+     Ver IDENTIDADE_VISUAL (1).md § 2.1 — tons suavizados + azul clínico,
+     substituem os tons v2.0 saturados (que coincidiam com as cores de ação).
+     Cores de AÇÃO (--color-action, --color-primary) e de STATUS
+     (--color-warning, --color-critical) NÃO mudam — só a identidade de
+     categoria. */
+  --color-cat-suprimentos: #4E9B8A;
+  --color-cat-suprimentos-subtle: rgba(78, 155, 138, 0.12);
+  --color-cat-suprimentos-border: rgba(78, 155, 138, 0.35);
+
+  --color-cat-assistencial: #5B84B1;
+  --color-cat-assistencial-subtle: rgba(91, 132, 177, 0.12);
+  --color-cat-assistencial-border: rgba(91, 132, 177, 0.35);
+
+  --color-cat-operacao: #C99A4A;
+  --color-cat-operacao-subtle: rgba(201, 154, 74, 0.14);
+  --color-cat-operacao-border: rgba(201, 154, 74, 0.35);
+
+  --color-cat-financeiro: #7C93A3;
+  --color-cat-financeiro-subtle: rgba(124, 147, 163, 0.12);
+  --color-cat-financeiro-border: rgba(124, 147, 163, 0.35);
+
+  /* ── Tipografia ── */
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-sans: 'Public Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
 
   /* ── Estrutura & Sombras (tinta em vez de preto puro) ── */
-  --vs-radius: 8px;
-  --vs-shadow-sm: 0 1px 2px rgba(27, 31, 28, 0.05);
-  --vs-shadow:    0 1px 4px rgba(27, 31, 28, 0.06), 0 4px 12px rgba(27, 31, 28, 0.05);
-  --vs-shadow-lg: 0 8px 24px rgba(27, 31, 28, 0.10), 0 2px 8px rgba(27, 31, 28, 0.05);
-
-  /* ── Variáveis Dinâmicas de Tema (ThemeContext) ── */
-  --theme-primary: #0E5C4C;
-  --theme-secondary: #1B1F1C;
-  --theme-accent: #C1622D;
-  --theme-light: #EFEAE0;
-}
-
-@theme inline {
-  --color-vs-blue-900: var(--vs-blue-900);
-  --color-vs-blue-700: var(--vs-blue-700);
-  --color-vs-blue-500: var(--vs-blue-500);
-  --color-vs-blue-100: var(--vs-blue-100);
-  --color-vs-blue-50: var(--vs-blue-50);
-  --color-vs-green: var(--vs-green);
-  --color-vs-green-dk: var(--vs-green-dk);
-  --color-vs-green-lt: var(--vs-green-lt);
-  --color-vs-yellow: var(--vs-yellow);
-  --color-vs-yellow-dk: var(--vs-yellow-dk);
-  --color-vs-yellow-lt: var(--vs-yellow-lt);
-  --color-vs-red: var(--vs-red);
-  --color-vs-red-dk: var(--vs-red-dk);
-  --color-vs-red-lt: var(--vs-red-lt);
-  --color-vs-gray-900: var(--vs-gray-900);
-  --color-vs-gray-700: var(--vs-gray-700);
-  --color-vs-gray-500: var(--vs-gray-500);
-  --color-vs-gray-300: var(--vs-gray-300);
-  --color-vs-gray-200: var(--vs-gray-200);
-  --color-vs-gray-100: var(--vs-gray-100);
-  --color-vs-gray-50: var(--vs-gray-50);
-
-  --font-sans: 'Public Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-display: 'Fraunces', Georgia, serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  --radius-ds: 8px;
+  --shadow-ds-sm: 0 1px 2px rgba(27, 31, 28, 0.05);
+  --shadow-ds: 0 1px 4px rgba(27, 31, 28, 0.06), 0 4px 12px rgba(27, 31, 28, 0.05);
+  --shadow-ds-lg: 0 8px 24px rgba(27, 31, 28, 0.10), 0 2px 8px rgba(27, 31, 28, 0.05);
 }
 
 body {
-  background-color: var(--vs-gray-50);
-  color: var(--vs-gray-900);
+  background-color: var(--color-surface);
+  color: var(--color-foreground);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
@@ -92,18 +88,20 @@ h1, h2 {
   font-family: var(--font-display);
 }
 
-/* ── Componentes Padrão do Design System ── */
+/* ── Componentes Padrão do Design System (legado — bases .btn/.badge/.alert/
+   .kpi-* ainda usadas em telas mais antigas como src/app/admin/page.tsx;
+   novas telas devem preferir os componentes de src/components/ui/) ── */
 
 .card-vs {
-  background-color: var(--white);
-  border: 1px solid var(--vs-gray-200);
+  background-color: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
   border-radius: 12px;
-  box-shadow: var(--vs-shadow-sm);
+  box-shadow: var(--shadow-ds-sm);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .card-vs:hover {
-  box-shadow: var(--vs-shadow);
+  box-shadow: var(--shadow-ds);
 }
 
 /* Botões */
@@ -127,23 +125,26 @@ h1, h2 {
   transform: scale(0.98);
 }
 
-.btn-primary { background-color: var(--vs-blue-700); color: #ffffff; }
-.btn-primary:hover { background-color: var(--vs-blue-900); }
+.btn-primary { background-color: var(--color-action); color: #ffffff; }
+.btn-primary:hover { background-color: var(--color-foreground); }
 
-.btn-secondary { background-color: var(--vs-blue-100); color: var(--vs-blue-700); }
-.btn-secondary:hover { background-color: #d9e4f8; }
+.btn-secondary { background-color: var(--color-action-subtle); color: var(--color-action); }
+.btn-secondary:hover { background-color: rgba(14, 92, 76, 0.14); }
 
-.btn-success { background-color: var(--vs-green); color: #ffffff; }
-.btn-success:hover { background-color: var(--vs-green-dk); }
+.btn-success { background-color: var(--color-primary); color: #ffffff; }
+.btn-success:hover { background-color: var(--color-primary-hover); }
 
-.btn-danger { background-color: var(--vs-red); color: #ffffff; }
-.btn-danger:hover { background-color: var(--vs-red-dk); }
+.btn-warning { background-color: var(--color-warning); color: #ffffff; }
+.btn-warning:hover { background-color: var(--color-warning-hover); }
 
-.btn-outline { background-color: transparent; border: 1.5px solid var(--vs-blue-700); color: var(--vs-blue-700); }
-.btn-outline:hover { background-color: var(--vs-blue-100); }
+.btn-danger { background-color: var(--color-critical); color: #ffffff; }
+.btn-danger:hover { background-color: var(--color-critical-hover); }
 
-.btn-ghost { background-color: transparent; color: var(--vs-gray-700); }
-.btn-ghost:hover { background-color: var(--vs-gray-200); }
+.btn-outline { background-color: transparent; border: 1.5px solid var(--color-action); color: var(--color-action); }
+.btn-outline:hover { background-color: var(--color-action-subtle); }
+
+.btn-ghost { background-color: transparent; color: var(--color-foreground-muted); }
+.btn-ghost:hover { background-color: var(--color-border); }
 
 .btn-sm { padding: 5px 12px; font-size: 12px; border-radius: 6px; }
 .btn-lg { padding: 12px 24px; font-size: 16px; border-radius: 10px; }
@@ -192,36 +193,36 @@ h1, h2 {
 }
 
 .alert-info {
-  background-color: var(--vs-blue-100);
-  border-left-color: var(--vs-blue-700);
-  color: var(--vs-blue-900);
+  background-color: var(--color-action-subtle);
+  border-left-color: var(--color-action);
+  color: var(--color-foreground);
 }
 
 .alert-success {
-  background-color: var(--vs-green-lt);
-  border-left-color: var(--vs-green);
-  color: var(--vs-green-dk);
+  background-color: var(--color-primary-subtle);
+  border-left-color: var(--color-primary);
+  color: var(--color-primary-hover);
 }
 
 .alert-warning {
-  background-color: var(--vs-yellow-lt);
-  border-left-color: var(--vs-yellow);
-  color: var(--vs-yellow-dk);
+  background-color: var(--color-warning-subtle);
+  border-left-color: var(--color-warning);
+  color: var(--color-warning-hover);
 }
 
 .alert-danger {
-  background-color: var(--vs-red-lt);
-  border-left-color: var(--vs-red);
-  color: var(--vs-red-dk);
+  background-color: var(--color-critical-subtle);
+  border-left-color: var(--color-critical);
+  color: var(--color-critical-hover);
 }
 
 /* KPI Cards */
 .kpi-card {
   padding: 20px;
-  background-color: var(--white);
-  border: 1px solid var(--vs-gray-200);
+  background-color: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
   border-radius: 12px;
-  box-shadow: var(--vs-shadow-sm);
+  box-shadow: var(--shadow-ds-sm);
 }
 
 .kpi-icon {
@@ -237,13 +238,13 @@ h1, h2 {
 .kpi-val {
   font-size: 24px;
   font-weight: 700;
-  color: var(--vs-gray-900);
+  color: var(--color-foreground);
   line-height: 1.2;
 }
 
 .kpi-label {
   font-size: 12px;
-  color: var(--vs-gray-500);
+  color: var(--color-foreground-subtle);
   margin-top: 2px;
 }
 
@@ -251,4 +252,32 @@ h1, h2 {
   font-size: 12px;
   font-weight: 500;
   margin-top: 8px;
+}
+
+/* ── Microinterações (stagger de cards, toast, contagem de KPI) ──
+   Respeitam prefers-reduced-motion: reduce abaixo. */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes cardEnter {
+  from { opacity: 0; transform: translateY(10px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.animate-card-enter {
+  animation: cardEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: var(--card-delay, 0ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-card-enter {
+    animation: none;
+  }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

@@ -319,7 +319,7 @@ export default function EscalaMedicaPage() {
         >
           <div>
             {/* CABEÇALHO DO PRODUTO */}
-            <div className="flex items-center gap-3 p-3 bg-gradient-to-br from-[#8A6A16]/[0.08] to-white rounded-2xl border border-[#8A6A16]/[0.12] mb-4">
+            <div className="flex items-center gap-3 p-3 bg-[#8A6A16]/[0.08] rounded-2xl border border-[#8A6A16]/[0.12] mb-4">
               <div className="p-2.5 bg-[#8A6A16] text-white rounded-xl shadow-xs">
                 <UserCheck className="w-5 h-5" />
               </div>

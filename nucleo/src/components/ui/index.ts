@@ -1,0 +1,10 @@
+export { Button, buttonVariants, type ButtonProps } from './button';
+export { Badge, badgeVariants, type BadgeProps } from './badge';
+export { ModuleCard, type ModuleCardProps, type ModuleCategoria } from './module-card';
+export { KpiCard, type KpiCardProps } from './kpi-card';
+export { Input, Textarea, FormField, type InputProps, type TextareaProps, type FormFieldProps } from './input';
+export { Dialog, type DialogProps } from './dialog';
+export { Alert, type AlertProps } from './alert';
+export { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, type TableCellProps } from './table';
+export { Tooltip, type TooltipProps } from './tooltip';
+export { Tabs, TabsList, TabsTrigger, type TabsProps, type TabsTriggerProps } from './tabs';
