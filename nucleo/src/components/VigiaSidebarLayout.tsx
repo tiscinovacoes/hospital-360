@@ -166,13 +166,7 @@ export function VigiaSidebarLayout({
   actions
 }: VigiaSidebarLayoutProps) {
   const pathname = usePathname();
-  const [collapsed, setCollapsed] = useState<boolean>(false);
-  const [mobileOpen, setMobileOpen] = useState<boolean>(false);
-
-  // Fecha o menu mobile ao trocar de página
-  useEffect(() => {
-    setMobileOpen(false);
-  }, [pathname]);
+  const isHomePage = pathname === '/';
 
   // Determina o tema do módulo atual (por prop ou pathname)
   const resolvedModuloId: ModuloId = React.useMemo(() => {
@@ -189,240 +183,95 @@ export function VigiaSidebarLayout({
   const currentTheme = MODULO_THEMES[resolvedModuloId] || MODULO_THEMES['compras-publicas'];
 
   return (
-    <div className="min-h-screen bg-[#F6F3EC] flex text-[#1B1F1C] antialiased font-sans">
-      {/* Backdrop suave para mobile (sem tons escuros opacos) */}
-      {mobileOpen && (
-        <div
-          onClick={() => setMobileOpen(false)}
-          className="fixed inset-0 bg-[#1B1F1C]/20 backdrop-blur-xs z-40 lg:hidden transition-opacity"
-          aria-label="Fechar menu de navegação"
-        />
-      )}
-
-      {/* SIDEBAR LATERAL — CHROME NEUTRO (TINTA/PAPEL); A COR DO MÓDULO VIRA SÓ UM SINAL DISCRETO */}
-      <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 bg-[#EFEAE0]/70 border-r border-[#1B1F1C]/12 flex flex-col transition-all duration-300 ease-in-out backdrop-blur-xs ${
-          collapsed ? 'w-20' : 'w-72'
-        } ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
-      >
-        {/* Topo da Sidebar: Brand & Botão de Colapso */}
-        <div className="h-16 px-4 flex items-center justify-between border-b border-[#1B1F1C]/12 bg-[#EFEAE0]/90 flex-shrink-0">
-          <Link href="/" className="flex items-center gap-3 overflow-hidden">
-            {/* Escudo Vigia Saúde — tinta, único em todo o produto (não varia por módulo) */}
-            <div className="w-10 h-10 flex-shrink-0 bg-[#1B1F1C] rounded-xl flex items-center justify-center text-[#F6F3EC] shadow-sm">
-              <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+    <div className="min-h-screen bg-[#F6F3EC] flex flex-col text-[#1B1F1C] antialiased font-sans">
+      {/* HEADER SUPERIOR UNIFICADO DE PONTA A PONTA */}
+      <header className="h-16 bg-white/95 backdrop-blur-md border-b border-[#1B1F1C]/12 sticky top-0 z-30 px-3 sm:px-6 lg:px-8 flex items-center justify-between flex-shrink-0">
+        <div className="flex items-center gap-3">
+          {/* Brand Vigia Saúde 360 */}
+          <Link href="/" className="flex items-center gap-2.5 group cursor-pointer" title="Ir para o Hub de Módulos">
+            <div className="w-9 h-9 flex-shrink-0 bg-[#1B1F1C] rounded-xl flex items-center justify-center text-[#F6F3EC] shadow-sm group-hover:bg-[#0E5C4C] transition-colors">
+              <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
                 <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-1 6h2v4h4v2h-4v4h-2v-4H7v-2h4V7z" />
               </svg>
             </div>
-
-            {!collapsed && (
-              <div className="flex flex-col leading-tight">
-                <div className="flex items-center gap-1.5">
-                  <span className="font-display font-semibold text-base tracking-tight text-[#1B1F1C]">
-                    Vigia <span className="text-[#0E5C4C]">Saúde</span>
-                  </span>
-                </div>
-                <span className="flex items-center gap-1.5 text-[11px] font-semibold text-[#1B1F1C]/45">
-                  <span className={`w-[6px] h-[6px] rounded-full flex-shrink-0 ${currentTheme.primaryBg}`} />
-                  {currentTheme.corNome}
-                </span>
-              </div>
-            )}
+            <div className="flex flex-col leading-tight">
+              <span className="font-display font-bold text-sm tracking-tight text-[#1B1F1C]">
+                Vigia <span className="text-[#0E5C4C]">Saúde 360</span>
+              </span>
+            </div>
           </Link>
 
-          {/* Botão de fechar no mobile (touch target >= 44px) */}
-          <button
-            onClick={() => setMobileOpen(false)}
-            className="lg:hidden min-w-[44px] min-h-[44px] rounded-xl flex items-center justify-center text-[#1B1F1C]/60 hover:text-[#1B1F1C] hover:bg-white/60 transition-colors"
-            aria-label="Fechar gaveta"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          {/* Separador e Identificação do Módulo Atual */}
+          <span className="text-[#1B1F1C]/25 text-sm font-light">/</span>
 
-          {/* Botão de colapsar sidebar no desktop */}
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            className="hidden lg:flex w-8 h-8 rounded-lg items-center justify-center text-[#1B1F1C]/40 hover:text-[#1B1F1C]/80 hover:bg-white/60 transition-colors"
-            title={collapsed ? 'Expandir barra lateral' : 'Recolher barra lateral'}
-          >
-            {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-          </button>
-        </div>
+          <div className="flex items-center gap-2">
+            <h1 className="text-xs sm:text-sm font-bold text-[#1B1F1C] truncate max-w-[240px] sm:max-w-none">
+              {activeTitle || (isHomePage ? 'Hub de Módulos & Catálogo de Soluções' : currentTheme.nome)}
+            </h1>
 
-        {/* Lista de Navegação com scroll suave */}
-        <div className="flex-1 overflow-y-auto px-3 py-4 space-y-1.5 custom-scrollbar">
-          {!collapsed && (
-            <div className="px-3 pb-1 text-[10px] font-bold text-[#1B1F1C]/45 uppercase tracking-wider">
-              Módulos Especializados
-            </div>
-          )}
-
-          {MODULOS_SISTEMA.map((item) => {
-            const isActive =
-              item.id === 'home'
-                ? pathname === '/'
-                : pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
-            const Icon = item.icon;
-            const itemTheme =
-              item.id !== 'home' && item.id in MODULO_THEMES
-                ? MODULO_THEMES[item.id as ModuloId]
-                : null;
-
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                title={collapsed ? item.name : undefined}
-                className={`group flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all min-h-[44px] ${
-                  isActive
-                    ? 'bg-[#1B1F1C] text-[#F6F3EC] shadow-sm'
-                    : 'text-[#1B1F1C]/75 hover:bg-white/90 hover:text-[#1B1F1C] border border-transparent'
-                } ${collapsed ? 'justify-center' : ''}`}
+            {!isHomePage && currentTheme.tagRegulatoria && (
+              <span
+                className={`text-[9px] font-bold px-2 py-0.5 rounded-full border hidden sm:inline-flex ${currentTheme.lightBg} ${currentTheme.primaryText} ${currentTheme.lightBorder}`}
               >
-                {itemTheme && (
-                  <span className={`w-[6px] h-[6px] rounded-full flex-shrink-0 ${isActive ? 'bg-[#F6F3EC]' : itemTheme.primaryBg}`} />
-                )}
-                <Icon
-                  className={`w-5 h-5 flex-shrink-0 transition-transform group-hover:scale-105 ${
-                    isActive ? 'text-[#F6F3EC]' : 'text-[#1B1F1C]/60'
-                  } ${itemTheme ? '' : ''}`}
-                />
-
-                {!collapsed && (
-                  <div className="flex-1 flex items-center justify-between overflow-hidden">
-                    <span className="truncate">{item.name}</span>
-                    {item.badge && (
-                      <span
-                        className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider flex-shrink-0 ${
-                          isActive
-                            ? 'bg-white/20 text-[#F6F3EC]'
-                            : itemTheme
-                            ? `${itemTheme.lightBg} ${itemTheme.primaryText} border ${itemTheme.lightBorder}`
-                            : 'bg-white text-[#1B1F1C]/60 border border-[#1B1F1C]/12'
-                        }`}
-                      >
-                        {item.badge}
-                      </span>
-                    )}
-                  </div>
-                )}
-              </Link>
-            );
-          })}
-        </div>
-
-        {/* Rodapé da Sidebar: Perfil & Sair */}
-        <div className="p-3 border-t border-[#1B1F1C]/12 flex-shrink-0 bg-[#EFEAE0]/90">
-          <div className={`flex items-center gap-3 ${collapsed ? 'justify-center' : 'px-2 py-1.5'}`}>
-            <div className="w-8 h-8 rounded-full bg-[#1B1F1C] text-[#F6F3EC] font-bold text-xs flex items-center justify-center flex-shrink-0 shadow-xs">
-              CD
-            </div>
-            {!collapsed && (
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-bold text-[#1B1F1C] truncate">Diretoria Clínica / CD</p>
-                <p className="text-[10px] text-[#0E5C4C] font-semibold truncate">Hospital Central 360</p>
-              </div>
+                {currentTheme.tagRegulatoria}
+              </span>
             )}
-            {!collapsed && (
-              <Link
-                href="/login"
-                className="text-[#1B1F1C]/40 hover:text-[#9C3B2E] transition-colors p-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
-                title="Trocar de Usuário / Sair"
-              >
-                <LogOut className="w-4 h-4" />
-              </Link>
+
+            {isHomePage && (
+              <span className="text-[9px] font-bold px-2 py-0.5 rounded-full border bg-emerald-50 text-emerald-800 border-emerald-200 hidden sm:inline-flex">
+                Módulos Independentes
+              </span>
             )}
           </div>
         </div>
-      </aside>
 
-      {/* ÁREA DE CONTEÚDO PRINCIPAL COM CABEÇALHO SUPERIOR */}
-      <div
-        className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${
-          collapsed ? 'lg:pl-20' : 'lg:pl-72'
-        }`}
-      >
-        {/* TOPBAR / HEADER SUPERIOR — NEUTRO; CATEGORIA SÓ NA TAG REGULATÓRIA */}
-        <header className="h-16 bg-white/95 backdrop-blur-md border-b border-[#1B1F1C]/12 sticky top-0 z-30 px-3 sm:px-6 lg:px-8 flex items-center justify-between">
-          <div className="flex items-center gap-2 sm:gap-3">
-            {/* Hambúrguer para abrir sidebar no mobile (Touch target >= 44px) */}
-            <button
-              onClick={() => setMobileOpen(true)}
-              className="lg:hidden min-w-[44px] min-h-[44px] p-2 rounded-xl border border-[#1B1F1C]/12 bg-[#EFEAE0] text-[#1B1F1C] flex items-center justify-center transition-colors"
-              aria-label="Abrir menu lateral"
-            >
-              <Menu className="w-5 h-5" />
-            </button>
+        {/* Ações do Header (Ações Rápidas, Hub, Notificações, Perfil) */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          {actions}
 
-            {/* Breadcrumb / Título Ativo */}
-            <div>
-              <div className="flex items-center gap-1.5 sm:gap-2">
-                <span className="text-[10px] sm:text-[11px] font-semibold text-[#1B1F1C]/40 uppercase tracking-wider hidden sm:inline">
-                  Vigia Saúde 360
-                </span>
-                <span className="text-[#1B1F1C]/20 hidden sm:inline">/</span>
-                <h1 className="text-xs sm:text-base font-semibold text-[#1B1F1C] truncate max-w-[200px] sm:max-w-none">
-                  {activeTitle || currentTheme.nome}
-                </h1>
-                {currentTheme.tagRegulatoria && (
-                  <span
-                    className={`text-[9px] font-bold px-2 py-0.5 rounded-full border hidden md:inline-flex ${currentTheme.lightBg} ${currentTheme.primaryText} ${currentTheme.lightBorder}`}
-                  >
-                    {currentTheme.tagRegulatoria}
-                  </span>
-                )}
-              </div>
-              {activeSubtitle && (
-                <p className="text-[10px] sm:text-[11px] text-[#1B1F1C]/45 hidden md:block truncate max-w-xl">
-                  {activeSubtitle}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Ações do Header (Notificações, Perfil, Ações Rápidas) */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            {actions}
-
+          {!isHomePage && (
             <Link
               href="/"
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl bg-white hover:bg-[#F6F3EC] text-[#1B1F1C]/75 text-xs font-bold border border-[#1B1F1C]/12 transition-all"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl bg-white hover:bg-[#F6F3EC] text-[#1B1F1C]/75 hover:text-[#1B1F1C] text-xs font-bold border border-[#1B1F1C]/12 transition-all shadow-2xs"
+              title="Abrir o Hub de Módulos em nova aba"
             >
               <Layers className="w-4 h-4 text-[#0E5C4C]" />
               <span>Ver Módulos</span>
             </Link>
+          )}
 
-            <div className="h-5 w-px bg-[#1B1F1C]/12 hidden sm:block" />
+          <div className="h-5 w-px bg-[#1B1F1C]/12 hidden sm:block" />
 
-            {/* Sino de Notificações com touch target 44px */}
-            <div className="relative">
-              <button
-                className="w-10 h-10 min-w-[40px] min-h-[40px] sm:min-w-[44px] sm:min-h-[44px] rounded-xl bg-white hover:bg-[#F6F3EC] border border-[#1B1F1C]/12 text-[#1B1F1C]/70 flex items-center justify-center transition-colors"
-                title="Notificações Operacionais"
-              >
-                <Bell className="w-4 h-4" />
-                <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#9C3B2E] ring-2 ring-white animate-pulse" />
-              </button>
+          {/* Sino de Notificações com touch target 44px */}
+          <div className="relative">
+            <button
+              className="w-10 h-10 min-w-[40px] min-h-[40px] sm:min-w-[44px] sm:min-h-[44px] rounded-xl bg-white hover:bg-[#F6F3EC] border border-[#1B1F1C]/12 text-[#1B1F1C]/70 flex items-center justify-center transition-colors cursor-pointer"
+              title="Notificações Operacionais"
+            >
+              <Bell className="w-4 h-4" />
+              <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#9C3B2E] ring-2 ring-white animate-pulse" />
+            </button>
+          </div>
+
+          {/* Avatar do Usuário Conectado */}
+          <div className="flex items-center gap-2 pl-1 sm:pl-2">
+            <div className="w-9 h-9 min-w-[36px] min-h-[36px] sm:w-10 sm:h-10 rounded-xl bg-[#1B1F1C] text-[#F6F3EC] font-black text-xs flex items-center justify-center shadow-sm">
+              JS
             </div>
-
-            {/* Avatar do Usuário Conectado */}
-            <div className="flex items-center gap-2 pl-1 sm:pl-2">
-              <div className="w-9 h-9 min-w-[36px] min-h-[36px] sm:w-10 sm:h-10 rounded-xl bg-[#1B1F1C] text-[#F6F3EC] font-black text-xs flex items-center justify-center shadow-sm">
-                JS
-              </div>
-              <div className="hidden xl:block text-left leading-tight">
-                <span className="text-xs font-bold text-[#1B1F1C] block">João Silva</span>
-                <span className="text-[10px] text-[#1B1F1C]/45 block">Gestor Hospitalar</span>
-              </div>
+            <div className="hidden xl:block text-left leading-tight">
+              <span className="text-xs font-bold text-[#1B1F1C] block">João Silva</span>
+              <span className="text-[10px] text-[#1B1F1C]/45 block">Gestor Hospitalar</span>
             </div>
           </div>
-        </header>
+        </div>
+      </header>
 
-        {/* CORPO DO CONTEÚDO */}
-        <main className="flex-1 p-3 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
-          {children}
-        </main>
-      </div>
+      {/* ÁREA DE CONTEÚDO PRINCIPAL — LARGURA TOTAL PARA OS MÓDULOS TEREM SEU MENU LATERAL ÚNICO */}
+      <main className={`flex-1 flex flex-col min-w-0 ${isHomePage ? 'max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8' : 'w-full'}`}>
+        {children}
+      </main>
     </div>
   );
 }

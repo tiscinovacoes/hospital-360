@@ -239,15 +239,21 @@ export default function HubModulosPage() {
           <div className="flex flex-col sm:flex-row lg:flex-col gap-3 flex-shrink-0">
             <Link
               href="/dashboard-executivo"
-              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-[#C1622D] hover:bg-[#A8531F] text-white font-bold text-sm transition-all"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-[#C1622D] hover:bg-[#A8531F] text-white font-bold text-sm transition-all shadow-sm"
+              title="Abrir Custo do Paciente em nova aba"
             >
               <span>Abrir Custo do Paciente</span>
-              <ArrowRight className="w-4 h-4" />
+              <ArrowRight className="w-4 h-4 -rotate-45" />
             </Link>
 
             <Link
               href="/admin/perfis-acessos"
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-[#F6F3EC]/25 text-[#F6F3EC] font-semibold text-xs transition-all"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-[#F6F3EC]/25 text-[#F6F3EC] font-semibold text-xs hover:bg-white/10 transition-all"
+              title="Abrir Gestão de Perfis em nova aba"
             >
               <ShieldCheck className="w-4 h-4" />
               <span>Gestão de Perfis &amp; Acessos (RBAC)</span>
@@ -255,7 +261,10 @@ export default function HubModulosPage() {
 
             <Link
               href="/ingestao-modulos"
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-[#F6F3EC]/15 text-[#F6F3EC]/70 font-semibold text-xs transition-all"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-[#F6F3EC]/15 text-[#F6F3EC]/70 font-semibold text-xs hover:bg-white/10 transition-all"
+              title="Abrir Importação em nova aba"
             >
               <FileSpreadsheet className="w-4 h-4" />
               <span>Importar Dados Externos (CSV)</span>
@@ -312,7 +321,10 @@ export default function HubModulosPage() {
             <Link
               key={modulo.id}
               href={modulo.href}
-              className="group bg-white rounded-xl border border-[#1B1F1C]/12 p-5 hover:border-[#1B1F1C]/30 transition-colors flex flex-col justify-between"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group bg-white rounded-xl border border-[#1B1F1C]/12 p-5 hover:border-[#1B1F1C]/30 hover:shadow-sm transition-all flex flex-col justify-between"
+              title={`Abrir ${modulo.titulo} em uma nova aba independente`}
             >
               <div>
                 <div className="flex items-start justify-between gap-3">
@@ -325,10 +337,15 @@ export default function HubModulosPage() {
                       {modulo.categoria === 'FINANCEIRO' && 'Financeiro'}
                     </span>
                   </span>
-                  <ArrowRight className="w-3.5 h-3.5 text-[#1B1F1C]/25 group-hover:text-[#1B1F1C]/50 group-hover:translate-x-0.5 transition-all -rotate-45" />
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] font-semibold text-[#1B1F1C]/35 group-hover:text-[#0E5C4C] transition-colors">
+                      Nova Aba
+                    </span>
+                    <ArrowRight className="w-3.5 h-3.5 text-[#1B1F1C]/25 group-hover:text-[#0E5C4C] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all -rotate-45" />
+                  </div>
                 </div>
 
-                <h3 className="font-display font-semibold text-[17px] text-[#1B1F1C] mt-3.5 leading-snug">
+                <h3 className="font-display font-semibold text-[17px] text-[#1B1F1C] mt-3.5 leading-snug group-hover:text-[#0E5C4C] transition-colors">
                   {modulo.titulo}
                 </h3>
                 <p className="text-xs font-semibold text-[#1B1F1C]/45 mt-0.5">
@@ -349,9 +366,9 @@ export default function HubModulosPage() {
                   <span />
                 )}
 
-                <span className="inline-flex items-center gap-1 font-bold text-[#1B1F1C] min-h-[44px]">
-                  <span>Acessar</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
+                <span className="inline-flex items-center gap-1.5 font-bold text-[#1B1F1C] group-hover:text-[#0E5C4C] min-h-[44px] transition-colors">
+                  <span>Abrir Módulo</span>
+                  <ArrowRight className="w-3.5 h-3.5 -rotate-45" />
                 </span>
               </div>
             </Link>
