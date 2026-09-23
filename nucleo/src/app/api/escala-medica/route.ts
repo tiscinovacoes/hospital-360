@@ -139,6 +139,22 @@ const plantoesDB: PlantaoEscala[] = [
   }
 ];
 
+/** Indicadores do painel de escala médica devolvidos pelo GET. */
+export interface MetricasEscala {
+  total_plantoes_hoje: number;
+  taxa_presenca_geofence_pct: number;
+  valor_total_escala_dia: number;
+  medicos_com_certificados_a_vencer_30d: number;
+  cobertura_vagas_criticas: string;
+}
+
+/** Retorno das ações do POST (check-in por geofence, troca de plantão, etc.). */
+export interface RespostaAcaoEscala {
+  success: boolean;
+  mensagem?: string;
+  error?: string;
+}
+
 export async function GET() {
   const totalPlantoesHoje = plantoesDB.length;
   const plantoesComPresenca = plantoesDB.filter(p => p.status === 'CHECKIN_REALIZADO' || p.status === 'CONCLUIDO').length;

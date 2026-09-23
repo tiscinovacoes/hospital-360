@@ -266,6 +266,53 @@ export interface LogInteracao {
   data_hora: string;
 }
 
+// Métricas consolidadas devolvidas pelo GET deste módulo.
+export interface MetricasCompras {
+  total_atas_vigentes: number;
+  total_itens_registrados: number;
+  valor_total_atas: number;
+  saldo_disponivel_atas: number;
+  total_contratos_ativos: number;
+  valor_total_contratos: number;
+  saldo_total_contratos: number;
+  total_empenhos_emitidos: number;
+  valor_total_empenhos: number;
+  saldo_total_empenhos: number;
+  pedidos_aguardando_entrega: number;
+}
+
+// Retorno da baixa em cascata (Empenho -> Contrato -> Ata) ao lançar a NF-e.
+export interface ReciboBaixaCascata {
+  success: boolean;
+  pdc: PedidoCompra;
+  saldos_atualizados: {
+    saldo_empenho: number;
+    saldo_contrato: number;
+    saldo_ata: number;
+  };
+  termo_recebimento: string;
+  mensagem: string;
+}
+
+// Item cru de cotação recebido no corpo da requisição (antes de normalizar).
+export interface CotacaoItemEntrada {
+  codigo_catmat?: string;
+  descricao_medicamento?: string;
+  principio_ativo?: string;
+  unidade_fornecimento?: string;
+  quantidade?: number | string;
+  preco_cmed_teto?: number | string;
+  preco_bps_mediana?: number | string;
+}
+
+// Decisão do responsável sobre cada proposta de fornecedor.
+export interface AcaoProposta {
+  proposta_id: string;
+  aceito?: boolean;
+  excluido?: boolean;
+  motivo_descarte?: string;
+}
+
 // =====================================================================
 // BANCO DE DADOS EM MEMÓRIA (PERSISTÊNCIA OPERACIONAL)
 // =====================================================================
@@ -1252,7 +1299,7 @@ export async function POST(request: Request) {
         fiscal_nome: fiscal_nome || 'Fiscal do Contrato',
         fiscal_cargo: fiscal_cargo || 'Farmacêutico RT',
         data_recebimento: new Date().toISOString().replace('T', ' ').substring(0, 19),
-        tipo_recebimento: tipo_recebimento as any,
+        tipo_recebimento: tipo_recebimento as 'provisorio' | 'definitivo',
         termo_recebimento_numero: termoRecebimento,
         observacoes: 'Entrada física e fiscal realizada com baixa em cascata concluída (Empenho -> Contrato -> Ata). Carga liberada para quarentena WMS.',
         encaminhado_wms: true
@@ -1293,12 +1340,12 @@ export async function POST(request: Request) {
         id: `cot-${Date.now()}`,
         codigo_cotacao: codigoCotacao,
         titulo: titulo || 'Cotação de Preços Hospitalares',
-        origem_importacao: origem_importacao as any,
+        origem_importacao: origem_importacao as 'MANUAL' | 'LOTE_PDF' | 'LOTE_CSV',
         status: 'DISPARADA_FORNECEDORES',
         responsavel_abertura: responsavel || 'Carlos Eduardo (Comprador)',
         data_abertura: new Date().toISOString().substring(0, 10),
         data_limite_proposta: data_limite || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().substring(0, 10),
-        itens: (itens || []).map((it: any, index: number) => ({
+        itens: (itens || []).map((it: CotacaoItemEntrada, index: number) => ({
           id: `coti-${Date.now()}-${index + 1}`,
           item_numero: index + 1,
           codigo_catmat: it.codigo_catmat || `BR0${Math.floor(100000 + Math.random() * 900000)}`,
@@ -1410,7 +1457,7 @@ export async function POST(request: Request) {
       // Aplica aceites e exclusões
       for (const item of cotacao.itens) {
         for (const prop of item.propostas) {
-          const config = (acoes_propostas || []).find((a: any) => a.proposta_id === prop.id);
+          const config = (acoes_propostas || []).find((a: AcaoProposta) => a.proposta_id === prop.id);
           if (config) {
             prop.aceito_responsavel = !!config.aceito;
             prop.excluido_acima_media = !!config.excluido;

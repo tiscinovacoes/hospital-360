@@ -6,6 +6,7 @@ import { PageHeader } from '@/components/PageHeader';
 import { ModuloRbacBar } from '@/components/ModuloRbacBar';
 import { ModuloMenuLateral, MenuLateralItem } from '@/components/ModuloMenuLateral';
 import { ModuloRole, MODULO_ROLES_CATALOG, hasPermission } from '@/types/rbac';
+import type { PacienteCustoAnalysis } from '@/app/api/custo-paciente/route';
 import {
   Layers,
   UploadCloud,
@@ -210,7 +211,7 @@ export default function IngestaoModulosPage() {
   const [viewMode, setViewMode] = useState<'PRIVADO' | 'PUBLICO_SUS'>('PRIVADO');
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
   const [loadingPatient, setLoadingPatient] = useState(false);
-  const [patientData, setPatientData] = useState<any>(null);
+  const [patientData, setPatientData] = useState<PacienteCustoAnalysis | null>(null);
 
   // Carrega análise de custo do paciente da API criada
   const fetchPatientAnalysis = async () => {

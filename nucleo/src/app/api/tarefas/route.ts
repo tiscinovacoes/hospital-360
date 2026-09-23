@@ -105,6 +105,20 @@ const TAREFAS_MEMORIA: TarefaHospitalar[] = [
   },
 ];
 
+/** Evento de custo emitido ao dar baixa numa tarefa (mão de obra + insumo). */
+export interface EventoCustoTarefa {
+  tipo: string;
+  origemModulo: string;
+  paciente: string | null;
+  cpf: string | null;
+  leitoId: string | null;
+  localizacao: string;
+  duracao: string;
+  valorCusto: number;
+  responsavel: string;
+  censoHospitalarLiberado: string | null;
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const status = searchParams.get('status');
@@ -166,7 +180,7 @@ export async function POST(request: NextRequest) {
       // Se for higienização de leito (Facilities), gera evento de liberação de leito no censo Bahmni
       const isLeitoHigienizacao = tarefa.categoria === 'FACILITIES' && Boolean(tarefa.leitoId);
 
-      const eventoCusto = {
+      const eventoCusto: EventoCustoTarefa = {
         tipo: tarefa.cpfPaciente ? 'CUSTO_DIRETO_ASSISTENCIAL' : 'CUSTO_INDIRETO_FACILITIES',
         origemModulo: `APP_TAREFAS_${tarefa.categoria}`,
         paciente: tarefa.nomePaciente || null,

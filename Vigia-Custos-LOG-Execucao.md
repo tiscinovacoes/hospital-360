@@ -525,3 +525,43 @@ data-criacao: 2026-08-12
 ### Próximos Passos Previstos:
 - Restam **38 erros de `no-explicit-any`**, concentrados em `compras-publicas/page.tsx` (24): são `useState<any>` de payloads de API que exigem modelar as interfaces de dados reais — trabalho de tipagem à parte, não incluído neste refino.
 - Restam 273 warnings de `no-unused-vars` (imports e variáveis órfãs), limpeza mecânica pendente.
+
+
+---
+
+## [2026-09-23 15:30] - v2.5.5 (Tipagem dos Payloads de API: 38 → 0 Erros de Lint)
+
+### Data e Hora:
+- 23/09/2026 às 15:30 (Fuso de Campo Grande / MS)
+
+### Versão / Etapa da Alteração:
+- v2.5.5 — Fechamento da pendência deixada na v2.5.4: substituir os `any` remanescentes por tipos reais do domínio
+
+### Resumo do que foi feito:
+
+1. **Tipos derivados da fonte, não inventados**:
+   - A rota `/api/compras-atas` já exportava as interfaces do domínio (`AtaRegistroPreco`, `PedidoCompra`, `CotacaoPreco`, etc.), mas a tela de Compras Públicas usava `useState<any>` para tudo. Os 24 `any` da tela passaram a importar esses tipos.
+   - Onde o tipo não existia, foi criado e exportado **na rota que produz o dado**: `MetricasCompras`, `ReciboBaixaCascata`, `MetricasEscala`, `RespostaAcaoEscala`, `EventoCustoTarefa`, `ItemBaixadoFefo`, `ComprovanteBaixaFefo`, `PrescricaoEntrada`, `ExameEntrada`.
+   - `PacienteCustoAnalysis` e `CmedValidationResult` já existiam; faltava só importar.
+
+2. **Defeitos que o `any` escondia**:
+   - **Código morto no validador CMED**: três cadeias de fallback liam campos que o validador nunca devolveu (`prices.bps_median_price`, `metrics.discount_vs_cmed_pct`, `audit_log.conclusive_opinion`). Confirmado contra a API em execução: os campos reais sempre vêm preenchidos e os dos fallbacks vêm `undefined`. Fallbacks removidos, comportamento idêntico.
+   - **Seed incompleto**: `SEED_PDC_PADRAO` não tinha `vinculado_ata`, campo obrigatório de `PedidoCompra`.
+   - **Modelo errado no carrinho**: os itens da tela "Novo Pedido de Compra" não são `ItemPedidoCompra` (item persistido) e sim um rascunho local; ganharam interface própria (`ItemRascunhoPdc`).
+   - **Valor de banco sem validação**: a coluna `tarja` vinda do Supabase é texto livre, mas o domínio aceita só `VERMELHA | PRETA | LIVRE`. Sob `any`, um valor fora da lista passava direto; agora `normalizarTarja()` estreita e cai no padrão.
+   - **Unions frouxos na rota de compras**: `tipo_recebimento` e `origem_importacao` eram `as any`; agora usam os unions do contrato.
+
+### Arquivos Modificados:
+- `nucleo/src/app/api/compras-atas/route.ts`, `api/escala-medica/route.ts`, `api/estoque/fefo-baixa/route.ts`, `api/openemr/atendimento/route.ts`, `api/tarefas/route.ts`
+- `nucleo/src/app/(modulos)/compras-publicas/page.tsx`, `(modulos)/escala-medica/page.tsx`, `(modulos)/ingestao-modulos/page.tsx`, `tarefas/page.tsx`
+- `nucleo/src/lib/compras/bancoPrecosMedicamentos.ts`
+
+### Verificação:
+- ESLint → **0 erros** (eram 86 no início do refino, 38 após a v2.5.4)
+- `npx tsc --noEmit` → 0 erros; `npx next build` → sucesso
+- Rotas de API afetadas → 200
+- Auditoria em navegador → 21/21 rotas limpas em 1440px, 768px e 375px, sem erros de console
+- Validador CMED conferido contra a API em execução
+
+### Próximos Passos Previstos:
+- Restam 273 warnings de `no-unused-vars` (imports e variáveis órfãs) — limpeza mecânica, sem erro associado.

@@ -4,6 +4,23 @@ import { HubDespesasService } from '@/lib/hubDespesasStore';
 import { mensagemErro } from '@/lib/utils';
 
 // Contrato: evento_atendimento_clinico (Sprint 2 - Rodrigo Albuquerque)
+/** Prescrição crua recebida no corpo da requisição, antes de normalizar. */
+export interface PrescricaoEntrada {
+  codigo?: string;
+  nome?: string;
+  dose?: string;
+  via?: string;
+  posologia?: string;
+  quantidade?: number;
+}
+
+/** Exame cru recebido no corpo da requisição, antes de normalizar. */
+export interface ExameEntrada {
+  codigo?: string;
+  nome?: string;
+  prioridade?: string;
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -69,7 +86,7 @@ export async function POST(request: Request) {
           valorCondominio: valorConsulta * 0.15,
         },
       },
-      prescricoes: prescricoes.map((p: any, idx: number) => ({
+      prescricoes: prescricoes.map((p: PrescricaoEntrada, idx: number) => ({
         itemIndex: idx + 1,
         codigoMedicamento: p.codigo || 'MED-001',
         nomeMedicamento: p.nome || 'Dipirona 500mg/mL',
@@ -79,7 +96,7 @@ export async function POST(request: Request) {
         quantidade: p.quantidade || 1,
         statusEstoque: 'BAIXA_SOLICITADA_FEFO',
       })),
-      examesSolicitados: examesSolicitados.map((e: any) => ({
+      examesSolicitados: examesSolicitados.map((e: ExameEntrada) => ({
         codigoExame: e.codigo || 'LOINC-1751-7',
         nomeExame: e.nome || 'Hemograma Completo',
         prioridade: e.prioridade || 'URGENTE',

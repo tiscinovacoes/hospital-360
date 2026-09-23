@@ -3,6 +3,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { HospitalNav } from '../components/HospitalNav';
+import type { EventoCustoTarefa } from '@/app/api/tarefas/route';
+import type { ComprovanteBaixaFefo, ItemBaixadoFefo } from '@/app/api/estoque/fefo-baixa/route';
 import {
   CheckCircle2,
   Clock,
@@ -57,8 +59,8 @@ export default function TarefasAppPage() {
   const [loading, setLoading] = useState(true);
   const [filtroStatus, setFiltroStatus] = useState<string>('TODAS');
   const [tarefaSelecionada, setTarefaSelecionada] = useState<Tarefa | null>(null);
-  const [feedbackBaixa, setFeedbackBaixa] = useState<any>(null);
-  const [feedbackFefo, setFeedbackFefo] = useState<any>(null);
+  const [feedbackBaixa, setFeedbackBaixa] = useState<EventoCustoTarefa | null>(null);
+  const [feedbackFefo, setFeedbackFefo] = useState<ComprovanteBaixaFefo | null>(null);
   const [feedbackLeito, setFeedbackLeito] = useState<string | null>(null);
   const [qrCodeLido, setQrCodeLido] = useState(false);
   const [scannerAberto, setScannerAberto] = useState(false);
@@ -419,7 +421,7 @@ export default function TarefasAppPage() {
                 </span>
               </div>
               <div className="space-y-1.5 text-xs text-blue-800">
-                {feedbackFefo.itensBaixados?.map((it: any, idx: number) => (
+                {feedbackFefo.itensBaixados?.map((it: ItemBaixadoFefo, idx: number) => (
                   <div key={idx} className="flex items-center justify-between bg-white p-2.5 rounded-lg border border-blue-100">
                     <div>
                       <p className="font-bold text-slate-800">{it.nomeMedicamento} (Lote: {it.loteId})</p>

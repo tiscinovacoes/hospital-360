@@ -77,6 +77,46 @@ const inventarioLotes = [
   }
 ];
 
+/** Lote consumido numa baixa FEFO, com rastreabilidade de validade e teto CMED. */
+export interface ItemBaixadoFefo {
+  loteId: string;
+  nomeMedicamento: string;
+  fabricante: string;
+  quantidadeBaixada: number;
+  saldoRemanescente: number;
+  dataValidade: string;
+  diasAteVencimento: number;
+  alertaCritico: string;
+  custoUnitario: number;
+  precoTetoCmed: number;
+  custoTotalBaixa: number;
+  acimaTetoCmed: boolean;
+}
+
+/** Comprovante da baixa FEFO devolvido em `data`, usado pelo app de tarefas. */
+export interface ComprovanteBaixaFefo {
+  idBaixa: string;
+  timestamp: string;
+  atendimentoId: string;
+  pacienteNome: string;
+  cpf: string;
+  origemModulo: string;
+  responsavel: string;
+  motivo: string;
+  regraAplicada: string;
+  itensBaixados: ItemBaixadoFefo[];
+  loteConsumido: ItemBaixadoFefo | undefined;
+  custoTotalConsumido: number;
+  alertaTetoCmed: boolean;
+  statusIntegracaoOpenBoxes: string;
+  hubCustos: {
+    protocolo: string;
+    estacao: number;
+    estacaoNome: string;
+    valorImputado: number;
+  };
+}
+
 export async function GET() {
   const agora = new Date().getTime();
   const lotesMapeados = inventarioLotes.map(l => {
@@ -158,20 +198,7 @@ export async function POST(request: NextRequest) {
     );
 
     let quantidadeRestante = qtdRequisitadaNum;
-    const baixasEfetuadas: Array<{
-      loteId: string;
-      nomeMedicamento: string;
-      fabricante: string;
-      quantidadeBaixada: number;
-      saldoRemanescente: number;
-      dataValidade: string;
-      diasAteVencimento: number;
-      alertaCritico: string;
-      custoUnitario: number;
-      precoTetoCmed: number;
-      custoTotalBaixa: number;
-      acimaTetoCmed: boolean;
-    }> = [];
+    const baixasEfetuadas: ItemBaixadoFefo[] = [];
 
     let alertaPrecoCmedDetectado = false;
 
@@ -254,7 +281,7 @@ export async function POST(request: NextRequest) {
       despesas: despesasHub
     });
 
-    const comprovanteBaixaFefo = {
+    const comprovanteBaixaFefo: ComprovanteBaixaFefo = {
       idBaixa: `FEFO-${Date.now()}`,
       timestamp,
       atendimentoId: atendimentoId || `ATEND-${Date.now()}`,

@@ -7,6 +7,7 @@ import { ModuloRbacBar } from '@/components/ModuloRbacBar';
 import { KpiCard } from '@/components/KpiCard';
 import { ModuloRole, MODULO_ROLES_CATALOG } from '@/types/rbac';
 import { mensagemErro } from '@/lib/utils';
+import type { MetricasEscala, RespostaAcaoEscala } from '@/app/api/escala-medica/route';
 import {
   UserCheck,
   Calendar,
@@ -96,7 +97,7 @@ export default function EscalaMedicaPage() {
 
   const [plantoes, setPlantoes] = useState<Plantao[]>([]);
   const [corpoClinico, setCorpoClinico] = useState<MedicoPlantonista[]>([]);
-  const [metricas, setMetricas] = useState<any>(null);
+  const [metricas, setMetricas] = useState<MetricasEscala | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Modais de Ação
@@ -104,7 +105,7 @@ export default function EscalaMedicaPage() {
   const [modalAcao, setModalAcao] = useState<'CHECKIN' | 'TROCA' | 'ANTECIPAR_PIX' | 'COFRE_DOCS' | null>(null);
   const [substitutoId, setSubstitutoId] = useState<string>('');
   const [distanciaSimulada, setDistanciaSimulada] = useState<number>(25); // metros do hospital
-  const [resultadoAcao, setResultadoAcao] = useState<any>(null);
+  const [resultadoAcao, setResultadoAcao] = useState<RespostaAcaoEscala | null>(null);
   const [processando, setProcessando] = useState(false);
 
   // Estados de exportação para o Hub 360
