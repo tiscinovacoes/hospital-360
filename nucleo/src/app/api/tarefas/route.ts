@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { mensagemErro } from '@/lib/utils';
 
 export interface TarefaHospitalar {
   id: string;
@@ -24,7 +25,7 @@ export interface TarefaHospitalar {
 }
 
 // Mock inicial com tarefas de diferentes setores da Sprint 2
-let TAREFAS_MEMORIA: TarefaHospitalar[] = [
+const TAREFAS_MEMORIA: TarefaHospitalar[] = [
   {
     id: 'TSK-101',
     titulo: 'Administração de Ceftriaxona 1g IV (FEFO L-9941)',
@@ -104,6 +105,20 @@ let TAREFAS_MEMORIA: TarefaHospitalar[] = [
   },
 ];
 
+/** Evento de custo emitido ao dar baixa numa tarefa (mão de obra + insumo). */
+export interface EventoCustoTarefa {
+  tipo: string;
+  origemModulo: string;
+  paciente: string | null;
+  cpf: string | null;
+  leitoId: string | null;
+  localizacao: string;
+  duracao: string;
+  valorCusto: number;
+  responsavel: string;
+  censoHospitalarLiberado: string | null;
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const status = searchParams.get('status');
@@ -165,7 +180,7 @@ export async function POST(request: NextRequest) {
       // Se for higienização de leito (Facilities), gera evento de liberação de leito no censo Bahmni
       const isLeitoHigienizacao = tarefa.categoria === 'FACILITIES' && Boolean(tarefa.leitoId);
 
-      const eventoCusto = {
+      const eventoCusto: EventoCustoTarefa = {
         tipo: tarefa.cpfPaciente ? 'CUSTO_DIRETO_ASSISTENCIAL' : 'CUSTO_INDIRETO_FACILITIES',
         origemModulo: `APP_TAREFAS_${tarefa.categoria}`,
         paciente: tarefa.nomePaciente || null,
@@ -195,9 +210,9 @@ export async function POST(request: NextRequest) {
       { success: false, data: null, error: 'Ação inválida.' },
       { status: 400 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { success: false, data: null, error: error?.message || 'Erro interno.' },
+      { success: false, data: null, error: mensagemErro(error, 'Erro interno.') },
       { status: 500 }
     );
   }

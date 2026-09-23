@@ -13,7 +13,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 
-type LucideIcon = React.ComponentType<{ size?: string | number; className?: string; [key: string]: any }>;
+type LucideIcon = React.ComponentType<{ size?: string | number; className?: string; [key: string]: unknown }>;
 
 interface ProfileCardProps {
   role: UserRole;

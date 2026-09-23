@@ -469,3 +469,220 @@ data-criacao: 2026-08-12
 ### Próximos Passos Previstos:
 - Iniciar a sincronização do dashboard do `nucleo/` com os indicadores de déficit SUS apurados pelo parser SIGTAP.
 - Solicitar a permissão de `GRANT EXECUTE` na RPC do Supabase para conexão direta dos satélites sem fallback.
+
+
+---
+
+## [2026-09-23 14:10] - v2.5.4 (Refino do Núcleo em Localhost: Responsividade Total, WCAG 2.2 e Correções de React)
+
+### Data e Hora:
+- 23/09/2026 às 14:10 (Fuso de Campo Grande / MS)
+
+### Versão / Etapa da Alteração:
+- v2.5.4 — Refino do app `nucleo/` a partir da execução real em `localhost:3000` (Next.js 16 / Turbopack)
+
+### Resumo do que foi feito:
+
+1. **Execução e auditoria do app em localhost**:
+   - Subido o `next dev` na porta 3000 com `.env.local` apontando para o projeto Supabase `oogpcdaosexarxmvupiw` (apenas URL + chave anon; nenhum segredo foi versionado — `.env*` está no `.gitignore`).
+   - Auditadas as 21 rotas em navegador headless (Chromium) nas larguras 1440px, 768px e 375px, coletando erros de console, `pageerror`, requisições falhas, overflow horizontal e violações de acessibilidade.
+   - Smoke test das rotas de API: todas respondendo 200 (`/api/ingestao` responde 405 em GET por ser POST-only).
+
+2. **Correção de overflow horizontal em TODAS as rotas (era 21/21 quebradas em 375px)**:
+   - Causa-raiz em `VigiaSidebarLayout`: o grupo esquerdo do header não tinha `min-w-0` (impedindo o `truncate` de encolher) e o grupo direito não tinha `shrink-0`; as ações de página empurravam o header para fora da viewport (até 444px de estouro).
+   - As ações de página passaram a ter faixa própria que encolhe e rola na horizontal, sem estourar a página.
+   - Rótulos longos dos botões de ação colapsam para ícone abaixo de `lg`, preservando o nome acessível via `aria-label`/`title`.
+   - Resultado: **21/21 rotas limpas em 1440px, 768px e 375px**.
+
+3. **Correção de erros de correção do React (React Compiler lint)**:
+   - `medico/page.tsx`: `Date.now()` era chamado durante o render para o `id` do preview FHIR ServiceRequest — render impuro, com risco de divergência na hidratação. O id passou a ser gerado uma vez, na abertura do modal.
+   - `tarefas/page.tsx`: o cronômetro chamava `setState` de forma síncrona no corpo do efeito. Refatorado para manter apenas um relógio no efeito e **derivar** os segundos no render.
+   - `ui/kpi-card.tsx`: o caminho de `prefers-reduced-motion` chamava `setState` síncrono no efeito; agora usa duração 0 e aplica o valor final no primeiro frame.
+
+4. **Acessibilidade WCAG 2.2**:
+   - Nomes acessíveis (4.1.2): 13 toggles de módulo em `/ingestao-modulos` (agora `role="switch"` + `aria-checked` + `aria-label`), checkbox de checklist em `/facilities` e o botão de menu em `/escala-medica`.
+   - Alvos de toque (2.5.8 AA): checkboxes, botões-ícone e links de navegação abaixo de 24px ajustados em 10 telas.
+
+5. **Qualidade de tipos e lint (86 → 38 erros)**:
+   - Novo helper `mensagemErro()` em `src/lib/utils.ts`: os `catch (err: any)` viraram `catch (err: unknown)` em 13 pontos. Antes, um throw que não fosse `Error` fazia a mensagem de erro virar `undefined` justamente no caminho de falha.
+   - `hubDespesasStore`: `globalThis as any` substituído por declaração de tipo global.
+   - Corrigido um gap real de tipo em `/laboratorio`: o union de tubos de coleta não previa `'Verde (Heparina)'`, que a própria seed usava (estava mascarado por `as any`).
+   - Removidos os 13 `prefer-const` e as 10 entidades JSX não escapadas.
+
+### Arquivos Modificados:
+- `nucleo/src/components/VigiaSidebarLayout.tsx`, `nucleo/src/components/KpiCard.tsx`, `nucleo/src/components/ui/kpi-card.tsx`
+- `nucleo/src/lib/utils.ts` (novo helper `mensagemErro`), `nucleo/src/lib/hubDespesasStore.ts`, `nucleo/src/lib/compras/bancoPrecosMedicamentos.ts`
+- `nucleo/src/app/tarefas/page.tsx`, `medico/page.tsx`, `admin/page.tsx`, `facilities/page.tsx`, `login/page.tsx`, `recepcao/page.tsx`, `internacao/page.tsx`, `components/ProfileCard.tsx`
+- `nucleo/src/app/(modulos)/`: `dashboard-executivo`, `financeiro-split`, `ingestao-modulos`, `escala-medica`, `compras-publicas`, `gestao-clinica`, `laboratorio`, `automacao-mensageria`, `admin/perfis-acessos`
+- `nucleo/src/app/api/`: `compras`, `compras-atas`, `contabil/nfse`, `ingestao`, `openemr/atendimento`, `poli/whatsapp`, `tarefas`
+
+### Verificação:
+- `npx tsc --noEmit` → 0 erros
+- `npx next build` → sucesso (60 páginas geradas)
+- Auditoria em navegador → 21/21 rotas limpas em 1440px, 768px e 375px, sem erros de console
+- Cronômetro de `/tarefas` validado em execução (avança corretamente após o refactor)
+
+### Próximos Passos Previstos:
+- Restam **38 erros de `no-explicit-any`**, concentrados em `compras-publicas/page.tsx` (24): são `useState<any>` de payloads de API que exigem modelar as interfaces de dados reais — trabalho de tipagem à parte, não incluído neste refino.
+- Restam 273 warnings de `no-unused-vars` (imports e variáveis órfãs), limpeza mecânica pendente.
+
+
+---
+
+## [2026-09-23 15:30] - v2.5.5 (Tipagem dos Payloads de API: 38 → 0 Erros de Lint)
+
+### Data e Hora:
+- 23/09/2026 às 15:30 (Fuso de Campo Grande / MS)
+
+### Versão / Etapa da Alteração:
+- v2.5.5 — Fechamento da pendência deixada na v2.5.4: substituir os `any` remanescentes por tipos reais do domínio
+
+### Resumo do que foi feito:
+
+1. **Tipos derivados da fonte, não inventados**:
+   - A rota `/api/compras-atas` já exportava as interfaces do domínio (`AtaRegistroPreco`, `PedidoCompra`, `CotacaoPreco`, etc.), mas a tela de Compras Públicas usava `useState<any>` para tudo. Os 24 `any` da tela passaram a importar esses tipos.
+   - Onde o tipo não existia, foi criado e exportado **na rota que produz o dado**: `MetricasCompras`, `ReciboBaixaCascata`, `MetricasEscala`, `RespostaAcaoEscala`, `EventoCustoTarefa`, `ItemBaixadoFefo`, `ComprovanteBaixaFefo`, `PrescricaoEntrada`, `ExameEntrada`.
+   - `PacienteCustoAnalysis` e `CmedValidationResult` já existiam; faltava só importar.
+
+2. **Defeitos que o `any` escondia**:
+   - **Código morto no validador CMED**: três cadeias de fallback liam campos que o validador nunca devolveu (`prices.bps_median_price`, `metrics.discount_vs_cmed_pct`, `audit_log.conclusive_opinion`). Confirmado contra a API em execução: os campos reais sempre vêm preenchidos e os dos fallbacks vêm `undefined`. Fallbacks removidos, comportamento idêntico.
+   - **Seed incompleto**: `SEED_PDC_PADRAO` não tinha `vinculado_ata`, campo obrigatório de `PedidoCompra`.
+   - **Modelo errado no carrinho**: os itens da tela "Novo Pedido de Compra" não são `ItemPedidoCompra` (item persistido) e sim um rascunho local; ganharam interface própria (`ItemRascunhoPdc`).
+   - **Valor de banco sem validação**: a coluna `tarja` vinda do Supabase é texto livre, mas o domínio aceita só `VERMELHA | PRETA | LIVRE`. Sob `any`, um valor fora da lista passava direto; agora `normalizarTarja()` estreita e cai no padrão.
+   - **Unions frouxos na rota de compras**: `tipo_recebimento` e `origem_importacao` eram `as any`; agora usam os unions do contrato.
+
+### Arquivos Modificados:
+- `nucleo/src/app/api/compras-atas/route.ts`, `api/escala-medica/route.ts`, `api/estoque/fefo-baixa/route.ts`, `api/openemr/atendimento/route.ts`, `api/tarefas/route.ts`
+- `nucleo/src/app/(modulos)/compras-publicas/page.tsx`, `(modulos)/escala-medica/page.tsx`, `(modulos)/ingestao-modulos/page.tsx`, `tarefas/page.tsx`
+- `nucleo/src/lib/compras/bancoPrecosMedicamentos.ts`
+
+### Verificação:
+- ESLint → **0 erros** (eram 86 no início do refino, 38 após a v2.5.4)
+- `npx tsc --noEmit` → 0 erros; `npx next build` → sucesso
+- Rotas de API afetadas → 200
+- Auditoria em navegador → 21/21 rotas limpas em 1440px, 768px e 375px, sem erros de console
+- Validador CMED conferido contra a API em execução
+
+### Próximos Passos Previstos:
+- Restam 273 warnings de `no-unused-vars` (imports e variáveis órfãs) — limpeza mecânica, sem erro associado.
+
+
+---
+
+## [2026-09-23 18:40] - v2.5.6 (Padrão Único de Módulo: Logo por Módulo, Menu Lateral Arredondado e Cabeçalho Centralizado + Modelo no Figma)
+
+### Data e Hora:
+- 23/09/2026 às 18:40 (Fuso de Campo Grande / MS)
+
+### Versão / Etapa da Alteração:
+- v2.5.6 — Design System v2.2.0: moldura padrão para todos os módulos do `nucleo/`, modelada no Figma para os próximos
+
+### Pedido:
+Usar o Figma para ajustar e modelar os próximos módulos; centralizar o cabeçalho; vincular uma logo a cada módulo; manter o padrão arredondado (o da Escala Médica) em todos os menus de módulo; padronizar os módulos.
+
+### Resumo do que foi feito:
+
+1. **Diagnóstico — três padrões de menu convivendo**:
+   - 7 módulos usavam o componente `ModuloMenuLateral` (reto, colado na borda); 5 (Compras, Escala, Estoque, Farmácia, Leitos) tinham barra própria escrita à mão, cada uma com cores diferentes.
+   - A barra da Escala Médica (a referência) violava 3 regras do guia: raio 24px (teto é 16px), item ativo na cor do módulo (guia: tinta) e dourado `#8A6A16` da v2.0 (substituído).
+   - **Bug de UX em 11 dos 12 módulos:** no celular a gaveta do menu abria já aberta, cobrindo o conteúdo (`useState(true)`).
+
+2. **Logo de Módulo** (`nucleo/src/components/ModuloLogo.tsx`, novo): quadrado em tinta + símbolo lucide em papel + dot de categoria de 9px no canto, na família da logo Vigia. Registro único `MODULO_LOGO_ICONE` (14 módulos, incluindo Perfis & Acessos). Usada no cabeçalho, no menu lateral, nos cards e no painel de destaque do hub.
+
+3. **Menu lateral padrão** (`ModuloMenuLateral.tsx`, reescrito): painel flutuante arredondado (raio 16px) com cartão de identidade (logo + nome + tag regulatória), itens com raio 12px, ativo em tinta, rótulos quebrando em até 2 linhas, rodapé com status opcional. Desktop: fixo abaixo do cabeçalho enquanto a página rola. Celular: gaveta flutuante fechada por padrão, com botão fechar. **Os 12 módulos migrados**; os 5 menus avulsos foram removidos.
+
+4. **Cabeçalho** (`VigiaSidebarLayout.tsx`): no hub, o conteúdo do cabeçalho passou a acompanhar a coluna central da página; nos módulos, a logo do módulo entrou no lugar do separador "/". Corrigidos: o título do módulo sumia no celular quando havia ações na página; a rota `/admin/perfis-acessos` exibia o tema e a tag de Compras (caía no fallback); tag regulatória com contraste insuficiente (texto em cor de categoria → tinta 75%).
+
+5. **Padronização das ações do cabeçalho**: rótulo visível a partir de 1024px, só ícone abaixo disso (com `aria-label`) — 11 botões em 6 módulos alinhados ao que 3 módulos já faziam. Botão de menu com texto único e `aria-expanded` nos 12.
+
+6. **Figma — modelo para os próximos módulos**: arquivo [Vigia Saúde 360 — Padrão de Módulos](https://www.figma.com/design/oNgeLR3Td97EmqdHqdkTuU) com: variáveis de cor do guia (incluindo tokens de alfa e o modo de superfície clara/escura do traço dos ícones), 27 símbolos, componente **Logo de Módulo** (categoria × tamanho, símbolo trocável) e a folha com as 14 logos, componentes **Item de Menu** e **Menu Lateral de Módulo**, template de módulo desktop 1440 e celular 390, e as regras com o checklist de novo módulo.
+
+7. **Guia de identidade** (`IDENTIDADE_VISUAL (1).md`): v2.2.0 com as seções Logo de Módulo, Cabeçalho e Menu lateral de módulo em § 4, exceção da logo em § 5 e link para o Figma.
+
+8. **Refluxo WCAG em 320px**: o seletor de filtro de Perfis & Acessos estourava a largura (269px num viewport de 320px); corrigido.
+
+### Arquivos Modificados/Criados:
+- `nucleo/src/components/ModuloLogo.tsx` (novo), `ModuloMenuLateral.tsx` (reescrito), `VigiaSidebarLayout.tsx`, `ModuloLayoutShell.tsx` (`CATEGORIA_COR` exportado)
+- `nucleo/src/app/(modulos)/page.tsx` (hub) e os 12 módulos em `nucleo/src/app/(modulos)/*/page.tsx`, mais `admin/perfis-acessos/page.tsx`
+- `nucleo/src/lib/hubDespesasStore.ts` (diretiva de lint desnecessária removida)
+- `IDENTIDADE_VISUAL (1).md`, `Vigia-Custos-LOG-Execucao.md`
+
+### Verificação:
+- `tsc --noEmit` → 0 erros; ESLint → 0 erros (avisos: 273, os mesmos de antes — nenhum novo); `next build` → sucesso
+- Navegador: 21/21 rotas sem erro de console e sem estouro horizontal em 1440, 768 e 375px; cabeçalho sem falhas em 320, 390, 768, 1024 e 1440px; WCAG (alvos ≥ 24px e nomes acessíveis) sem ofensores
+- Interação do menu nos 12 módulos: fechado ao abrir, abre pelo botão com `aria-expanded`, fecha no X e ao escolher um item, item ativo marcado, painel fixo a 80px ao rolar no desktop — 12/12
+
+### Próximos Passos Previstos:
+- Decisão pendente com o usuário: "centralizar o cabeçalho" foi aplicado como alinhar o cabeçalho do hub à coluna central. A alternativa (título centralizado entre marca e ações) fica registrada caso seja essa a intenção.
+- Restam os 273 avisos de `no-unused-vars` anteriores a esta entrega.
+
+
+---
+
+## [2026-09-23 21:10] - v2.5.7 (Azul da Marca no Lugar da Tinta nas Superfícies de Identidade)
+
+### Data e Hora:
+- 23/09/2026 às 21:10 (Fuso de Campo Grande / MS)
+
+### Versão / Etapa da Alteração:
+- v2.5.7 — Design System v2.3.0: o preto (tinta `#1B1F1C`) dá lugar ao azul da identidade visual nos fundos e logos marcados pelo usuário
+
+### Pedido:
+Manter o padrão da v2.2, mas trocar o preto pelo azul da identidade visual, apenas nos fundos e nas logos.
+
+### Resumo do que foi feito:
+
+1. **Tokens novos** (`nucleo/src/app/globals.css`, `@theme`): `--color-marca` `#5B84B1` (azul clínico do guia), `--color-marca-forte` `#496C92` e `--color-marca-hover` `#3C5A7A`. Viram as classes `bg-marca`, `bg-marca-forte`, `hover:bg-marca-hover`.
+   - Motivo dos dois tons: o `#5B84B1` com texto branco dá 3,9:1 — passa como gráfico (≥ 3:1), reprova AA para texto (≥ 4,5:1). Por isso ele vai só nas logos (ícone), e as superfícies com texto usam `#496C92` (5,5:1 com branco, 4,9:1 com papel).
+
+2. **Trocado para azul**: quadrado da marca "Vigia Saúde 360", avatar, Logos de Módulo (cabeçalho, menu lateral e hub), item ativo do menu lateral, painel de destaque do hub, botões escuros de ação (Nova Transferência, Conferir, Iniciar Análise, Simulador de Leitos, Concluir Simulação, Simular Ingestão, Simular Consulta c/ Split, Transmitir Remessa SUS) e a barra de título do modal do Simulador.
+
+3. **Painel de destaque legível no azul**: sobrelinha terracota, ícones teal e textos em papel com transparência ficavam abaixo do contraste AA sobre o azul → passaram para papel sólido. O botão laranja "Abrir Custo do Paciente" foi mantido (pedido restrito a fundos e logos).
+
+4. **Mantido de propósito**: selo **Tarja Preta** em Compras (classificação ANVISA — tem que ser preto), painel de terminal em fonte mono da Gestão Clínica, realces neutros com tinta translúcida, véus de modal/gaveta, e `tooltip`/`NavHeader` (usados só nas telas antigas do núcleo, fora do padrão de módulos).
+
+5. **Figma** ([Padrão de Módulos](https://www.figma.com/design/oNgeLR3Td97EmqdHqdkTuU)): variáveis `marca`, `marca-forte`, `marca-hover`; Logo de Módulo, item ativo do menu, marca e avatar dos templates religados às novas variáveis; regras e descrições dos componentes atualizadas.
+
+6. **Guia** (`IDENTIDADE_VISUAL (1).md`): v2.3.0 com a subseção "Marca — Superfícies de Identidade" em § 2, tokens em § 6, e as seções de Logo de Módulo, Cabeçalho, Menu lateral e Painel de Destaque atualizadas.
+
+7. **Observação ao usuário**: o botão redondo escuro visto à direita na prévia da Vercel é a Vercel Toolbar (só aparece em deploys de prévia para membros logados), não faz parte do app.
+
+### Arquivos Modificados:
+- `nucleo/src/app/globals.css`, `nucleo/src/components/VigiaSidebarLayout.tsx`, `ModuloLogo.tsx`, `ModuloMenuLateral.tsx`
+- `nucleo/src/app/(modulos)/page.tsx` (hub), `dashboard-executivo`, `financeiro-split`, `estoque-central`, `laboratorio`
+- `IDENTIDADE_VISUAL (1).md`, `Vigia-Custos-LOG-Execucao.md`
+
+### Verificação:
+- `tsc --noEmit` e ESLint sem erros (273 avisos antigos, nenhum novo); `next build` com sucesso
+- Navegador: 21/21 rotas sem erro e sem estouro em 1440/768/375px; cabeçalho sem falhas de 320 a 1440px; WCAG sem ofensores; menu lateral ok nos 12 módulos
+- Contraste calculado: `marca-forte` × branco 5,46:1, × papel 4,93:1, `marca-hover` × papel 6,46:1 (AA); `marca` × branco 3,90:1 (só gráfico)
+
+### Próximos Passos Previstos:
+- Validar na prévia do `dev` na Vercel antes de qualquer merge para o `master`.
+
+
+---
+
+## [2026-09-23 21:40] - v2.5.8 (Implantação em Produção: dev → master)
+
+### Data e Hora:
+- 23/09/2026 às 21:40 (Fuso de Campo Grande / MS)
+
+### Versão / Etapa da Alteração:
+- v2.5.8 — Implantação autorizada pelo usuário ("suba para produção") das entregas v2.5.4 a v2.5.7
+
+### O que vai para produção (4 commits do `dev`):
+- `7691895` — responsividade total, WCAG 2.2 e correções de React (v2.5.4)
+- `fc8fcc2` — tipagem dos payloads de API, lint 38 → 0 erros (v2.5.5)
+- `1a7b497` — padrão único de módulo: logo por módulo, menu lateral arredondado, cabeçalho centralizado (v2.5.6)
+- `0e1a88a` — azul da marca no lugar da tinta nas superfícies de identidade (v2.5.7)
+
+### Checagens antes do merge:
+- CI "Hospital 360 - CI/CD Pipeline & Security Scan" com sucesso nos 4 commits
+- Prévia da Vercel do `0e1a88a` pronta (READY), mesmas variáveis de ambiente da produção
+- `master` sem conteúdo exclusivo desde a base `c5c53c6` (só commits de merge) → merge sem conflito
+- Merge no padrão do repositório: commit `merge(deploy): implantacao autorizada ...` no `master`
+
+### Observação:
+- Nenhuma alteração de banco (DDL) nesta implantação — só o app `nucleo/` e documentação.
+- A prévia e a produção usam o mesmo projeto Supabase.

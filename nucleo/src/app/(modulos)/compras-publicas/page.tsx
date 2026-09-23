@@ -1,11 +1,30 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { KpiCard, IconBadge } from '@/components/KpiCard';
 import { ModuloRbacBar } from '@/components/ModuloRbacBar';
 import { PageHeader } from '@/components/PageHeader';
+import { ModuloMenuLateral } from '@/components/ModuloMenuLateral';
 import { ModuloRole, MODULO_ROLES_CATALOG, hasPermission } from '@/types/rbac';
+import { mensagemErro } from '@/lib/utils';
+import type {
+  AtaRegistroPreco,
+  AtaItem,
+  ContratoAdministrativo,
+  NotaEmpenho,
+  PedidoCompra,
+  ItemPedidoCompra,
+  CotacaoPreco,
+  CotacaoItem,
+  CotacaoPropostaFornecedor,
+  ChamadoModulo,
+  OcorrenciaModulo,
+  LogInteracao,
+  MetricasCompras,
+  ReciboBaixaCascata
+} from '@/app/api/compras-atas/route';
+import type { MedicamentoPrecoReferencia } from '@/lib/compras/bancoPrecosMedicamentos';
+import type { CmedValidationResult } from '@/lib/compras/cmedValidator';
 import {
   FileText,
   ShoppingCart,
@@ -27,7 +46,6 @@ import {
   LayoutDashboard,
   Settings,
   ChevronRight,
-  ArrowLeft,
   PackageCheck,
   Truck,
   Thermometer,
@@ -70,9 +88,24 @@ type SecaoModulo =
   | 'parametros'
   | 'perfis';
 
-const SEED_PDC_PADRAO = {
+/**
+ * Item do carrinho da tela "Novo Pedido de Compra": o que o comprador monta
+ * antes de gravar. Difere de `ItemPedidoCompra` (o item ja persistido no PdC,
+ * que carrega quantidade entregue, conferencia, lote e validade).
+ */
+interface ItemRascunhoPdc {
+  id: string;
+  catmat: string;
+  descricao: string;
+  quantidade: number;
+  preco_unitario: number;
+  total: number;
+}
+
+const SEED_PDC_PADRAO: PedidoCompra = {
   id: 'pdc-001',
   numero_pdc: 'PdC-2026-0001',
+  vinculado_ata: true,
   numero_empenho: 'EMP-2026/894120',
   numero_contrato: 'CONT-2026/042-A',
   numero_ata: 'ARP-2026/042-SMS',
@@ -111,25 +144,25 @@ const SEED_PDC_PADRAO = {
 
 export default function VigiaComprasPage() {
   // Controle de Navegação do Produto Único
-  const [sidebarAberta, setSidebarAberta] = useState(true);
+  const [sidebarAberta, setSidebarAberta] = useState(false);
   const [secaoAtiva, setSecaoAtiva] = useState<SecaoModulo>('visao_geral');
   const [perfilAtivo] = useState<PerfilCompras>('compras_operador');
 
   // Estados de Dados da API
-  const [atas, setAtas] = useState<any[]>([]);
-  const [contratos, setContratos] = useState<any[]>([]);
-  const [empenhos, setEmpenhos] = useState<any[]>([]);
-  const [pedidosCompra, setPedidosCompra] = useState<any[]>([SEED_PDC_PADRAO]);
-  const [bancoPrecos, setBancoPrecos] = useState<any[]>([]);
+  const [atas, setAtas] = useState<AtaRegistroPreco[]>([]);
+  const [contratos, setContratos] = useState<ContratoAdministrativo[]>([]);
+  const [empenhos, setEmpenhos] = useState<NotaEmpenho[]>([]);
+  const [pedidosCompra, setPedidosCompra] = useState<PedidoCompra[]>([SEED_PDC_PADRAO]);
+  const [bancoPrecos, setBancoPrecos] = useState<MedicamentoPrecoReferencia[]>([]);
   const [origemBancoPrecos, setOrigemBancoPrecos] = useState<string>('CACHE_LOCAL_OFICIAL');
   const [filtroBancoPrecos, setFiltroBancoPrecos] = useState<string>('');
   const [sincronizandoBanco, setSincronizandoBanco] = useState(false);
   const [feedbackSincronizacao, setFeedbackSincronizacao] = useState<{ tipo: 'sucesso' | 'info' | 'erro'; texto: string } | null>(null);
-  const [cotacoes, setCotacoes] = useState<any[]>([]);
-  const [metricas, setMetricas] = useState<any>(null);
-  const [chamados, setChamados] = useState<any[]>([]);
-  const [ocorrencias, setOcorrencias] = useState<any[]>([]);
-  const [logs, setLogs] = useState<any[]>([]);
+  const [cotacoes, setCotacoes] = useState<CotacaoPreco[]>([]);
+  const [metricas, setMetricas] = useState<MetricasCompras | null>(null);
+  const [chamados, setChamados] = useState<ChamadoModulo[]>([]);
+  const [ocorrencias, setOcorrencias] = useState<OcorrenciaModulo[]>([]);
+  const [logs, setLogs] = useState<LogInteracao[]>([]);
   const [loading, setLoading] = useState(true);
   const [filtroBusca, setFiltroBusca] = useState('');
 
@@ -147,7 +180,7 @@ export default function VigiaComprasPage() {
   // Detalhes do item a adicionar
   const [medicamentoSelecionadoId, setMedicamentoSelecionadoId] = useState<string>('item-001');
   const [itemQuantidade, setItemQuantidade] = useState<number>(1000);
-  const [itensAdicionados, setItensAdicionados] = useState<any[]>([
+  const [itensAdicionados, setItensAdicionados] = useState<ItemRascunhoPdc[]>([
     {
       id: 'it-add-1',
       catmat: 'BR0284729',
@@ -192,7 +225,7 @@ export default function VigiaComprasPage() {
   const [validadeConferida, setValidadeConferida] = useState('2027-10-31');
   const [tempAferida, setTempAferida] = useState('21.4ºC');
   const [confirmandoEntrega, setConfirmandoEntrega] = useState(false);
-  const [reciboCascata, setReciboCascata] = useState<any | null>(null);
+  const [reciboCascata, setReciboCascata] = useState<ReciboBaixaCascata | null>(null);
 
   const rolesCompras = MODULO_ROLES_CATALOG['compras-publicas'];
   const [activeRoleCompras, setActiveRoleCompras] = useState<ModuloRole>(rolesCompras[0]);
@@ -232,7 +265,7 @@ export default function VigiaComprasPage() {
   const [catmatInput, setCatmatInput] = useState('BR0284729');
   const [nomeMedInput, setNomeMedInput] = useState('Meropenem 1g Pó Liofilizado Injetável');
   const [precoPropostoInput, setPrecoPropostoInput] = useState('48.50');
-  const [resultadoValidacao, setResultadoValidacao] = useState<any | null>(null);
+  const [resultadoValidacao, setResultadoValidacao] = useState<CmedValidationResult | null>(null);
   const [validandoPreco, setValidandoPreco] = useState(false);
 
   // -------------------------------------------------------------
@@ -305,10 +338,10 @@ export default function VigiaComprasPage() {
           texto: data.mensagem || 'Conexão ativa com o catálogo oficial CMED/BPS.'
         });
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       setFeedbackSincronizacao({
         tipo: 'erro',
-        texto: `Falha na requisição de sincronização: ${err.message}`
+        texto: `Falha na requisição de sincronização: ${mensagemErro(err)}`
       });
     } finally {
       setSincronizandoBanco(false);
@@ -325,7 +358,7 @@ export default function VigiaComprasPage() {
   const ataAtiva = atas.find(a => a.id === ataSelecionadaId) || atas[0] || null;
   const contratoAtivo = contratos.find(c => c.id === contratoSelecionadoId) || contratos[0] || null;
   const empenhoAtivo = empenhos.find(e => e.id === empenhoSelecionadoId) || empenhos[0] || null;
-  const medAtivo = ataAtiva?.itens?.find((i: any) => i.id === medicamentoSelecionadoId) || ataAtiva?.itens?.[0] || null;
+  const medAtivo = ataAtiva?.itens?.find((i: AtaItem) => i.id === medicamentoSelecionadoId) || ataAtiva?.itens?.[0] || null;
 
   // Cálculos de Total Geral dos Itens Adicionados
   const totalGeralPedido = itensAdicionados.reduce((acc, it) => acc + it.total, 0);
@@ -500,7 +533,7 @@ export default function VigiaComprasPage() {
           chave_acesso: danfeChave,
           fiscal_nome: fiscalNome,
           fiscal_cargo: fiscalCargo,
-          itens_conferencia: pdc.itens.map((it: any) => ({
+          itens_conferencia: pdc.itens.map((it: ItemPedidoCompra) => ({
             catmat: it.catmat,
             preco_unitario: it.preco_unitario,
             quantidade_entregue: it.quantidade_pedida,
@@ -815,110 +848,53 @@ export default function VigiaComprasPage() {
             <button
               onClick={() => setSidebarAberta(!sidebarAberta)}
               className="lg:hidden p-2 min-h-[44px] min-w-[44px] rounded-xl text-slate-600 hover:bg-slate-100 transition-all cursor-pointer flex items-center justify-center"
-              title={sidebarAberta ? 'Recolher menu de seções' : 'Expandir menu de seções'}
+              title={sidebarAberta ? 'Recolher menu' : 'Expandir menu'}
+              aria-label={sidebarAberta ? 'Recolher menu' : 'Expandir menu'}
+              aria-expanded={sidebarAberta}
             >
               {sidebarAberta ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
             </button>
 
             <button
+              aria-label="Novo Pedido (PdC)"
+              title="Novo Pedido (PdC)"
               onClick={() => setSecaoAtiva('pedidos_compra')}
               className="flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl text-xs font-bold bg-[#0E5C4C] text-white hover:bg-[#0A4A3D] transition-all shadow-xs cursor-pointer"
             >
               <ShoppingCart className="w-3.5 h-3.5" />
-              <span>Novo Pedido (PdC)</span>
+              <span className="hidden lg:inline">Novo Pedido (PdC)</span>
             </button>
 
             <button
+              aria-label="Confirmar Entrega"
+              title="Confirmar Entrega"
               onClick={() => setSecaoAtiva('confirmar_entrega')}
               className="hidden sm:flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition-all shadow-xs cursor-pointer"
             >
               <PackageCheck className="w-3.5 h-3.5" />
-              <span>Confirmar Entrega</span>
+              <span className="hidden lg:inline">Confirmar Entrega</span>
             </button>
           </div>
         }
       />
 
-      {/* Backdrop Mobile Transparente com Blur */}
-      {sidebarAberta && (
-        <div
-          onClick={() => setSidebarAberta(false)}
-          className="fixed inset-0 bg-slate-900/20 backdrop-blur-xs z-40 lg:hidden transition-opacity"
-          aria-hidden="true"
-        />
-      )}
 
       {/* ========================================================================= */}
       {/* 2. CORPO PRINCIPAL COM SIDEBAR RETRÁTIL & MOBILE DRAWER */}
       {/* ========================================================================= */}
-      <div className="flex flex-1 overflow-hidden relative">
-        {/* Menu Lateral Colorido com a Cor do Módulo (Azul Cobalto) */}
-        <aside
-          className={`
-            fixed lg:static inset-y-0 left-0 z-50 lg:z-30
-            ${sidebarAberta ? 'translate-x-0 w-72 lg:w-64 shadow-xl lg:shadow-none' : '-translate-x-full lg:translate-x-0 lg:w-0 lg:hidden'}
-            shrink-0 bg-[#0E5C4C]/[0.05] border-r border-[#0E5C4C]/20 flex flex-col justify-between transition-all duration-200 ease-in-out
-          `}
-        >
-          <nav className="p-3 space-y-1.5 flex-1 overflow-y-auto">
-            <div className="px-3 pb-2 text-[10px] font-bold text-[#0E5C4C] uppercase tracking-wider">
-              Menu de Compras &amp; Atas
-            </div>
-            {menuItens.map((item) => {
-              const Icone = item.icon;
-              const ativo = secaoAtiva === item.id;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => {
-                    setSecaoAtiva(item.id as SecaoModulo);
-                    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
-                      setSidebarAberta(false);
-                    }
-                  }}
-                  className={`w-full min-h-[44px] sm:min-h-[38px] flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all text-left cursor-pointer focus:ring-2 focus:ring-[#0E5C4C] focus:outline-none ${
-                    ativo
-                      ? 'bg-[#0E5C4C] text-white font-bold border border-[#0E5C4C] shadow-sm shadow-blue-600/25'
-                      : 'text-slate-700 hover:bg-white/90 hover:text-[#0E5C4C] hover:shadow-2xs border border-transparent'
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <Icone
-                      className={`w-4 h-4 shrink-0 transition-colors ${
-                        ativo ? 'text-white' : 'text-[#0E5C4C]/80 group-hover:text-[#0E5C4C]'
-                      }`}
-                    />
-                    <span className="truncate">{item.label}</span>
-                  </div>
-                  {item.badge && (
-                    <span
-                      className={`text-[10px] px-2 py-0.5 rounded-full font-bold ml-2 shrink-0 ${
-                        ativo
-                          ? 'bg-white/20 text-white'
-                          : item.badgeCor || 'bg-[#0E5C4C]/[0.12] text-[#0E5C4C] border border-[#0E5C4C]/20'
-                      }`}
-                    >
-                      {item.badge}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </nav>
-
-          <div className="p-3 border-t border-[#0E5C4C]/20 bg-[#0E5C4C]/[0.10] space-y-2">
-            <Link
-              href="/"
-              className="flex items-center justify-center gap-2 w-full py-2.5 px-3 rounded-xl border border-[#0E5C4C]/20 bg-white text-[#0E5C4C] hover:text-[#1B1F1C] hover:bg-[#0A4A3D]/[0.08] text-xs font-bold transition-all shadow-2xs"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Voltar ao Hub de Módulos</span>
-            </Link>
-          </div>
-        </aside>
+      <div className="flex flex-1 relative overflow-x-clip">
+        <ModuloMenuLateral
+          moduloId="compras-publicas"
+          titulo="Compras & Atas"
+          itens={menuItens}
+          ativoId={secaoAtiva}
+          onSelect={(id) => setSecaoAtiva(id as SecaoModulo)}
+          aberto={sidebarAberta}
+          onFechar={() => setSidebarAberta(false)}
+        />
 
         {/* Área Central de Conteúdo */}
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-6">
+        <main className="flex-1 min-w-0 p-4 lg:p-6 space-y-6">
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 text-xs text-slate-500 font-medium pb-2 border-b border-[#E0E0E0]">
             <span>Vigia Saúde</span>
@@ -1160,7 +1136,7 @@ export default function VigiaComprasPage() {
                       onChange={(e) => setMedicamentoSelecionadoId(e.target.value)}
                       className="w-full px-3 py-2 bg-white border border-[#E0E0E0] rounded-xl text-xs font-medium text-slate-800 focus:ring-2 focus:ring-[#0E5C4C] focus:outline-none cursor-pointer"
                     >
-                      {ataAtiva?.itens?.map((it: any) => (
+                      {ataAtiva?.itens?.map((it: AtaItem) => (
                         <option key={it.id} value={it.id}>
                           {it.descricao_medicamento} (CATMAT: {it.codigo_catmat}) - Preço ATA: R$ {it.preco_homologado?.toFixed(2)}
                         </option>
@@ -1798,7 +1774,7 @@ export default function VigiaComprasPage() {
 
                   {/* Itens e Propostas Recebidas */}
                   <div className="space-y-4">
-                    {cot.itens.map((it: any) => (
+                    {cot.itens.map((it: CotacaoItem) => (
                       <div key={it.id} className="border border-[#E0E0E0] rounded-xl p-4 bg-[#F8FAFC] space-y-3">
                         <div className="flex flex-wrap items-center justify-between gap-2">
                           <div>
@@ -1834,7 +1810,7 @@ export default function VigiaComprasPage() {
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-[#E0E0E0]">
-                              {it.propostas?.map((prop: any) => (
+                              {it.propostas?.map((prop: CotacaoPropostaFornecedor) => (
                                 <tr
                                   key={prop.id}
                                   className={`hover:bg-[#F8FAFC] ${
@@ -2001,7 +1977,7 @@ export default function VigiaComprasPage() {
                   </label>
                   <select
                     onChange={(e) => {
-                      const med = bancoPrecos.find((m: any) => m.id === e.target.value);
+                      const med = bancoPrecos.find((m: MedicamentoPrecoReferencia) => m.id === e.target.value);
                       if (med) {
                         setCatmatInput(med.codigo_catmat);
                         setNomeMedInput(med.nome_comercial_padrao);
@@ -2011,7 +1987,7 @@ export default function VigiaComprasPage() {
                     className="w-full px-3 py-2 bg-white border border-[#E0E0E0] rounded-xl text-xs font-medium text-slate-800 cursor-pointer focus:ring-2 focus:ring-[#0E5C4C] focus:outline-none"
                   >
                     <option value="">-- Escolha um medicamento para preenchimento automático --</option>
-                    {bancoPrecos.map((m: any) => (
+                    {bancoPrecos.map((m: MedicamentoPrecoReferencia) => (
                       <option key={m.id} value={m.id}>
                         {m.nome_comercial_padrao} (CATMAT: {m.codigo_catmat}) - Teto CMED: R$ {m.preco_teto_cmed?.toFixed(2)} | BPS: R$ {m.preco_referencia_bps?.toFixed(2)}
                       </option>
@@ -2083,18 +2059,18 @@ export default function VigiaComprasPage() {
                       <div className="p-3 bg-white rounded-xl border border-[#E0E0E0]">
                         <span className="text-[10px] text-slate-500 block">Mediana BPS (SUS):</span>
                         <span className="font-bold text-slate-900">
-                          R$ {(resultadoValidacao?.prices?.bps_reference_price ?? resultadoValidacao?.prices?.bps_median_price)?.toFixed(2) || '0,00'}
+                          R$ {resultadoValidacao?.prices?.bps_reference_price?.toFixed(2) || '0,00'}
                         </span>
                       </div>
                       <div className="p-3 bg-white rounded-xl border border-[#E0E0E0]">
                         <span className="text-[10px] text-slate-500 block">Divergência / Desconto:</span>
                         <span className="font-bold text-[#0E9F6E]">
-                          {resultadoValidacao?.validation?.divergence_vs_cmed_percent ?? resultadoValidacao?.metrics?.discount_vs_cmed_pct ?? 0}%
+                          {resultadoValidacao?.validation?.divergence_vs_cmed_percent ?? 0}%
                         </span>
                       </div>
                     </div>
                     <p className="text-slate-700 mt-2 font-medium">
-                      {resultadoValidacao?.validation?.parecer_tecnico ?? resultadoValidacao?.validation?.reason ?? resultadoValidacao?.audit_log?.conclusive_opinion ?? 'Parecer técnico em conformidade com o Art. 23 da Lei 14.133/21.'}
+                      {resultadoValidacao?.validation?.parecer_tecnico ?? resultadoValidacao?.validation?.reason ?? 'Parecer técnico em conformidade com o Art. 23 da Lei 14.133/21.'}
                     </p>
                   </div>
                 )}
@@ -2180,7 +2156,7 @@ export default function VigiaComprasPage() {
                 />
                 <KpiCard
                   title="Cadeia de Frio (2ºC-8ºC)"
-                  value={bancoPrecos.filter((m: any) => m.temperatura_exigida?.includes('2ºC')).length || 4}
+                  value={bancoPrecos.filter((m: MedicamentoPrecoReferencia) => m.temperatura_exigida?.includes('2ºC')).length || 4}
                   icon={Thermometer}
                   variant="teal"
                   subtitle="Termolábeis com controle térmico"
@@ -2217,7 +2193,7 @@ export default function VigiaComprasPage() {
 
                   <div className="flex items-center gap-2 self-start sm:self-auto text-xs text-slate-500">
                     <span>Exibindo: <strong className="text-slate-900">
-                      {bancoPrecos.filter((m: any) => {
+                      {bancoPrecos.filter((m: MedicamentoPrecoReferencia) => {
                         if (!filtroBancoPrecos) return true;
                         const f = filtroBancoPrecos.toLowerCase();
                         return (
@@ -2247,7 +2223,7 @@ export default function VigiaComprasPage() {
                     </thead>
                     <tbody className="divide-y divide-[#E0E0E0]">
                       {bancoPrecos
-                        .filter((m: any) => {
+                        .filter((m: MedicamentoPrecoReferencia) => {
                           if (!filtroBancoPrecos) return true;
                           const f = filtroBancoPrecos.toLowerCase();
                           return (
@@ -2257,7 +2233,7 @@ export default function VigiaComprasPage() {
                             m.classe_terapeutica?.toLowerCase().includes(f)
                           );
                         })
-                        .map((med: any) => {
+                        .map((med: MedicamentoPrecoReferencia) => {
                           const descontoPct = med.preco_teto_cmed > 0
                             ? (((med.preco_teto_cmed - med.preco_referencia_bps) / med.preco_teto_cmed) * 100).toFixed(1)
                             : '0';

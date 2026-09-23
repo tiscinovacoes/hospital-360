@@ -3,6 +3,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { HospitalNav } from '../components/HospitalNav';
+import type { EventoCustoTarefa } from '@/app/api/tarefas/route';
+import type { ComprovanteBaixaFefo, ItemBaixadoFefo } from '@/app/api/estoque/fefo-baixa/route';
 import {
   CheckCircle2,
   Clock,
@@ -57,14 +59,15 @@ export default function TarefasAppPage() {
   const [loading, setLoading] = useState(true);
   const [filtroStatus, setFiltroStatus] = useState<string>('TODAS');
   const [tarefaSelecionada, setTarefaSelecionada] = useState<Tarefa | null>(null);
-  const [feedbackBaixa, setFeedbackBaixa] = useState<any>(null);
-  const [feedbackFefo, setFeedbackFefo] = useState<any>(null);
+  const [feedbackBaixa, setFeedbackBaixa] = useState<EventoCustoTarefa | null>(null);
+  const [feedbackFefo, setFeedbackFefo] = useState<ComprovanteBaixaFefo | null>(null);
   const [feedbackLeito, setFeedbackLeito] = useState<string | null>(null);
   const [qrCodeLido, setQrCodeLido] = useState(false);
   const [scannerAberto, setScannerAberto] = useState(false);
   
   // Cronômetro dinâmico em tempo real (mobile-design & react-patterns)
-  const [segundosDecorridos, setSegundosDecorridos] = useState<number>(0);
+  // Relógio do cronômetro: só avança enquanto há tarefa em andamento.
+  const [agoraMs, setAgoraMs] = useState<number>(() => Date.now());
 
   const [certosEnfermagem, setCertosEnfermagem] = useState({
     pacienteCerto: false,
@@ -77,7 +80,11 @@ export default function TarefasAppPage() {
   // Sintetizador de áudio para bip de scanner hospitalar (Web Audio API)
   const tocarBipScanner = () => {
     try {
-      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const AudioCtor =
+        window.AudioContext ??
+        (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      if (!AudioCtor) return;
+      const audioCtx = new AudioCtor();
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
       osc.type = 'sine';
@@ -98,8 +105,10 @@ export default function TarefasAppPage() {
     }
   };
 
+  // Não liga o spinner aqui: no mount `loading` já inicia como true e um
+  // setState síncrono a partir do efeito dispara renders em cascata. Os
+  // recarregamentos disparados por interação ligam o spinner no call site.
   const carregarTarefas = async () => {
-    setLoading(true);
     try {
       const res = await fetch('/api/tarefas');
       const json = await res.json();
@@ -116,28 +125,42 @@ export default function TarefasAppPage() {
   };
 
   useEffect(() => {
+    // A regra não enxerga através do async: carregarTarefas() só chama
+    // setState depois do primeiro `await fetch(...)`, nunca de forma síncrona
+    // no corpo do efeito. Buscar dados no mount é justamente o caso de uso do
+    // useEffect, então aqui a regra é um falso positivo.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     carregarTarefas();
   }, []);
 
-  // Hook reativo do cronômetro para tarefa em andamento (react-patterns)
+  // Cronômetro da tarefa em andamento.
+  //
+  // O efeito só mantém um "relógio" (agoraMs) atualizado a cada segundo; os
+  // segundos decorridos são DERIVADOS no render. Antes, o efeito chamava
+  // setSegundosDecorridos() de forma síncrona no próprio corpo, o que dispara
+  // renders em cascata (react-hooks/set-state-in-effect).
+  const cronometroAtivo = Boolean(
+    tarefaSelecionada &&
+      tarefaSelecionada.status === 'EM_ANDAMENTO' &&
+      tarefaSelecionada.horarioInicio
+  );
+
   useEffect(() => {
-    if (!tarefaSelecionada || tarefaSelecionada.status !== 'EM_ANDAMENTO' || !tarefaSelecionada.horarioInicio) {
-      setSegundosDecorridos(0);
-      return;
-    }
-
-    const inicioMs = new Date(tarefaSelecionada.horarioInicio).getTime();
-
-    const atualizar = () => {
-      const agoraMs = Date.now();
-      const deltaSec = Math.max(0, Math.floor((agoraMs - inicioMs) / 1000));
-      setSegundosDecorridos(deltaSec);
-    };
-
-    atualizar();
-    const interval = setInterval(atualizar, 1000);
+    if (!cronometroAtivo) return;
+    const interval = setInterval(() => setAgoraMs(Date.now()), 1000);
     return () => clearInterval(interval);
-  }, [tarefaSelecionada]);
+  }, [cronometroAtivo]);
+
+  const inicioMs = tarefaSelecionada?.horarioInicio
+    ? new Date(tarefaSelecionada.horarioInicio).getTime()
+    : null;
+
+  // Math.max(agoraMs, inicioMs) evita contagem negativa quando a tarefa começa
+  // depois da última leitura do relógio — mostra 00:00 até o próximo tick.
+  const segundosDecorridos =
+    cronometroAtivo && inicioMs !== null
+      ? Math.floor((Math.max(agoraMs, inicioMs) - inicioMs) / 1000)
+      : 0;
 
   const handleIniciarTarefa = async (tarefaId: string) => {
     try {
@@ -149,6 +172,7 @@ export default function TarefasAppPage() {
       const json = await res.json();
       if (json.success) {
         tocarBipScanner();
+        setLoading(true);
         carregarTarefas();
       }
     } catch (err) {
@@ -220,6 +244,7 @@ export default function TarefasAppPage() {
         }
 
         setQrCodeLido(false);
+        setLoading(true);
         carregarTarefas();
       }
     } catch (err) {
@@ -249,7 +274,7 @@ export default function TarefasAppPage() {
       {/* Header Mobile PWA (Touch-First & High-Contrast) */}
       <section className="bg-gradient-to-r from-[#0F172A] via-[#1E293B] to-[#1E3A5F] text-white py-5 px-4 sm:px-6 shadow-md">
         <div className="max-w-4xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
+          <div className="min-w-0">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 mb-2">
               <Smartphone className="w-3.5 h-3.5" /> App Mobile PWA • Chão de Fábrica Hospitalar
             </div>
@@ -261,7 +286,7 @@ export default function TarefasAppPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-2 self-stretch sm:self-auto">
+          <div className="flex flex-wrap items-center gap-2 self-stretch sm:self-auto sm:shrink-0">
             <button
               onClick={() => setScannerAberto(true)}
               className="flex-1 sm:flex-none min-h-[48px] px-4 py-2.5 text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 active:scale-95"
@@ -396,7 +421,7 @@ export default function TarefasAppPage() {
                 </span>
               </div>
               <div className="space-y-1.5 text-xs text-blue-800">
-                {feedbackFefo.itensBaixados?.map((it: any, idx: number) => (
+                {feedbackFefo.itensBaixados?.map((it: ItemBaixadoFefo, idx: number) => (
                   <div key={idx} className="flex items-center justify-between bg-white p-2.5 rounded-lg border border-blue-100">
                     <div>
                       <p className="font-bold text-slate-800">{it.nomeMedicamento} (Lote: {it.loteId})</p>
@@ -584,7 +609,7 @@ export default function TarefasAppPage() {
                           onChange={(e) =>
                             setCertosEnfermagem((prev) => ({ ...prev, [key]: e.target.checked }))
                           }
-                          className="rounded text-cyan-600 focus:ring-cyan-500 w-4 h-4"
+                          className="rounded text-cyan-600 focus:ring-cyan-500 w-6 h-6 shrink-0"
                         />
                         <span className="capitalize text-[11px] font-semibold text-slate-700">
                           {key.replace('Certo', ' Certo')}

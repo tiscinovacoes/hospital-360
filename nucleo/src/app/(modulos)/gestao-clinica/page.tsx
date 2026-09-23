@@ -61,7 +61,7 @@ export default function ClinicManagementPage() {
   const roles = MODULO_ROLES_CATALOG['gestao-clinica'];
   const [activeRole, setActiveRole] = useState<ModuloRole>(roles[0]);
   const [activeTab, setActiveTab] = useState<'painel' | 'agenda' | 'financeiro' | 'fila-openemr' | 'perfis'>('painel');
-  const [sidebarAberta, setSidebarAberta] = useState(true);
+  const [sidebarAberta, setSidebarAberta] = useState(false);
   const menuItens: MenuLateralItem[] = [
     { id: 'painel', label: 'Visão Geral & DRE', icon: DollarSign },
     { id: 'agenda', label: 'Agenda Preditiva & No-Show (IA)', icon: Calendar },
@@ -366,6 +366,8 @@ export default function ClinicManagementPage() {
               onClick={() => setSidebarAberta(!sidebarAberta)}
               className="lg:hidden p-2 min-h-[44px] min-w-[44px] rounded-xl text-slate-600 hover:bg-slate-100 transition-all cursor-pointer flex items-center justify-center"
               title={sidebarAberta ? 'Recolher menu' : 'Expandir menu'}
+              aria-label={sidebarAberta ? 'Recolher menu' : 'Expandir menu'}
+              aria-expanded={sidebarAberta}
             >
               {sidebarAberta ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
             </button>
@@ -377,17 +379,17 @@ export default function ClinicManagementPage() {
         }
       />
 
-      <div className="flex flex-1 overflow-hidden relative">
+      <div className="flex flex-1 relative overflow-x-clip">
         <ModuloMenuLateral
           titulo="Consultório & Clínica"
-          categoria="ASSISTENCIAL"
+          moduloId="gestao-clinica"
           itens={menuItens}
           ativoId={activeTab}
           onSelect={(id) => setActiveTab(id as typeof activeTab)}
           aberto={sidebarAberta}
           onFechar={() => setSidebarAberta(false)}
         />
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-6">
+        <main className="flex-1 min-w-0 p-4 lg:p-6 space-y-6">
       {/* Toast Flutuante Asséptico (Sem preto/escuro) */}
       {toastMessage && (
         <div className="fixed top-20 right-6 z-50 bg-white text-slate-800 px-5 py-3.5 rounded-xl shadow-xl border border-[#C1622D]/30 flex items-center gap-3 animate-in slide-in-from-top-4 duration-300">
@@ -1563,12 +1565,12 @@ export default function ClinicManagementPage() {
               <div>
                 <label className="font-bold text-[#374151] block mb-1">Mensagem Gerada pela IA:</label>
                 <div className="p-3 bg-slate-50 border border-slate-300 rounded-xl font-mono text-[11px] text-slate-700 leading-relaxed">
-                  "Olá Paulo! Confirmamos sua consulta hoje com o Dr. Ricardo às 16:00 na CardioVida (Sala 204). O estacionamento do Hub está liberado com manobrista cortesia. Por favor, responda 1 para CONFIRMAR ou 2 para REMARCAR."
+                  &quot;Olá Paulo! Confirmamos sua consulta hoje com o Dr. Ricardo às 16:00 na CardioVida (Sala 204). O estacionamento do Hub está liberado com manobrista cortesia. Por favor, responda 1 para CONFIRMAR ou 2 para REMARCAR.&quot;
                 </div>
               </div>
 
               <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-900 text-[11px]">
-                <strong>Gatilho de Encaixe Automático:</strong> Se o paciente responder "2" ou não responder em 45 minutos, o slot é ofertado imediatamente para a lista de espera de 3 pacientes prioritários.
+                <strong>Gatilho de Encaixe Automático:</strong> Se o paciente responder &quot;2&quot; ou não responder em 45 minutos, o slot é ofertado imediatamente para a lista de espera de 3 pacientes prioritários.
               </div>
             </div>
 

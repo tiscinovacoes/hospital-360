@@ -24,18 +24,16 @@ function useCountUp(valorFinal: string, ativo: boolean) {
   useEffect(() => {
     if (!isInteiroPuro || !ativo) return;
 
+    // Com "prefers-reduced-motion" a duração vira 0: o primeiro frame já
+    // aplica o valor final. Antes havia um setExibido() síncrono no corpo do
+    // efeito, que provoca renders em cascata (react-hooks/set-state-in-effect).
     const reduzMovimento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduzMovimento) {
-      setExibido(numero);
-      return;
-    }
-
-    const duracao = 700;
+    const duracao = reduzMovimento ? 0 : 700;
     const inicio = performance.now();
     let frame: number;
 
     function tick(agora: number) {
-      const progresso = Math.min((agora - inicio) / duracao, 1);
+      const progresso = duracao === 0 ? 1 : Math.min((agora - inicio) / duracao, 1);
       const easeOut = 1 - Math.pow(1 - progresso, 3);
       setExibido(Math.round(easeOut * numero));
       if (progresso < 1) frame = requestAnimationFrame(tick);

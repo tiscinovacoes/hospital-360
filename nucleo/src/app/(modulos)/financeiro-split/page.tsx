@@ -175,7 +175,7 @@ export default function FinanceiroSplitPage() {
   const roles = MODULO_ROLES_CATALOG['financeiro-split'];
   const [activeRole, setActiveRole] = useState<ModuloRole>(roles[0]);
   const [abaAtiva, setAbaAtiva] = useState<AbaFinanceiro>('split');
-  const [sidebarAberta, setSidebarAberta] = useState(true);
+  const [sidebarAberta, setSidebarAberta] = useState(false);
   const menuItens: MenuLateralItem[] = [
     { id: 'split', label: 'Split de Honorários (PIX D+0)', icon: Split },
     { id: 'faturamento-sus', label: 'Faturamento SUS (BPA / AIH)', icon: FileText },
@@ -231,38 +231,44 @@ export default function FinanceiroSplitPage() {
               onClick={() => setSidebarAberta(!sidebarAberta)}
               className="lg:hidden p-2 min-h-[44px] min-w-[44px] rounded-xl text-slate-600 hover:bg-slate-100 transition-all cursor-pointer flex items-center justify-center"
               title={sidebarAberta ? 'Recolher menu' : 'Expandir menu'}
+              aria-label={sidebarAberta ? 'Recolher menu' : 'Expandir menu'}
+              aria-expanded={sidebarAberta}
             >
               {sidebarAberta ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
             </button>
             <Link
               href="/"
-              className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] text-xs font-bold text-slate-700 bg-white border border-[#E0E0E0] rounded-xl hover:bg-slate-50 transition-all shadow-xs"
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-2 min-h-[44px] min-w-[44px] shrink-0 text-xs font-bold text-slate-700 bg-white border border-[#E0E0E0] rounded-xl hover:bg-slate-50 transition-all shadow-xs"
+              title="Hub Central"
+              aria-label="Hub Central"
             >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Hub Central</span>
+              <ArrowLeft className="w-3.5 h-3.5 shrink-0" />
+              <span className="hidden lg:inline">Hub Central</span>
             </Link>
             <button
               onClick={handleSimulateSplitPayment}
-              className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] text-xs font-bold text-white bg-[#1B1F1C] hover:bg-[#33382F] rounded-xl transition-all shadow-xs touch-manipulation"
+              className="inline-flex items-center justify-center gap-1.5 px-3 lg:px-4 py-2 min-h-[44px] min-w-[44px] shrink-0 text-xs font-bold text-white bg-marca-forte hover:bg-marca-hover rounded-xl transition-all shadow-xs touch-manipulation"
+              title="Simular Consulta c/ Split"
+              aria-label="Simular Consulta c/ Split"
             >
-              <Split className="w-4 h-4" />
-              <span>Simular Consulta c/ Split</span>
+              <Split className="w-4 h-4 shrink-0" />
+              <span className="hidden lg:inline">Simular Consulta c/ Split</span>
             </button>
           </div>
         }
       />
 
-      <div className="flex flex-1 overflow-hidden relative">
+      <div className="flex flex-1 relative overflow-x-clip">
         <ModuloMenuLateral
           titulo="Financeiro & Split"
-          categoria="FINANCEIRO"
+          moduloId="financeiro-split"
           itens={menuItens}
           ativoId={abaAtiva}
           onSelect={(id) => setAbaAtiva(id as AbaFinanceiro)}
           aberto={sidebarAberta}
           onFechar={() => setSidebarAberta(false)}
         />
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-6">
+        <main className="flex-1 min-w-0 p-4 lg:p-6 space-y-6">
       {/* Feedback de Notificação */}
       {successNotice && (
         <div className="mb-4 p-3.5 bg-[#1B1F1C]/[0.08] border border-[#1B1F1C]/30 rounded-2xl flex items-center justify-between text-xs text-[#33382F] shadow-sm animate-in fade-in duration-200">
@@ -450,7 +456,7 @@ export default function FinanceiroSplitPage() {
                 onClick={() => triggerNotice('Arquivo Magnético BPA/AIH assinado digitalmente e transmitido ao Ministério da Saúde.')}
                 className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all min-h-[44px] ${
                   hasPermission(activeRole, 'APPROVE')
-                    ? 'bg-[#1B1F1C] hover:bg-[#33382F] text-white shadow-xs'
+                    ? 'bg-marca-forte hover:bg-marca-hover text-white shadow-xs'
                     : 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
                 }`}
               >

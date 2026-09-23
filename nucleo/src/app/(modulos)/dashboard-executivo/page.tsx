@@ -53,7 +53,7 @@ export default function ExecutiveDashboardPage() {
   const roles = MODULO_ROLES_CATALOG['dashboard-executivo'];
   const [activeRole, setActiveRole] = useState<ModuloRole>(roles[0]);
   const [abaAtiva, setAbaAtiva] = useState<AbaExecutiva>('jornada');
-  const [sidebarAberta, setSidebarAberta] = useState(true);
+  const [sidebarAberta, setSidebarAberta] = useState(false);
   const menuItens: MenuLateralItem[] = [
     { id: 'jornada', label: 'Custo Door-to-Door & Jornada 360°', icon: Activity },
     { id: 'desfechos', label: 'Desfechos Clínicos & ONA', icon: Stethoscope },
@@ -111,39 +111,45 @@ export default function ExecutiveDashboardPage() {
               onClick={() => setSidebarAberta(!sidebarAberta)}
               className="lg:hidden p-2 min-h-[44px] min-w-[44px] rounded-xl text-slate-600 hover:bg-slate-100 transition-all cursor-pointer flex items-center justify-center"
               title={sidebarAberta ? 'Recolher menu' : 'Expandir menu'}
+              aria-label={sidebarAberta ? 'Recolher menu' : 'Expandir menu'}
+              aria-expanded={sidebarAberta}
             >
               {sidebarAberta ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
             </button>
             <button
               onClick={() => setShowModalImportarDespesas(true)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[44px] rounded-xl bg-[#0E5C4C] hover:bg-[#0A4A3D] text-white text-xs font-bold shadow-sm transition-all cursor-pointer"
+              className="inline-flex items-center justify-center gap-1.5 px-3 lg:px-3.5 py-2 min-h-[44px] min-w-[44px] shrink-0 rounded-xl bg-[#0E5C4C] hover:bg-[#0A4A3D] text-white text-xs font-bold shadow-sm transition-all cursor-pointer"
+              title="Importar Despesas (Hub Ingestor)"
+              aria-label="Importar Despesas (Hub Ingestor)"
             >
-              <Upload className="w-4 h-4" />
-              <span>Importar Despesas (Hub Ingestor)</span>
+              <Upload className="w-4 h-4 shrink-0" />
+              <span className="hidden lg:inline">Importar Despesas (Hub Ingestor)</span>
             </button>
 
             <button
               onClick={() => setShowSimModal(true)}
-              className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] rounded-xl bg-[#1B1F1C] hover:bg-[#33382F] text-white text-xs font-bold shadow-sm transition-all cursor-pointer"
+              className="inline-flex items-center justify-center gap-1.5 px-3 lg:px-4 py-2 min-h-[44px] min-w-[44px] shrink-0 rounded-xl bg-marca-forte hover:bg-marca-hover text-white text-xs font-bold shadow-sm transition-all cursor-pointer"
+              title="Simulador de Leitos"
+              aria-label="Simulador de Leitos"
             >
-              <Sliders className="w-4 h-4" />
-              <span>Simulador de Leitos</span>
+              <Sliders className="w-4 h-4 shrink-0" />
+              <span className="hidden lg:inline">Simulador de Leitos</span>
             </button>
           </div>
         }
       />
 
-      <div className="flex flex-1 overflow-hidden relative">
+      <div className="flex flex-1 relative overflow-x-clip">
         <ModuloMenuLateral
           titulo="Custo do Paciente"
-          categoria="FINANCEIRO"
+          moduloId="dashboard-executivo"
           itens={menuItens}
           ativoId={abaAtiva}
           onSelect={(id) => setAbaAtiva(id as AbaExecutiva)}
           aberto={sidebarAberta}
           onFechar={() => setSidebarAberta(false)}
         />
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-6">
+        <main className="flex-1 min-w-0 p-4 lg:p-6 space-y-6">
       {/* Toast Flutuante Asséptico (Sem preto) */}
       {toastMessage && (
         <div className="fixed top-20 right-6 z-50 bg-white text-slate-800 px-5 py-3.5 rounded-xl shadow-xl border border-[#1B1F1C]/30 flex items-center gap-3 animate-fadeIn">
@@ -572,7 +578,7 @@ export default function ExecutiveDashboardPage() {
                       onClick={() => markAsRead(n.id)}
                       className="text-[10px] font-bold text-[#1B1F1C] hover:underline mt-2 inline-block"
                     >
-                      Marcar como ciente
+                      <span className="inline-flex items-center min-h-[24px]">Marcar como ciente</span>
                     </button>
                   )}
                 </div>
@@ -601,7 +607,7 @@ export default function ExecutiveDashboardPage() {
       {showSimModal && (
         <div className="fixed inset-0 bg-slate-900/20 backdrop-blur-xs z-50 flex items-center justify-center p-4">
           <div className="bg-white max-w-md w-full rounded-3xl shadow-xl border border-[#E0E0E0] overflow-hidden animate-fadeIn">
-            <div className="px-6 py-4 bg-[#1B1F1C] text-white flex items-center justify-between">
+            <div className="px-6 py-4 bg-marca-forte text-white flex items-center justify-between">
               <h3 className="font-extrabold text-base">Simulador de Expansão de Leitos</h3>
               <button onClick={() => setShowSimModal(false)} className="min-w-[44px] min-h-[44px] flex items-center justify-center font-bold text-white/80 hover:text-white">✕</button>
             </div>
@@ -647,7 +653,7 @@ export default function ExecutiveDashboardPage() {
               <div className="flex justify-end pt-2">
                 <button
                   onClick={() => setShowSimModal(false)}
-                  className="px-5 py-2.5 min-h-[44px] bg-[#1B1F1C] hover:bg-[#33382F] text-white rounded-xl font-bold shadow-sm transition-colors"
+                  className="px-5 py-2.5 min-h-[44px] bg-marca-forte hover:bg-marca-hover text-white rounded-xl font-bold shadow-sm transition-colors"
                 >
                   Concluir Simulação
                 </button>
@@ -771,7 +777,7 @@ export default function ExecutiveDashboardPage() {
                         setImportando(false);
                       }
                     }}
-                    className="px-3 py-2 bg-[#1B1F1C] hover:bg-[#33382F] text-white font-bold rounded-xl shadow-xs transition-colors cursor-pointer"
+                    className="px-3 py-2 bg-marca-forte hover:bg-marca-hover text-white font-bold rounded-xl shadow-xs transition-colors cursor-pointer"
                   >
                     {importando ? 'Processando Lote...' : 'Simular Ingestão de Compras (.json)'}
                   </button>

@@ -103,7 +103,7 @@ export default function AdminDashboardPage() {
               className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#93C5FD] hover:text-white transition-colors mb-2"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Voltar para Seleção de Perfis</span>
+              <span className="inline-flex items-center min-h-[24px]">Voltar para Seleção de Perfis</span>
             </Link>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-[#1E3A5F] text-[#93C5FD] flex items-center justify-center shadow-inner">
@@ -384,7 +384,7 @@ export default function AdminDashboardPage() {
                     onClick={() => setActiveSection('contratos')}
                     className="text-xs font-bold text-[#1A56DB] hover:underline"
                   >
-                    Ver todos os contratos →
+                    <span className="inline-flex items-center min-h-[24px]">Ver todos os contratos →</span>
                   </button>
                 </div>
 
@@ -740,7 +740,7 @@ export default function AdminDashboardPage() {
                       </h4>
                       <p className="text-xs text-[#4B5563] mt-2 leading-relaxed">
                         • Senha gerada automaticamente: <strong>A247</strong> • Destino: Consultório 204 (Cardiologia).
-                        <br />• O sistema notificou a agenda do Dr. Ricardo Mendes marcando o paciente com a flag <strong>"No Prédio" (RN15)</strong>.
+                        <br />• O sistema notificou a agenda do Dr. Ricardo Mendes marcando o paciente com a flag <strong>&quot;No Prédio&quot; (RN15)</strong>.
                       </p>
                     </div>
                   )}
@@ -771,7 +771,7 @@ export default function AdminDashboardPage() {
                       <p className="text-xs text-[#4B5563] mt-2 leading-relaxed">
                         • Anamnese e aferição de sinais vitais gravados no prontuário.
                         <br />• Médico solicitou Hemograma Completo com <strong>pedido digital FHIR ServiceRequest</strong> diretamente para o laboratório do prédio.
-                        <br />• Ao término da consulta, a Sala 204 é sinalizada como <strong>"Aguardando Limpeza"</strong> no mapa do administrador.
+                        <br />• Ao término da consulta, a Sala 204 é sinalizada como <strong>&quot;Aguardando Limpeza&quot;</strong> no mapa do administrador.
                       </p>
                     </div>
                   )}

@@ -112,7 +112,7 @@ export function KpiCard({
                 onMouseEnter={() => setShowTooltip(true)}
                 onMouseLeave={() => setShowTooltip(false)}
                 onClick={() => setShowTooltip(!showTooltip)}
-                className="text-slate-400 hover:text-slate-600 focus:outline-none transition-colors p-1 rounded-lg hover:bg-slate-100"
+                className="inline-flex items-center justify-center min-w-[24px] min-h-[24px] text-slate-400 hover:text-slate-600 focus:outline-none transition-colors p-1 rounded-lg hover:bg-slate-100"
                 aria-label={`Informações sobre ${title}`}
               >
                 <Info className="w-3.5 h-3.5" />

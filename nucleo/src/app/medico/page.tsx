@@ -168,6 +168,10 @@ export default function MedicalEHRPage() {
 
   // Modais de UX Senior
   const [showExamModal, setShowExamModal] = useState(false);
+  // Id do ServiceRequest FHIR gerado UMA vez por abertura do modal. Calcular
+  // isto durante o render (Date.now()) tornava o render impuro: o preview JSON
+  // mudava a cada re-render e divergia entre servidor e cliente na hidratacao.
+  const [examRequestId, setExamRequestId] = useState('req-preview');
   const [showPrescriptionModal, setShowPrescriptionModal] = useState(false);
   const [showCertificateModal, setShowCertificateModal] = useState(false);
   const [showLabResultModal, setShowLabResultModal] = useState(false);
@@ -269,7 +273,7 @@ export default function MedicalEHRPage() {
               className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-100 hover:text-white mb-2 transition-colors"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Voltar para Seleção de Módulos</span>
+              <span className="inline-flex items-center min-h-[24px]">Voltar para Seleção de Módulos</span>
             </Link>
             <div className="flex items-center gap-2.5">
               <div className="p-2 bg-emerald-800/80 rounded-xl border border-emerald-600">
@@ -314,7 +318,7 @@ export default function MedicalEHRPage() {
             onClick={() => setShowLabResultModal(true)}
             className="font-bold underline hover:text-[#065F46] text-left sm:text-right flex items-center gap-1"
           >
-            <span>Visualizar Laudo no Hub</span>
+            <span className="inline-flex items-center min-h-[24px]">Visualizar Laudo no Hub</span>
             <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>
@@ -516,7 +520,7 @@ export default function MedicalEHRPage() {
                 className="text-xs text-[#1A56DB] hover:text-[#1E40AF] font-bold flex items-center gap-1"
               >
                 <Pill className="w-3.5 h-3.5" />
-                + Adicionar Medicamento
+                <span className="inline-flex items-center min-h-[24px]">+ Adicionar Medicamento</span>
               </button>
             </div>
 
@@ -574,7 +578,10 @@ export default function MedicalEHRPage() {
             </h3>
             <div className="space-y-2.5">
               <button
-                onClick={() => setShowExamModal(true)}
+                onClick={() => {
+                  setExamRequestId(`req-${Date.now()}`);
+                  setShowExamModal(true);
+                }}
                 className="w-full p-3 rounded-xl border border-[#E5E7EB] hover:border-[#1A56DB] hover:bg-[#EBF0FB] text-left text-xs font-semibold text-[#111928] flex items-center justify-between transition-all group shadow-2xs"
               >
                 <div className="flex items-center gap-2.5">
@@ -795,7 +802,7 @@ export default function MedicalEHRPage() {
 {JSON.stringify(
   {
     resourceType: 'ServiceRequest',
-    id: `req-${Date.now()}`,
+    id: examRequestId,
     status: 'active',
     intent: 'order',
     priority: examUrgency,
@@ -888,7 +895,7 @@ export default function MedicalEHRPage() {
                   <label className="font-bold text-[#374151] block mb-1">Tipo de Documento:</label>
                   <select
                     value={certType}
-                    onChange={(e) => setCertType(e.target.value as any)}
+                    onChange={(e) => setCertType(e.target.value as 'afastamento' | 'comparecimento' | 'aptidao')}
                     className="w-full p-2 border border-[#D1D5DB] rounded-xl outline-none font-semibold text-[#111928]"
                   >
                     <option value="afastamento">Atestado de Afastamento</option>

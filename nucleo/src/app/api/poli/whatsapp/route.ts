@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { mensagemErro } from '@/lib/utils';
 
 export async function POST(request: NextRequest) {
   try {
@@ -37,9 +38,9 @@ export async function POST(request: NextRequest) {
       message: 'Notificação despachada com sucesso via WhatsApp Poli.',
       data: despachoPoli,
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     return NextResponse.json(
-      { success: false, error: 'Falha ao despachar notificação WhatsApp: ' + err.message },
+      { success: false, error: 'Falha ao despachar notificação WhatsApp: ' + mensagemErro(err) },
       { status: 500 }
     );
   }

@@ -143,7 +143,7 @@ export default function AutomacaoMensageriaPage() {
   const roles = MODULO_ROLES_CATALOG['automacao-mensageria'];
   const [activeRole, setActiveRole] = useState<ModuloRole>(roles[0]);
   const [abaAtiva, setAbaAtiva] = useState<AbaMensageria>('disparos');
-  const [sidebarAberta, setSidebarAberta] = useState(true);
+  const [sidebarAberta, setSidebarAberta] = useState(false);
   const menuItens: MenuLateralItem[] = [
     { id: 'disparos', label: 'Disparos ao Paciente (WhatsApp)', icon: MessageSquare },
     { id: 'confirmacao', label: 'Confirmação & Anti-NoShow', icon: CheckCircle2 },
@@ -178,31 +178,35 @@ export default function AutomacaoMensageriaPage() {
               onClick={() => setSidebarAberta(!sidebarAberta)}
               className="lg:hidden p-2 min-h-[44px] min-w-[44px] rounded-xl text-slate-600 hover:bg-slate-100 transition-all cursor-pointer flex items-center justify-center"
               title={sidebarAberta ? 'Recolher menu' : 'Expandir menu'}
+              aria-label={sidebarAberta ? 'Recolher menu' : 'Expandir menu'}
+              aria-expanded={sidebarAberta}
             >
               {sidebarAberta ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
             </button>
             <Link
+              aria-label="Hub Central"
+              title="Hub Central"
               href="/"
               className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] text-xs font-bold text-slate-700 bg-white border border-[#E0E0E0] rounded-xl hover:bg-slate-50 transition-all shadow-xs"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Hub Central</span>
+              <span className="hidden lg:inline">Hub Central</span>
             </Link>
           </div>
         }
       />
 
-      <div className="flex flex-1 overflow-hidden relative">
+      <div className="flex flex-1 relative overflow-x-clip">
         <ModuloMenuLateral
           titulo="Automação & Mensageria"
-          categoria="OPERACAO"
+          moduloId="automacao-mensageria"
           itens={menuItens}
           ativoId={abaAtiva}
           onSelect={(id) => setAbaAtiva(id as AbaMensageria)}
           aberto={sidebarAberta}
           onFechar={() => setSidebarAberta(false)}
         />
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-6">
+        <main className="flex-1 min-w-0 p-4 lg:p-6 space-y-6">
       {/* Feedback de Notificação */}
       {whatsappSent && (
         <div className="mb-4 p-3.5 bg-[#8A6A16]/[0.08] border border-[#8A6A16]/20 rounded-2xl flex items-center justify-between text-xs text-[#6E5511] shadow-sm animate-in fade-in duration-200">
@@ -354,8 +358,8 @@ export default function AutomacaoMensageriaPage() {
             <div className="p-4 border border-[#E0E0E0] rounded-xl text-xs space-y-2">
               <strong className="text-slate-900 block">Template Ativo Homologado:</strong>
               <p className="font-mono text-[11px] text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-200">
-                "Olá [Nome]! Confirmamos sua consulta amanhã às [Horário] com o Dr. [Médico] no Hospital 360. 
-                Responda 1 para CONFIRMAR ou 2 para REMARCAR."
+                &quot;Olá [Nome]! Confirmamos sua consulta amanhã às [Horário] com o Dr. [Médico] no Hospital 360. 
+                Responda 1 para CONFIRMAR ou 2 para REMARCAR.&quot;
               </p>
             </div>
           </div>

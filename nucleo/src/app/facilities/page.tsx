@@ -201,7 +201,7 @@ export default function FacilitiesAppPage() {
               className="inline-flex items-center gap-1.5 text-xs text-orange-400 hover:text-orange-300 mb-2 font-semibold transition-colors"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Voltar para Seleção de Módulos</span>
+              <span className="inline-flex items-center min-h-[24px]">Voltar para Seleção de Módulos</span>
             </Link>
             <div className="flex items-center gap-2.5">
               <div className="p-2 bg-orange-600/20 rounded-xl border border-orange-500/40">
@@ -335,7 +335,7 @@ export default function FacilitiesAppPage() {
                 <div className="mt-1 flex items-center justify-center gap-2">
                   <button
                     onClick={() => setIsRunning(!isRunning)}
-                    className="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] flex items-center gap-1 px-2"
+                    className="p-1 min-h-[24px] rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] flex items-center gap-1 px-2"
                   >
                     {isRunning ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
                     {isRunning ? 'Pausar' : 'Continuar'}
@@ -385,7 +385,8 @@ export default function FacilitiesAppPage() {
                         type="checkbox"
                         checked={isChecked}
                         onChange={() => {}}
-                        className="mt-0.5 rounded text-emerald-500 accent-emerald-500"
+                        aria-label={item}
+                        className="mt-0.5 w-6 h-6 shrink-0 rounded text-emerald-500 accent-emerald-500"
                       />
                       <span className="flex-1 leading-relaxed">{item}</span>
                     </div>
@@ -448,7 +449,7 @@ export default function FacilitiesAppPage() {
                 <label className="font-bold text-slate-300 block mb-1">Tipo de Limpeza:</label>
                 <select
                   value={newType}
-                  onChange={(e) => setNewType(e.target.value as any)}
+                  onChange={(e) => setNewType(e.target.value as 'Terminal' | 'Concorrente' | 'Preventiva')}
                   className="w-full p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white outline-none"
                 >
                   <option value="Terminal">Terminal (Desinfecção Profunda / Pós-Alta)</option>
@@ -461,7 +462,7 @@ export default function FacilitiesAppPage() {
                 <label className="font-bold text-slate-300 block mb-1">Prioridade:</label>
                 <select
                   value={newPriority}
-                  onChange={(e) => setNewPriority(e.target.value as any)}
+                  onChange={(e) => setNewPriority(e.target.value as 'Crítica' | 'Alta' | 'Normal')}
                   className="w-full p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white outline-none"
                 >
                   <option value="Crítica">Crítica (SLA 15 min)</option>

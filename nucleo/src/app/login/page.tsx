@@ -90,7 +90,7 @@ export default function LoginPage() {
             href="/"
             className="font-bold text-[#1A56DB] hover:underline flex items-center gap-1"
           >
-            <span>Ir direto para o Hub de Módulos</span>
+            <span className="inline-flex items-center min-h-[24px]">Ir direto para o Hub de Módulos</span>
             <ArrowRight className="w-3 h-3" />
           </Link>
         </div>

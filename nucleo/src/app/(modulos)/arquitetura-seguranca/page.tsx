@@ -120,7 +120,7 @@ export default function ArchitectureSecurityPage() {
   const roles = MODULO_ROLES_CATALOG['arquitetura-seguranca'];
   const [activeRole, setActiveRole] = useState<ModuloRole>(roles[0]);
   const [abaAtiva, setAbaAtiva] = useState<AbaSeguranca>('isolamento');
-  const [sidebarAberta, setSidebarAberta] = useState(true);
+  const [sidebarAberta, setSidebarAberta] = useState(false);
   const menuItens: MenuLateralItem[] = [
     { id: 'isolamento', label: 'Isolamento Financeiro (RN-IND)', icon: Database },
     { id: 'lgpd', label: 'Trilhas de Auditoria LGPD', icon: ShieldCheck },
@@ -146,6 +146,8 @@ export default function ArchitectureSecurityPage() {
               onClick={() => setSidebarAberta(!sidebarAberta)}
               className="lg:hidden p-2 min-h-[44px] min-w-[44px] rounded-xl text-slate-600 hover:bg-slate-100 transition-all cursor-pointer flex items-center justify-center"
               title={sidebarAberta ? 'Recolher menu' : 'Expandir menu'}
+              aria-label={sidebarAberta ? 'Recolher menu' : 'Expandir menu'}
+              aria-expanded={sidebarAberta}
             >
               {sidebarAberta ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
             </button>
@@ -157,17 +159,17 @@ export default function ArchitectureSecurityPage() {
         }
       />
 
-      <div className="flex flex-1 overflow-hidden relative">
+      <div className="flex flex-1 relative overflow-x-clip">
         <ModuloMenuLateral
           titulo="Blindagem & Auditoria"
-          categoria="FINANCEIRO"
+          moduloId="arquitetura-seguranca"
           itens={menuItens}
           ativoId={abaAtiva}
           onSelect={(id) => setAbaAtiva(id as AbaSeguranca)}
           aberto={sidebarAberta}
           onFechar={() => setSidebarAberta(false)}
         />
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-6">
+        <main className="flex-1 min-w-0 p-4 lg:p-6 space-y-6">
       {/* Toast Notice */}
       {notice && (
         <div className="mb-4 p-3.5 bg-[#1B1F1C]/[0.08] border border-[#1B1F1C]/20 rounded-2xl flex items-center justify-between text-xs text-[#33382F] shadow-sm animate-in fade-in duration-200">

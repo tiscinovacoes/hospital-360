@@ -5,6 +5,7 @@
 // =====================================================================
 
 import { createClient } from '@supabase/supabase-js';
+import { mensagemErro } from '@/lib/utils';
 
 export interface MedicamentoPrecoReferencia {
   id: string;
@@ -279,6 +280,41 @@ function getSupabaseDbClient() {
  * Se a tabela 'banco_precos_medicamentos' existir e tiver dados, retorna os dados reais do banco.
  * Em caso de indisponibilidade ou migração pendente, utiliza fallback resiliente com dados regulatórios oficiais.
  */
+/**
+ * Linha crua da tabela de preços no Supabase. Os numéricos chegam como string
+ * ou number dependendo do driver, por isso a normalização com Number() abaixo.
+ */
+interface LinhaPrecoSupabase {
+  id: string;
+  codigo_catmat: string;
+  nome_comercial_padrao: string;
+  principio_ativo: string;
+  concentracao: string;
+  forma_farmaceutica: string;
+  apresentacao: string;
+  unidade_fornecimento: string;
+  preco_teto_cmed: number | string;
+  preco_referencia_bps: number | string;
+  classe_terapeutica: string;
+  tarja?: string;
+  temperatura_exigida?: string;
+  data_atualizacao?: string;
+  origem_dados?: string;
+}
+
+/** Tarjas válidas segundo a ANVISA; a coluna no banco é texto livre. */
+const TARJAS_VALIDAS = ['VERMELHA', 'PRETA', 'LIVRE'] as const;
+
+/**
+ * Estreita a tarja vinda do banco para o union do domínio. Sob `any` um valor
+ * fora da lista passava direto e contaminava o tipo; agora cai no padrão.
+ */
+function normalizarTarja(valor: string | undefined): MedicamentoPrecoReferencia['tarja'] {
+  return (TARJAS_VALIDAS as readonly string[]).includes(valor ?? '')
+    ? (valor as MedicamentoPrecoReferencia['tarja'])
+    : 'VERMELHA';
+}
+
 export async function obterBancoPrecosDoBanco(termoBusca?: string): Promise<{
   medicamentos: MedicamentoPrecoReferencia[];
   origem: 'SUPABASE_POSTGRES' | 'CACHE_LOCAL_OFICIAL';
@@ -299,7 +335,7 @@ export async function obterBancoPrecosDoBanco(termoBusca?: string): Promise<{
     const { data, error } = await query;
 
     if (!error && data && data.length > 0) {
-      const formatados: MedicamentoPrecoReferencia[] = data.map((d: any) => ({
+      const formatados: MedicamentoPrecoReferencia[] = data.map((d: LinhaPrecoSupabase) => ({
         id: d.id,
         codigo_catmat: d.codigo_catmat,
         nome_comercial_padrao: d.nome_comercial_padrao,
@@ -311,8 +347,8 @@ export async function obterBancoPrecosDoBanco(termoBusca?: string): Promise<{
         preco_teto_cmed: Number(d.preco_teto_cmed),
         preco_referencia_bps: Number(d.preco_referencia_bps),
         classe_terapeutica: d.classe_terapeutica,
-        tarja: d.tarja || 'VERMELHA',
-        temperatura_exigida: d.temperatura_exigida,
+        tarja: normalizarTarja(d.tarja),
+        temperatura_exigida: d.temperatura_exigida ?? 'Não informada',
         data_atualizacao: d.data_atualizacao,
         origem_dados: 'SUPABASE_POSTGRES'
       }));
@@ -389,7 +425,7 @@ export async function semearBancoPrecosMedicamentosSupabase(): Promise<{ success
     }
 
     return { success: true, inseridos: data?.length || rows.length };
-  } catch (err: any) {
-    return { success: false, inseridos: 0, error: err.message };
+  } catch (err: unknown) {
+    return { success: false, inseridos: 0, error: mensagemErro(err) };
   }
 }

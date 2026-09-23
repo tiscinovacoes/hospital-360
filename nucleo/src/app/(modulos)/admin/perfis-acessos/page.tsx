@@ -95,19 +95,23 @@ export default function CentralPerfisAcessosPage() {
           <div className="flex items-center gap-2">
             <Link
               href="/admin"
-              className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 border border-[#E0E0E0] transition-colors"
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-2 min-h-[44px] min-w-[44px] shrink-0 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 border border-[#E0E0E0] transition-colors"
+              title="Voltar ao Admin"
+              aria-label="Voltar ao Admin"
             >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Voltar ao Admin</span>
+              <ArrowLeft className="w-3.5 h-3.5 shrink-0" />
+              <span className="hidden lg:inline">Voltar ao Admin</span>
             </Link>
 
             <button
               type="button"
               onClick={() => triggerToast('Matriz Geral de Acessos exportada em planilha auditada para o comitê de compliance.')}
-              className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] rounded-xl bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition-colors"
+              className="inline-flex items-center justify-center gap-1.5 px-3 lg:px-4 py-2 min-h-[44px] min-w-[44px] shrink-0 rounded-xl bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition-colors"
+              title="Exportar Matriz RBAC"
+              aria-label="Exportar Matriz RBAC"
             >
-              <Download className="w-4 h-4" />
-              <span>Exportar Matriz RBAC</span>
+              <Download className="w-4 h-4 shrink-0" />
+              <span className="hidden lg:inline">Exportar Matriz RBAC</span>
             </button>
           </div>
         }
@@ -151,12 +155,12 @@ export default function CentralPerfisAcessosPage() {
       <div className="bg-white rounded-2xl border border-[#E0E0E0] p-4 mb-6 shadow-xs flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
           {/* Seletor Módulo */}
-          <div className="flex items-center gap-1.5 text-xs">
+          <div className="flex items-center gap-1.5 text-xs min-w-0 max-w-full">
             <span className="font-bold text-slate-600">Módulo:</span>
             <select
               value={moduloFiltro}
               onChange={e => setModuloFiltro(e.target.value)}
-              className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 outline-none min-h-[44px]"
+              className="min-w-0 max-w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 outline-none min-h-[44px]"
             >
               <option value="TODOS">Todos os Módulos (12)</option>
               {MODULOS_INFO.map(m => (
@@ -171,7 +175,7 @@ export default function CentralPerfisAcessosPage() {
             <select
               value={nivelFiltro}
               onChange={e => setNivelFiltro(e.target.value)}
-              className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 outline-none min-h-[44px]"
+              className="min-w-0 max-w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 outline-none min-h-[44px]"
             >
               <option value="TODOS">Todos os Níveis</option>
               <option value="operacional">Operacional</option>

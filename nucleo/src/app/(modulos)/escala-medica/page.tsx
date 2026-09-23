@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { PageHeader } from '@/components/PageHeader';
+import { ModuloMenuLateral } from '@/components/ModuloMenuLateral';
 import { ModuloRbacBar } from '@/components/ModuloRbacBar';
 import { KpiCard } from '@/components/KpiCard';
 import { ModuloRole, MODULO_ROLES_CATALOG } from '@/types/rbac';
+import { mensagemErro } from '@/lib/utils';
+import type { MetricasEscala, RespostaAcaoEscala } from '@/app/api/escala-medica/route';
 import {
-  UserCheck,
   Calendar,
   Clock,
   ShieldCheck,
@@ -29,8 +30,7 @@ import {
   UploadCloud,
   FileText,
   Activity,
-  Layers,
-  ArrowUpRight
+  Layers
 } from 'lucide-react';
 
 interface CertificadoItem {
@@ -95,7 +95,7 @@ export default function EscalaMedicaPage() {
 
   const [plantoes, setPlantoes] = useState<Plantao[]>([]);
   const [corpoClinico, setCorpoClinico] = useState<MedicoPlantonista[]>([]);
-  const [metricas, setMetricas] = useState<any>(null);
+  const [metricas, setMetricas] = useState<MetricasEscala | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Modais de Ação
@@ -103,7 +103,7 @@ export default function EscalaMedicaPage() {
   const [modalAcao, setModalAcao] = useState<'CHECKIN' | 'TROCA' | 'ANTECIPAR_PIX' | 'COFRE_DOCS' | null>(null);
   const [substitutoId, setSubstitutoId] = useState<string>('');
   const [distanciaSimulada, setDistanciaSimulada] = useState<number>(25); // metros do hospital
-  const [resultadoAcao, setResultadoAcao] = useState<any>(null);
+  const [resultadoAcao, setResultadoAcao] = useState<RespostaAcaoEscala | null>(null);
   const [processando, setProcessando] = useState(false);
 
   // Estados de exportação para o Hub 360
@@ -169,8 +169,8 @@ export default function EscalaMedicaPage() {
       if (data.success) {
         carregarEscala();
       }
-    } catch (err: any) {
-      setResultadoAcao({ success: false, error: err.message });
+    } catch (err: unknown) {
+      setResultadoAcao({ success: false, error: mensagemErro(err) });
     } finally {
       setProcessando(false);
     }
@@ -201,8 +201,8 @@ export default function EscalaMedicaPage() {
       if (data.success) {
         carregarEscala();
       }
-    } catch (err: any) {
-      setResultadoAcao({ success: false, error: err.message });
+    } catch (err: unknown) {
+      setResultadoAcao({ success: false, error: mensagemErro(err) });
     } finally {
       setProcessando(false);
     }
@@ -231,8 +231,8 @@ export default function EscalaMedicaPage() {
       if (data.success) {
         carregarEscala();
       }
-    } catch (err: any) {
-      setResultadoAcao({ success: false, error: err.message });
+    } catch (err: unknown) {
+      setResultadoAcao({ success: false, error: mensagemErro(err) });
     } finally {
       setProcessando(false);
     }
@@ -265,10 +265,10 @@ export default function EscalaMedicaPage() {
           mensagem: data.error || 'Falha ao sincronizar honorários com o Hub.'
         });
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       setFeedbackExportacao({
         sucesso: false,
-        mensagem: err?.message || 'Erro de conexão com o Hub 360.'
+        mensagem: mensagemErro(err, 'Erro de conexão com o Hub 360.')
       });
     } finally {
       setExportandoHub(false);
@@ -289,121 +289,44 @@ export default function EscalaMedicaPage() {
       <PageHeader
         activeTitle="Escala Médica & Plantonistas"
         activeSubtitle="Corpo Clínico, Ponto GPS <100m, CFM/ATLS, Trocas de Plantão e PIX D+0"
-      />
-
-      <div className="flex flex-col lg:flex-row gap-6 min-h-[calc(100vh-140px)]">
-        {/* BOTÃO MOBILE PARA ABRIR SIDEBAR */}
-        <div className="lg:hidden flex items-center justify-between bg-white p-3.5 rounded-2xl border border-slate-200 shadow-xs">
-          <div className="flex items-center gap-2.5">
-            <span className="p-2 bg-[#8A6A16] text-white rounded-xl">
-              <UserCheck className="w-5 h-5" />
-            </span>
-            <span className="text-xs font-bold text-slate-900">Menu Escala Médica</span>
-          </div>
+        actions={
           <button
             onClick={() => setSidebarAberta(!sidebarAberta)}
-            className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl"
+            className="lg:hidden p-2 min-h-[44px] min-w-[44px] rounded-xl text-slate-600 hover:bg-slate-100 transition-all cursor-pointer flex items-center justify-center"
+            title={sidebarAberta ? 'Recolher menu' : 'Expandir menu'}
+            aria-label={sidebarAberta ? 'Recolher menu' : 'Expandir menu'}
+            aria-expanded={sidebarAberta}
           >
-            {sidebarAberta ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            {sidebarAberta ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
           </button>
-        </div>
+        }
+      />
 
-        {/* SIDEBAR EXCLUSIVA DO PRODUTO: ESCALA MÉDICA & PLANTÕES */}
-        <aside
-          className={`
-            fixed lg:static inset-y-0 left-0 z-40
-            w-72 lg:w-64 shrink-0 bg-white border border-slate-200/80 rounded-3xl p-4
-            flex flex-col justify-between shadow-sm transition-transform duration-200
-            ${sidebarAberta ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-          `}
-        >
-          <div>
-            {/* CABEÇALHO DO PRODUTO */}
-            <div className="flex items-center gap-3 p-3 bg-[#8A6A16]/[0.08] rounded-2xl border border-[#8A6A16]/[0.12] mb-4">
-              <div className="p-2.5 bg-[#8A6A16] text-white rounded-xl shadow-xs">
-                <UserCheck className="w-5 h-5" />
-              </div>
-              <div>
-                <h2 className="text-xs font-bold text-slate-900 leading-tight">Escala Médica 360</h2>
-                <span className="text-[10px] font-semibold text-[#8A6A16] bg-[#8A6A16]/70 px-1.5 py-0.5 rounded-md mt-0.5 inline-block">
-                  Res. CFM 2.147
-                </span>
-              </div>
-            </div>
-
-            {/* SELEÇÃO VERTICAL DE SEÇÕES */}
-            <nav className="space-y-1">
-              {menuItems.map(item => {
-                const Icon = item.icon;
-                const ativa = secaoAtiva === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => {
-                      setSecaoAtiva(item.id);
-                      setSidebarAberta(false);
-                    }}
-                    className={`
-                      w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all text-left
-                      ${ativa
-                        ? 'bg-[#8A6A16] text-white shadow-xs'
-                        : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}
-                    `}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <Icon className={`w-4 h-4 shrink-0 ${ativa ? 'text-white' : 'text-slate-400'}`} />
-                      <span>{item.label}</span>
-                    </div>
-                    {item.badge && (
-                      <span
-                        className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded-md ${
-                          ativa
-                            ? 'bg-white/20 text-white'
-                            : 'bg-slate-100 text-slate-600'
-                        }`}
-                      >
-                        {item.badge}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </nav>
-          </div>
-
-          {/* RODAPÉ DA SIDEBAR: VOLTAR AO HUB & STATUS OPERACIONAL */}
-          <div className="pt-4 border-t border-slate-100 space-y-2">
-            <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200/60 text-[11px] text-slate-600">
+      <div className="flex flex-1 relative overflow-x-clip">
+        <ModuloMenuLateral
+          moduloId="escala-medica"
+          titulo="Escala Médica 360"
+          itens={menuItems}
+          ativoId={secaoAtiva}
+          onSelect={(id) => setSecaoAtiva(id as SecaoEscala)}
+          aberto={sidebarAberta}
+          onFechar={() => setSidebarAberta(false)}
+          rodape={
+            <div className="p-2.5 rounded-xl bg-[#F6F3EC] border border-[#1B1F1C]/[0.08] text-[11px] text-[#1B1F1C]/70">
               <div className="flex items-center justify-between mb-1">
-                <span className="font-bold text-slate-700">Ponto Digital:</span>
+                <span className="font-bold text-[#1B1F1C]">Ponto Digital:</span>
                 <span className="text-emerald-700 font-bold inline-flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   Geofence Ativo
                 </span>
               </div>
-              <p className="text-[10px] text-slate-500">Ponto biométrico integrado ao CNAB 240 e PIX D+0.</p>
+              <p className="text-[10px] text-[#1B1F1C]/60">Ponto biométrico integrado ao CNAB 240 e PIX D+0.</p>
             </div>
-
-            <Link
-              href="/"
-              className="flex items-center justify-between w-full px-3 py-2 text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors"
-            >
-              <span>Voltar ao Hub de Módulos</span>
-              <ArrowUpRight className="w-3.5 h-3.5 text-slate-400" />
-            </Link>
-          </div>
-        </aside>
-
-        {/* OVERLAY ESCURO PARA MOBILE */}
-        {sidebarAberta && (
-          <div
-            onClick={() => setSidebarAberta(false)}
-            className="fixed inset-0 bg-slate-900/30 z-30 lg:hidden"
-          />
-        )}
+          }
+        />
 
         {/* ÁREA PRINCIPAL DE CONTEÚDO */}
-        <main className="flex-1 min-w-0 space-y-6">
+        <main className="flex-1 min-w-0 p-4 lg:p-6 space-y-6">
           {/* PERFIS & MATRIZ RBAC — só aparece na seção "Perfis" do menu lateral, não em todas as telas */}
           {secaoAtiva === 'perfis' && (
             <ModuloRbacBar
