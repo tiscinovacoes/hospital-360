@@ -615,7 +615,7 @@ export default function VigiaEstoqueCentralPage() {
               aria-label="Nova Transferência"
               title="Nova Transferência"
               onClick={() => setSecaoAtiva('transferencias')}
-              className="hidden sm:flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-900 text-white transition-all shadow-xs cursor-pointer"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl text-xs font-bold bg-marca-forte hover:bg-marca-hover text-white transition-all shadow-xs cursor-pointer"
             >
               <ArrowRightLeft className="w-3.5 h-3.5" />
               <span className="hidden lg:inline">Nova Transferência</span>
@@ -989,7 +989,7 @@ export default function VigiaEstoqueCentralPage() {
                       <button
                         type="button"
                         onClick={() => triggerNotificacao('Conferência cega iniciada. Formulário de contagem liberado para o conferente.')}
-                        className="px-3 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800"
+                        className="px-3 py-1.5 rounded-xl bg-marca-forte text-white text-xs font-bold hover:bg-marca-hover"
                       >
                         Conferir
                       </button>

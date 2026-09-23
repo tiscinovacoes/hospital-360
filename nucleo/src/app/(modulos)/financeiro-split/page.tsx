@@ -247,7 +247,7 @@ export default function FinanceiroSplitPage() {
             </Link>
             <button
               onClick={handleSimulateSplitPayment}
-              className="inline-flex items-center justify-center gap-1.5 px-3 lg:px-4 py-2 min-h-[44px] min-w-[44px] shrink-0 text-xs font-bold text-white bg-[#1B1F1C] hover:bg-[#33382F] rounded-xl transition-all shadow-xs touch-manipulation"
+              className="inline-flex items-center justify-center gap-1.5 px-3 lg:px-4 py-2 min-h-[44px] min-w-[44px] shrink-0 text-xs font-bold text-white bg-marca-forte hover:bg-marca-hover rounded-xl transition-all shadow-xs touch-manipulation"
               title="Simular Consulta c/ Split"
               aria-label="Simular Consulta c/ Split"
             >
@@ -456,7 +456,7 @@ export default function FinanceiroSplitPage() {
                 onClick={() => triggerNotice('Arquivo Magnético BPA/AIH assinado digitalmente e transmitido ao Ministério da Saúde.')}
                 className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all min-h-[44px] ${
                   hasPermission(activeRole, 'APPROVE')
-                    ? 'bg-[#1B1F1C] hover:bg-[#33382F] text-white shadow-xs'
+                    ? 'bg-marca-forte hover:bg-marca-hover text-white shadow-xs'
                     : 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
                 }`}
               >

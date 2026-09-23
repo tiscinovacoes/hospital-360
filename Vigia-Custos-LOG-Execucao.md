@@ -615,3 +615,47 @@ Usar o Figma para ajustar e modelar os próximos módulos; centralizar o cabeça
 ### Próximos Passos Previstos:
 - Decisão pendente com o usuário: "centralizar o cabeçalho" foi aplicado como alinhar o cabeçalho do hub à coluna central. A alternativa (título centralizado entre marca e ações) fica registrada caso seja essa a intenção.
 - Restam os 273 avisos de `no-unused-vars` anteriores a esta entrega.
+
+
+---
+
+## [2026-09-23 21:10] - v2.5.7 (Azul da Marca no Lugar da Tinta nas Superfícies de Identidade)
+
+### Data e Hora:
+- 23/09/2026 às 21:10 (Fuso de Campo Grande / MS)
+
+### Versão / Etapa da Alteração:
+- v2.5.7 — Design System v2.3.0: o preto (tinta `#1B1F1C`) dá lugar ao azul da identidade visual nos fundos e logos marcados pelo usuário
+
+### Pedido:
+Manter o padrão da v2.2, mas trocar o preto pelo azul da identidade visual, apenas nos fundos e nas logos.
+
+### Resumo do que foi feito:
+
+1. **Tokens novos** (`nucleo/src/app/globals.css`, `@theme`): `--color-marca` `#5B84B1` (azul clínico do guia), `--color-marca-forte` `#496C92` e `--color-marca-hover` `#3C5A7A`. Viram as classes `bg-marca`, `bg-marca-forte`, `hover:bg-marca-hover`.
+   - Motivo dos dois tons: o `#5B84B1` com texto branco dá 3,9:1 — passa como gráfico (≥ 3:1), reprova AA para texto (≥ 4,5:1). Por isso ele vai só nas logos (ícone), e as superfícies com texto usam `#496C92` (5,5:1 com branco, 4,9:1 com papel).
+
+2. **Trocado para azul**: quadrado da marca "Vigia Saúde 360", avatar, Logos de Módulo (cabeçalho, menu lateral e hub), item ativo do menu lateral, painel de destaque do hub, botões escuros de ação (Nova Transferência, Conferir, Iniciar Análise, Simulador de Leitos, Concluir Simulação, Simular Ingestão, Simular Consulta c/ Split, Transmitir Remessa SUS) e a barra de título do modal do Simulador.
+
+3. **Painel de destaque legível no azul**: sobrelinha terracota, ícones teal e textos em papel com transparência ficavam abaixo do contraste AA sobre o azul → passaram para papel sólido. O botão laranja "Abrir Custo do Paciente" foi mantido (pedido restrito a fundos e logos).
+
+4. **Mantido de propósito**: selo **Tarja Preta** em Compras (classificação ANVISA — tem que ser preto), painel de terminal em fonte mono da Gestão Clínica, realces neutros com tinta translúcida, véus de modal/gaveta, e `tooltip`/`NavHeader` (usados só nas telas antigas do núcleo, fora do padrão de módulos).
+
+5. **Figma** ([Padrão de Módulos](https://www.figma.com/design/oNgeLR3Td97EmqdHqdkTuU)): variáveis `marca`, `marca-forte`, `marca-hover`; Logo de Módulo, item ativo do menu, marca e avatar dos templates religados às novas variáveis; regras e descrições dos componentes atualizadas.
+
+6. **Guia** (`IDENTIDADE_VISUAL (1).md`): v2.3.0 com a subseção "Marca — Superfícies de Identidade" em § 2, tokens em § 6, e as seções de Logo de Módulo, Cabeçalho, Menu lateral e Painel de Destaque atualizadas.
+
+7. **Observação ao usuário**: o botão redondo escuro visto à direita na prévia da Vercel é a Vercel Toolbar (só aparece em deploys de prévia para membros logados), não faz parte do app.
+
+### Arquivos Modificados:
+- `nucleo/src/app/globals.css`, `nucleo/src/components/VigiaSidebarLayout.tsx`, `ModuloLogo.tsx`, `ModuloMenuLateral.tsx`
+- `nucleo/src/app/(modulos)/page.tsx` (hub), `dashboard-executivo`, `financeiro-split`, `estoque-central`, `laboratorio`
+- `IDENTIDADE_VISUAL (1).md`, `Vigia-Custos-LOG-Execucao.md`
+
+### Verificação:
+- `tsc --noEmit` e ESLint sem erros (273 avisos antigos, nenhum novo); `next build` com sucesso
+- Navegador: 21/21 rotas sem erro e sem estouro em 1440/768/375px; cabeçalho sem falhas de 320 a 1440px; WCAG sem ofensores; menu lateral ok nos 12 módulos
+- Contraste calculado: `marca-forte` × branco 5,46:1, × papel 4,93:1, `marca-hover` × papel 6,46:1 (AA); `marca` × branco 3,90:1 (só gráfico)
+
+### Próximos Passos Previstos:
+- Validar na prévia do `dev` na Vercel antes de qualquer merge para o `master`.

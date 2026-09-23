@@ -61,19 +61,20 @@ const TAMANHOS = {
 interface ModuloLogoProps {
   moduloId: ModuloLogoId;
   tamanho?: keyof typeof TAMANHOS;
-  /** `papel` inverte as cores para fundos em tinta (ex.: hero do hub). */
-  tom?: 'tinta' | 'papel';
+  /** `papel` inverte as cores para fundos em azul marca (ex.: hero do hub). */
+  tom?: 'marca' | 'papel';
   className?: string;
 }
 
 /**
- * Logo de módulo — mesma família da logo "Vigia Saúde 360": quadrado em tinta
- * com o símbolo em papel. A categoria entra só pelo dot de 9px no canto, como
- * pede o guia v2.1 (§ 2.1 e § 5): nada de bloco com cor de módulo.
+ * Logo de módulo — mesma família da logo "Vigia Saúde 360": quadrado no azul
+ * da marca (#5B84B1) com o símbolo em papel. A categoria entra só pelo dot de
+ * 9px no canto, como pede o guia (§ 2.1 e § 5): nada de bloco na cor do módulo.
+ * O quadrado só leva ícone, então o azul claro basta (contraste gráfico ≥ 3:1).
  *
  * É decorativa (aria-hidden): o nome do módulo sempre aparece ao lado.
  */
-export function ModuloLogo({ moduloId, tamanho = 'md', tom = 'tinta', className }: ModuloLogoProps) {
+export function ModuloLogo({ moduloId, tamanho = 'md', tom = 'marca', className }: ModuloLogoProps) {
   const Icone = MODULO_LOGO_ICONE[moduloId];
   const cor = CATEGORIA_COR[categoriaDoModulo(moduloId)];
   const t = TAMANHOS[tamanho];
@@ -83,7 +84,7 @@ export function ModuloLogo({ moduloId, tamanho = 'md', tom = 'tinta', className 
       aria-hidden="true"
       className={cn(
         'relative inline-flex items-center justify-center shrink-0 shadow-sm',
-        tom === 'tinta' ? 'bg-[#1B1F1C] text-[#F6F3EC]' : 'bg-[#F6F3EC] text-[#1B1F1C]',
+        tom === 'marca' ? 'bg-marca text-[#F6F3EC]' : 'bg-[#F6F3EC] text-[#1B1F1C]',
         t.caixa,
         className
       )}
@@ -92,7 +93,7 @@ export function ModuloLogo({ moduloId, tamanho = 'md', tom = 'tinta', className 
       <span
         className={cn(
           'absolute -top-[3px] -right-[3px] w-[9px] h-[9px] rounded-full ring-2',
-          tom === 'tinta' ? 'ring-white' : 'ring-[#1B1F1C]'
+          tom === 'marca' ? 'ring-white' : 'ring-marca-forte'
         )}
         style={{ backgroundColor: cor }}
       />

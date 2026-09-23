@@ -128,7 +128,7 @@ export default function ExecutiveDashboardPage() {
 
             <button
               onClick={() => setShowSimModal(true)}
-              className="inline-flex items-center justify-center gap-1.5 px-3 lg:px-4 py-2 min-h-[44px] min-w-[44px] shrink-0 rounded-xl bg-[#1B1F1C] hover:bg-[#33382F] text-white text-xs font-bold shadow-sm transition-all cursor-pointer"
+              className="inline-flex items-center justify-center gap-1.5 px-3 lg:px-4 py-2 min-h-[44px] min-w-[44px] shrink-0 rounded-xl bg-marca-forte hover:bg-marca-hover text-white text-xs font-bold shadow-sm transition-all cursor-pointer"
               title="Simulador de Leitos"
               aria-label="Simulador de Leitos"
             >
@@ -607,7 +607,7 @@ export default function ExecutiveDashboardPage() {
       {showSimModal && (
         <div className="fixed inset-0 bg-slate-900/20 backdrop-blur-xs z-50 flex items-center justify-center p-4">
           <div className="bg-white max-w-md w-full rounded-3xl shadow-xl border border-[#E0E0E0] overflow-hidden animate-fadeIn">
-            <div className="px-6 py-4 bg-[#1B1F1C] text-white flex items-center justify-between">
+            <div className="px-6 py-4 bg-marca-forte text-white flex items-center justify-between">
               <h3 className="font-extrabold text-base">Simulador de Expansão de Leitos</h3>
               <button onClick={() => setShowSimModal(false)} className="min-w-[44px] min-h-[44px] flex items-center justify-center font-bold text-white/80 hover:text-white">✕</button>
             </div>
@@ -653,7 +653,7 @@ export default function ExecutiveDashboardPage() {
               <div className="flex justify-end pt-2">
                 <button
                   onClick={() => setShowSimModal(false)}
-                  className="px-5 py-2.5 min-h-[44px] bg-[#1B1F1C] hover:bg-[#33382F] text-white rounded-xl font-bold shadow-sm transition-colors"
+                  className="px-5 py-2.5 min-h-[44px] bg-marca-forte hover:bg-marca-hover text-white rounded-xl font-bold shadow-sm transition-colors"
                 >
                   Concluir Simulação
                 </button>
@@ -777,7 +777,7 @@ export default function ExecutiveDashboardPage() {
                         setImportando(false);
                       }
                     }}
-                    className="px-3 py-2 bg-[#1B1F1C] hover:bg-[#33382F] text-white font-bold rounded-xl shadow-xs transition-colors cursor-pointer"
+                    className="px-3 py-2 bg-marca-forte hover:bg-marca-hover text-white font-bold rounded-xl shadow-xs transition-colors cursor-pointer"
                   >
                     {importando ? 'Processando Lote...' : 'Simular Ingestão de Compras (.json)'}
                   </button>

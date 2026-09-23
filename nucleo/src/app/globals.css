@@ -63,6 +63,15 @@
   --color-cat-financeiro-subtle: rgba(124, 147, 163, 0.12);
   --color-cat-financeiro-border: rgba(124, 147, 163, 0.35);
 
+  /* ── Marca v2.3: azul clínico como cor das superfícies de identidade ──
+     Substitui a tinta (#1B1F1C) como FUNDO: logos, item ativo do menu,
+     painel de destaque, avatar e botões escuros. Texto continua em tinta.
+     Ver IDENTIDADE_VISUAL (1).md § 2.2. Contraste com texto branco:
+     #5B84B1 = 3,9:1 (só gráfico — reprova AA para texto), #496C92 = 5,5:1. */
+  --color-marca: #5B84B1;        /* Logos (quadrado da logo Vigia e dos módulos): só ícone */
+  --color-marca-forte: #496C92;  /* Superfícies com texto: item ativo, hero, avatar, botões */
+  --color-marca-hover: #3C5A7A;  /* Hover de superfícies marca-forte */
+
   /* ── Tipografia ── */
   --font-display: 'Fraunces', Georgia, serif;
   --font-sans: 'Public Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;

@@ -44,7 +44,7 @@ const TAG_FORA_DO_TEMA: Partial<Record<ModuloLogoId, string>> = {
  * Estrutura herdada da Escala Médica, ajustada ao guia v2.1:
  * - painel flutuante em cartão (raio 16px, teto do guia — não 24px);
  * - cartão de identidade no topo com a logo do módulo e a tag regulatória;
- * - item ativo em tinta #1B1F1C (a cor de categoria fica só na identidade);
+ * - item ativo em azul marca-forte #496C92 (a cor de categoria fica só na identidade);
  * - desktop: painel fixo abaixo do cabeçalho, sempre visível;
  * - mobile: gaveta flutuante, fechada por padrão.
  */
@@ -130,7 +130,7 @@ export function ModuloMenuLateral({
                   'w-full min-h-[44px] lg:min-h-[40px] flex items-center justify-between gap-2 px-3 py-2 rounded-xl text-xs text-left transition-colors cursor-pointer',
                   'focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0E5C4C]',
                   ativo
-                    ? 'bg-[#1B1F1C] text-white font-bold shadow-sm'
+                    ? 'bg-marca-forte text-white font-bold shadow-sm'
                     : 'text-[#1B1F1C]/75 font-semibold hover:bg-[#F6F3EC] hover:text-[#1B1F1C]'
                 )}
               >

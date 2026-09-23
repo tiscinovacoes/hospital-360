@@ -451,7 +451,7 @@ export default function LabHubPage() {
                     ) : (
                       <button
                         onClick={() => handleStartAnalysis(sample)}
-                        className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold flex items-center gap-1 ml-auto shadow-xs transition-colors"
+                        className="px-3 py-1.5 rounded-xl bg-marca-forte hover:bg-marca-hover text-white font-bold flex items-center gap-1 ml-auto shadow-xs transition-colors"
                       >
                         <Play className="w-3.5 h-3.5" /> Iniciar Análise
                       </button>

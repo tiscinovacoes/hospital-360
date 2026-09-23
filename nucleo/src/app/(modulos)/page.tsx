@@ -209,12 +209,12 @@ export default function HubModulosPage() {
       />
 
       {/* PAINEL DE DESTAQUE: O CUSTO DO PACIENTE (A JUNÇÃO DE TUDO) — ÚNICO ELEMENTO "ALTO" DA TELA */}
-      <div className="bg-[#1B1F1C] rounded-2xl p-6 sm:p-8 mb-8">
+      <div className="bg-marca-forte rounded-2xl p-6 sm:p-8 mb-8">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="max-w-2xl">
             <span className="flex items-center gap-3">
               <ModuloLogo moduloId="dashboard-executivo" tamanho="md" tom="papel" />
-              <span className="text-[11px] font-bold uppercase tracking-widest text-[#C1622D]">
+              <span className="text-[11px] font-bold uppercase tracking-widest text-[#F6F3EC]">
                 Módulo central unificador
               </span>
             </span>
@@ -223,19 +223,19 @@ export default function HubModulosPage() {
               Custo do Paciente (Core 360)
             </h2>
 
-            <p className="mt-3 text-sm text-[#F6F3EC]/75 leading-relaxed">
+            <p className="mt-3 text-sm text-[#F6F3EC] leading-relaxed">
               O coração analítico da nossa plataforma. Ele é a <strong className="text-[#F6F3EC] font-bold">junção de tudo o que oferecemos</strong>: absorve automaticamente os dados de prontuários (OpenEMR), dispensação de farmácia (FEFO), laudos de laboratório (LIMS), compras e contratos de atas, escalas médicas e faturamento, confrontando o custo real apurado com as tabelas <strong className="text-[#F6F3EC] font-bold">SIGTAP (SUS)</strong> e <strong className="text-[#F6F3EC] font-bold">TUSS</strong>.
             </p>
 
-            <div className="flex flex-wrap items-center gap-5 mt-5 text-xs font-semibold text-[#F6F3EC]/85">
+            <div className="flex flex-wrap items-center gap-5 mt-5 text-xs font-semibold text-[#F6F3EC]">
               <span className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-3.5 h-3.5 text-[#0E5C4C]" /> 5 Estações de Custo
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#F6F3EC]" /> 5 Estações de Custo
               </span>
               <span className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-3.5 h-3.5 text-[#0E5C4C]" /> Confronto SIGTAP Automático
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#F6F3EC]" /> Confronto SIGTAP Automático
               </span>
               <span className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-3.5 h-3.5 text-[#0E5C4C]" /> Importação de Sistemas Legados
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#F6F3EC]" /> Importação de Sistemas Legados
               </span>
             </div>
           </div>
@@ -267,7 +267,7 @@ export default function HubModulosPage() {
               href="/ingestao-modulos"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-[#F6F3EC]/15 text-[#F6F3EC]/70 font-semibold text-xs hover:bg-white/10 transition-all"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-[#F6F3EC]/25 text-[#F6F3EC] font-semibold text-xs hover:bg-white/10 transition-all"
               title="Abrir Importação em nova aba"
             >
               <FileSpreadsheet className="w-4 h-4" />
