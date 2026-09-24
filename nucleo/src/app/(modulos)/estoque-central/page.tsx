@@ -1,401 +1,59 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { ModuloRbacBar } from '@/components/ModuloRbacBar';
 import { KpiCard } from '@/components/KpiCard';
 import { PageHeader } from '@/components/PageHeader';
-import { ModuloMenuLateral } from '@/components/ModuloMenuLateral';
-import { ModuloRole, MODULO_ROLES_CATALOG, hasPermission } from '@/types/rbac';
+import { ModuloMenuLateral, MenuLateralItem } from '@/components/ModuloMenuLateral';
+import { CATEGORIA_COR } from '@/components/ModuloLayoutShell';
+import { ModuloRole, MODULO_ROLES_CATALOG } from '@/types/rbac';
 import {
   Boxes,
   Package,
-  TrendingUp,
   AlertOctagon,
   Clock,
   Plus,
   Snowflake,
   ShieldAlert,
-  Send,
-  Lock,
   CheckCircle2,
-  Calendar,
   Search,
-  Filter,
-  FileText,
   Truck,
   FileCheck2,
-  ArrowRightLeft,
   AlertTriangle,
-  QrCode,
   Download,
   Eye,
-  Check,
   X,
   History,
-  Info,
-  Menu,
-  ChevronRight,
   FileSpreadsheet,
   Upload,
   RefreshCw,
   Building2,
   Database,
-  ExternalLink,
-  DollarSign
+  DollarSign,
+  User,
+  FileCode,
+  Menu,
+  ChevronRight
 } from 'lucide-react';
+
+import {
+  ProdutoFarmacia,
+  LocalEstoque,
+  LoteEstoque,
+  SolicitacaoEstoque,
+  CatmatItem
+} from '@/lib/estoque/types';
+import { FefoEngine } from '@/lib/estoque/fefoEngine';
 
 type SecaoModuloEstoque = 
   | 'visao_geral'
+  | 'solicitacoes'
   | 'fefo'
   | 'nfe'
-  | 'transferencias'
+  | 'dispensacao'
   | 'recall'
-  | 'despesas_hub'
+  | 'relatorios'
   | 'perfis_rbac';
-
-interface ItemEstoque {
-  id: string;
-  codigoAnvisa: string;
-  nome: string;
-  apresentacao: string;
-  categoria: 'A' | 'B' | 'C';
-  curvaAbc: string;
-  saldoDisponivel: number;
-  saldoComprometido: number;
-  saldoTotal: number;
-  pontoReposicao: number;
-  endereco: string;
-  termolabil: boolean;
-  temperatura?: string;
-  status: 'NORMAL' | 'ATENCAO' | 'RUPTURA_IMINENTE';
-  valorUnitario: number;
-}
-
-const ITENS_ESTOQUE_MOCK: ItemEstoque[] = [
-  {
-    id: 'MED-001',
-    codigoAnvisa: '1004300780012',
-    nome: 'Amoxicilina + Clavulanato 500/125mg',
-    apresentacao: 'Comprimido Revestido',
-    categoria: 'A',
-    curvaAbc: 'Curva A (Alto Valor)',
-    saldoDisponivel: 14500,
-    saldoComprometido: 1200,
-    saldoTotal: 15700,
-    pontoReposicao: 4000,
-    endereco: 'Rua A - Prateleira 04 - Nível 2',
-    termolabil: false,
-    status: 'NORMAL',
-    valorUnitario: 3.45
-  },
-  {
-    id: 'MED-002',
-    codigoAnvisa: '1018001560031',
-    nome: 'Insulina Humana NPH 100 UI/ml',
-    apresentacao: 'Suspensão Injetável Frasco-Ampola 10ml',
-    categoria: 'A',
-    curvaAbc: 'Curva A (Crítico)',
-    saldoDisponivel: 820,
-    saldoComprometido: 340,
-    saldoTotal: 1160,
-    pontoReposicao: 1000,
-    endereco: 'Câmara Fria 02 - Gaveta 08',
-    termolabil: true,
-    temperatura: '4.2°C (Faixa 2°C - 8°C)',
-    status: 'ATENCAO',
-    valorUnitario: 42.80
-  },
-  {
-    id: 'MED-003',
-    codigoAnvisa: '1023504120021',
-    nome: 'Dipirona Sódica 500mg/ml',
-    apresentacao: 'Solução Injetável Ampola 2ml',
-    categoria: 'B',
-    curvaAbc: 'Curva B (Giro Alto)',
-    saldoDisponivel: 45000,
-    saldoComprometido: 6200,
-    saldoTotal: 51200,
-    pontoReposicao: 15000,
-    endereco: 'Rua B - Prateleira 01 - Nível 1',
-    termolabil: false,
-    status: 'NORMAL',
-    valorUnitario: 0.85
-  },
-  {
-    id: 'MED-004',
-    codigoAnvisa: '1057303240019',
-    nome: 'Meropenem 1g',
-    apresentacao: 'Pó Liofilizado para Injeção Frasco',
-    categoria: 'A',
-    curvaAbc: 'Curva A (Crítico)',
-    saldoDisponivel: 180,
-    saldoComprometido: 220,
-    saldoTotal: 400,
-    pontoReposicao: 500,
-    endereco: 'Cofre de Antimicrobianos - Prateleira C',
-    termolabil: false,
-    status: 'RUPTURA_IMINENTE',
-    valorUnitario: 48.50
-  },
-  {
-    id: 'MED-005',
-    codigoAnvisa: '1130002510041',
-    nome: 'Ceftriaxona Dissódica 1g',
-    apresentacao: 'Pó para Solução Injetável IV',
-    categoria: 'B',
-    curvaAbc: 'Curva B (Alto Giro)',
-    saldoDisponivel: 6200,
-    saldoComprometido: 1100,
-    saldoTotal: 7300,
-    pontoReposicao: 2500,
-    endereco: 'Rua A - Prateleira 08 - Nível 3',
-    termolabil: false,
-    status: 'NORMAL',
-    valorUnitario: 14.20
-  },
-  {
-    id: 'MED-006',
-    codigoAnvisa: '1064601190014',
-    nome: 'Imunoglobulina Humana 5g 100ml',
-    apresentacao: 'Frasco Solução para Infusão',
-    categoria: 'A',
-    curvaAbc: 'Curva A (Alto Custo)',
-    saldoDisponivel: 45,
-    saldoComprometido: 20,
-    saldoTotal: 65,
-    pontoReposicao: 30,
-    endereco: 'Câmara Fria 01 - Gaveta 03',
-    termolabil: true,
-    temperatura: '3.8°C (Faixa 2°C - 8°C)',
-    status: 'NORMAL',
-    valorUnitario: 1250.00
-  },
-  {
-    id: 'MED-007',
-    codigoAnvisa: '1037004110022',
-    nome: 'Paracetamol 500mg',
-    apresentacao: 'Comprimido Simples',
-    categoria: 'C',
-    curvaAbc: 'Curva C (Giro Baixo/Médio)',
-    saldoDisponivel: 80000,
-    saldoComprometido: 4500,
-    saldoTotal: 84500,
-    pontoReposicao: 20000,
-    endereco: 'Rua C - Prateleira 02 - Nível 1',
-    termolabil: false,
-    status: 'NORMAL',
-    valorUnitario: 0.18
-  },
-  {
-    id: 'MED-008',
-    codigoAnvisa: '1006800450011',
-    nome: 'Cloreto de Sódio 0,9% 500ml',
-    apresentacao: 'Bolsa Sistema Fechado',
-    categoria: 'B',
-    curvaAbc: 'Curva B (Volume Físico)',
-    saldoDisponivel: 18500,
-    saldoComprometido: 2200,
-    saldoTotal: 20700,
-    pontoReposicao: 6000,
-    endereco: 'Paleteira Central - Posição 12-B',
-    termolabil: false,
-    status: 'NORMAL',
-    valorUnitario: 4.10
-  }
-];
-
-interface LoteFefo {
-  batchId: string;
-  medicamento: string;
-  fabricante: string;
-  validade: string;
-  diasParaVencer: number;
-  quantidadeDisponivel: number;
-  statusLote: 'VALIDO' | 'ALERTA_60D' | 'ALERTA_30D' | 'VENCIDO' | 'BLOQUEADO';
-  temperaturaExigida: string;
-}
-
-const LOTES_FEFO_MOCK: LoteFefo[] = [
-  {
-    batchId: 'VG-LOT-2025-0081',
-    medicamento: 'Insulina Humana NPH 100 UI/ml',
-    fabricante: 'Novo Nordisk S/A',
-    validade: '2026-10-15',
-    diasParaVencer: 24,
-    quantidadeDisponivel: 190,
-    statusLote: 'ALERTA_30D',
-    temperaturaExigida: '2°C a 8°C (Câmara Fria)'
-  },
-  {
-    batchId: 'VG-LOT-2025-0104',
-    medicamento: 'Meropenem 1g Injetável',
-    fabricante: 'Eurofarma Lab.',
-    validade: '2026-11-20',
-    diasParaVencer: 60,
-    quantidadeDisponivel: 120,
-    statusLote: 'ALERTA_60D',
-    temperaturaExigida: '15°C a 30°C'
-  },
-  {
-    batchId: 'VG-LOT-2026-0012',
-    medicamento: 'Amoxicilina + Clavulanato 500/125mg',
-    fabricante: 'EMS S/A',
-    validade: '2027-04-30',
-    diasParaVencer: 221,
-    quantidadeDisponivel: 8400,
-    statusLote: 'VALIDO',
-    temperaturaExigida: 'Ambiente controlado'
-  },
-  {
-    batchId: 'VG-LOT-2026-0044',
-    medicamento: 'Dipirona Sódica 500mg/ml',
-    fabricante: 'Teuto Brasileiro',
-    validade: '2027-08-15',
-    diasParaVencer: 328,
-    quantidadeDisponivel: 25000,
-    statusLote: 'VALIDO',
-    temperaturaExigida: 'Ambiente controlado'
-  }
-];
-
-interface TransferenciaCD {
-  id: string;
-  rastreio: string;
-  destino: string;
-  itensQtd: number;
-  status: 'PENDENTE' | 'SEPARACAO' | 'TRANSITO' | 'RECEBIDO';
-  prioridade: 'NORMAL' | 'URGENTE';
-  solicitante: string;
-  dataHora: string;
-}
-
-const TRANSFERENCIAS_MOCK: TransferenciaCD[] = [
-  {
-    id: 'TR-2026-0091',
-    rastreio: 'RAS-2026-0091-HSP01',
-    destino: 'Hospital Central - Farmácia Satélite UTI',
-    itensQtd: 14,
-    status: 'PENDENTE',
-    prioridade: 'URGENTE',
-    solicitante: 'Enfª Renata Duarte (UTI Geral)',
-    dataHora: '21/09/2026 21:40'
-  },
-  {
-    id: 'TR-2026-0092',
-    rastreio: 'RAS-2026-0092-UBS04',
-    destino: 'Farmácia Básica Municipal - Polo Sul',
-    itensQtd: 38,
-    status: 'TRANSITO',
-    prioridade: 'NORMAL',
-    solicitante: 'Farm. Carlos Eduardo',
-    dataHora: '21/09/2026 18:20'
-  },
-  {
-    id: 'TR-2026-0089',
-    rastreio: 'RAS-2026-0089-MAT02',
-    destino: 'Hospital Materno Infantil - Centro Cirúrgico',
-    itensQtd: 22,
-    status: 'RECEBIDO',
-    prioridade: 'NORMAL',
-    solicitante: 'Dra. Vanessa Meireles',
-    dataHora: '21/09/2026 14:15'
-  }
-];
-
-// Registro analítico de despesas do estoque por paciente/centro de custo (Alimenta o Custo do Paciente no Hub)
-interface DespesaEstoqueItem {
-  id: string;
-  dataHora: string;
-  pacienteNome: string;
-  pacienteCpf: string;
-  prontuario: string;
-  centroCusto: 'UTI_GERAL' | 'CENTRO_CIRURGICO' | 'ENFERMARIA_2' | 'PRONTO_SOCORRO';
-  leito: string;
-  medicamento: string;
-  lote: string;
-  quantidade: number;
-  valorUnitario: number;
-  valorTotal: number;
-  statusHub: 'SINCRONIZADO' | 'PENDENTE_EXPORTACAO';
-}
-
-const DESPESAS_ESTOQUE_SEED: DespesaEstoqueItem[] = [
-  {
-    id: 'DSP-EST-001',
-    dataHora: '22/09/2026 07:15',
-    pacienteNome: 'Carlos Eduardo Silveira',
-    pacienteCpf: '123.456.789-00',
-    prontuario: 'EPIS-2026-8841',
-    centroCusto: 'UTI_GERAL',
-    leito: 'Leito 204 UTI',
-    medicamento: 'Meropenem 1g Injetável',
-    lote: 'LT-2026-MERO-01',
-    quantidade: 6,
-    valorUnitario: 48.50,
-    valorTotal: 291.00,
-    statusHub: 'SINCRONIZADO'
-  },
-  {
-    id: 'DSP-EST-002',
-    dataHora: '22/09/2026 07:20',
-    pacienteNome: 'Carlos Eduardo Silveira',
-    pacienteCpf: '123.456.789-00',
-    prontuario: 'EPIS-2026-8841',
-    centroCusto: 'UTI_GERAL',
-    leito: 'Leito 204 UTI',
-    medicamento: 'Noradrenalina 2mg/mL Ampola 4mL',
-    lote: 'LT-2026-NORA-04',
-    quantidade: 10,
-    valorUnitario: 12.80,
-    valorTotal: 128.00,
-    statusHub: 'SINCRONIZADO'
-  },
-  {
-    id: 'DSP-EST-003',
-    dataHora: '22/09/2026 06:45',
-    pacienteNome: 'Mariana Duarte Souza',
-    pacienteCpf: '234.567.890-11',
-    prontuario: 'EPIS-2026-8910',
-    centroCusto: 'CENTRO_CIRURGICO',
-    leito: 'Sala Cirúrgica 02',
-    medicamento: 'Enoxaparina Sódica 40mg Seringa',
-    lote: 'LT-2026-ENOX-99',
-    quantidade: 4,
-    valorUnitario: 23.40,
-    valorTotal: 93.60,
-    statusHub: 'PENDENTE_EXPORTACAO'
-  },
-  {
-    id: 'DSP-EST-004',
-    dataHora: '22/09/2026 05:30',
-    pacienteNome: 'Roberto F. Alencar',
-    pacienteCpf: '345.678.901-22',
-    prontuario: 'EPIS-2026-8955',
-    centroCusto: 'ENFERMARIA_2',
-    leito: 'Leito 312 Clin.',
-    medicamento: 'Amoxicilina + Clavulanato 500/125mg',
-    lote: 'VG-LOT-2026-0012',
-    quantidade: 21,
-    valorUnitario: 3.45,
-    valorTotal: 72.45,
-    statusHub: 'PENDENTE_EXPORTACAO'
-  },
-  {
-    id: 'DSP-EST-005',
-    dataHora: '21/09/2026 23:10',
-    pacienteNome: 'Carlos Eduardo Silveira',
-    pacienteCpf: '123.456.789-00',
-    prontuario: 'EPIS-2026-8841',
-    centroCusto: 'UTI_GERAL',
-    leito: 'Leito 204 UTI',
-    medicamento: 'Imunoglobulina Humana 5g 100mL',
-    lote: 'LT-2026-IMUNO-88',
-    quantidade: 1,
-    valorUnitario: 1250.00,
-    valorTotal: 1250.00,
-    statusHub: 'SINCRONIZADO'
-  }
-];
 
 export default function VigiaEstoqueCentralPage() {
   const roles = MODULO_ROLES_CATALOG['estoque-central'];
@@ -403,188 +61,473 @@ export default function VigiaEstoqueCentralPage() {
   const [secaoAtiva, setSecaoAtiva] = useState<SecaoModuloEstoque>('visao_geral');
   const [sidebarAberta, setSidebarAberta] = useState(false);
   const [busca, setBusca] = useState('');
-  const [modalAjuste, setModalAjuste] = useState<ItemEstoque | null>(null);
-  const [transferencias, setTransferencias] = useState<TransferenciaCD[]>(TRANSFERENCIAS_MOCK);
-  const [despesasEstoque, setDespesasEstoque] = useState<DespesaEstoqueItem[]>(DESPESAS_ESTOQUE_SEED);
-  const [filtroCentroCusto, setFiltroCentroCusto] = useState<string>('TODOS');
-  const [notificacao, setNotificacao] = useState<string | null>(null);
-  const [sincronizandoHub, setSincronizandoHub] = useState(false);
+  const [notificacao, setNotificacao] = useState<{ tipo: 'sucesso' | 'erro' | 'alerta'; texto: string } | null>(null);
+  const [carregando, setCarregando] = useState(false);
 
-  // Alerta de feedback
-  const triggerNotificacao = (msg: string) => {
-    setNotificacao(msg);
-    setTimeout(() => setNotificacao(null), 4500);
-  };
+  // Dados reais carregados das APIs
+  const [locais, setLocais] = useState<LocalEstoque[]>([]);
+  const [localAtivoId, setLocalAtivoId] = useState<string>('');
+  const [produtos, setProdutos] = useState<ProdutoFarmacia[]>([]);
+  const [lotes, setLotes] = useState<LoteEstoque[]>([]);
+  const [solicitacoes, setSolicitacoes] = useState<SolicitacaoEstoque[]>([]);
+  const [metricas, setMetricas] = useState({
+    valor_total_estoque_consolidado: 0,
+    total_locais_ativos: 10,
+    total_produtos_padronizados: 0,
+    lotes_em_quarentena_ou_bloqueio: 0,
+    lotes_vencidos: 0,
+    alertas_ponto_ressuprimento: 0
+  });
 
-  const handleAprovarTransferencia = (trId: string) => {
-    if (!hasPermission(activeRole, 'APPROVE')) {
-      triggerNotificacao('Atenção: Seu perfil não possui permissão para aprovar saídas do CD.');
-      return;
-    }
-    setTransferencias(prev =>
-      prev.map(t => (t.id === trId ? { ...t, status: 'TRANSITO' as const } : t))
-    );
-    triggerNotificacao(`Transferência ${trId} aprovada e liberada para rota de entrega!`);
-  };
+  // Modais e gavetas
+  const [perfilMedicamentoId, setPerfilMedicamentoId] = useState<string | null>(null);
+  const [dadosPerfil, setDadosPerfil] = useState<{
+    produto: ProdutoFarmacia;
+    catmat: CatmatItem | null;
+    saldoTotal: number;
+    saldosPorLocal: { localId: string; localNome: string; tipo: string; cnes: string; saldo: number }[];
+    lotes: LoteEstoque[];
+    historicoMovimentacoes: {
+      id: string;
+      tipo: string;
+      numeroLote?: string;
+      quantidade: number;
+      origem?: string;
+      destino?: string;
+      documento?: string;
+      justificativa?: string;
+      usuario: string;
+      dataHora: string;
+    }[];
+  } | null>(null);
 
-  // Exportar arquivo JSON estruturado de despesas para o Hub
-  const handleExportarJsonDespesas = () => {
-    const payload = {
-      origem_modulo: 'ESTOQUE_CENTRAL',
-      cliente_id: 'HOSPITAL_360_MATRIZ',
-      lote_exportacao_id: `EXP-EST-${Date.now()}`,
-      data_geracao: new Date().toISOString(),
-      despesas: despesasEstoque.map(d => ({
-        id_transacao: d.id,
-        paciente_cpf: d.pacienteCpf,
-        paciente_nome: d.pacienteNome,
-        prontuario_episodio: d.prontuario,
-        centro_custo: d.centroCusto,
-        leito_identificador: d.leito,
-        item_codigo: d.lote,
-        item_descricao: d.medicamento,
-        lote_fabricante: d.lote,
-        quantidade: d.quantidade,
-        unidade_medida: 'UN',
-        valor_unitario_medio: d.valorUnitario,
-        valor_total_imputado: d.valorTotal,
-        data_consumo: d.dataHora
-      }))
+  // Modal de Separação com Validação FEFO
+  const [modalSeparacao, setModalSeparacao] = useState<SolicitacaoEstoque | null>(null);
+  const [loteEscolhidoSeparacao, setLoteEscolhidoSeparacao] = useState<{ [solicitacaoItemId: string]: string }>({});
+  const [justificativaOverrideFefo, setJustificativaOverrideFefo] = useState<string>('');
+  const [alertaOverrideVisivel, setAlertaOverrideVisivel] = useState<{
+    solicitacaoItemId: string;
+    loteEscolhido: LoteEstoque;
+    loteSugerido: LoteEstoque;
+  } | null>(null);
+
+  // Modal de Nova Solicitação UBS -> CAF
+  const [modalNovaSolicitacao, setModalNovaSolicitacao] = useState(false);
+  const [novaSolProdutoId, setNovaSolProdutoId] = useState('');
+  const [novaSolQtd, setNovaSolQtd] = useState(30);
+  const [novaSolObs, setNovaSolObs] = useState('');
+
+  // Modal de Upload e Conferência Cega NF-e
+  const [xmlNfeTexto, setXmlNfeTexto] = useState('');
+  const [nfeProcessada, setNfeProcessada] = useState<{
+    nfe: {
+      chaveAcesso: string;
+      numero: string;
+      serie: string;
+      emitenteNome: string;
+      emitenteCnpj: string;
+      valorTotal: number;
     };
+    itens: {
+      nItem: number;
+      cProd: string;
+      xProd: string;
+      uCom: string;
+      qCom: number;
+      vUnCom: number;
+      produto_sugerido_id?: string;
+      produto_sugerido_nome?: string;
+      rastroDetectado?: { nLote: string; qLote: number; dFab?: string; dVal: string }[];
+    }[];
+  } | null>(null);
+  const [contagemCega, setContagemCega] = useState<{ [nItem: number]: { lote: string; validade: string; qtd: number } }>({});
 
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(payload, null, 2));
-    const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", `despesas_estoque_hospital360_${new Date().toISOString().slice(0, 10)}.json`);
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
+  // Modal de Dispensação ao Paciente
+  const [dispensacaoCpf, setDispensacaoCpf] = useState('');
+  const [dispensacaoNome, setDispensacaoNome] = useState('');
+  const [dispensacaoProdId, setDispensacaoProdId] = useState('');
+  const [dispensacaoLoteId, setDispensacaoLoteId] = useState('');
+  const [dispensacaoQtd, setDispensacaoQtd] = useState(10);
+  const [dispensacaoReceita, setDispensacaoReceita] = useState('');
+  const [dispensacaoJustificativa, setDispensacaoJustificativa] = useState('');
 
-    triggerNotificacao('Arquivo JSON de despesas gerado com sucesso para consolidação no Hub!');
+  // Modal de Recall Sanitário
+  const [modalRecallLoteId, setModalRecallLoteId] = useState<string | null>(null);
+  const [motivoRecall, setMotivoRecall] = useState('');
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const triggerNotificacao = (texto: string, tipo: 'sucesso' | 'erro' | 'alerta' = 'sucesso') => {
+    setNotificacao({ texto, tipo });
+    setTimeout(() => setNotificacao(null), 5000);
   };
 
-  // Exportar CSV de despesas
-  const handleExportarCsvDespesas = () => {
-    const header = "ID;Data/Hora;Paciente;CPF;Prontuario;CentroCusto;Leito;Medicamento;Lote;Qtd;ValorUnit;ValorTotal\n";
-    const rows = despesasEstoque.map(d => 
-      `${d.id};${d.dataHora};${d.pacienteNome};${d.pacienteCpf};${d.prontuario};${d.centroCusto};${d.leito};${d.medicamento};${d.lote};${d.quantidade};${d.valorUnitario.toFixed(2)};${d.valorTotal.toFixed(2)}`
-    ).join("\n");
-
-    const csvContent = "data:text/csv;charset=utf-8," + encodeURIComponent(header + rows);
-    const link = document.createElement("a");
-    link.setAttribute("href", csvContent);
-    link.setAttribute("download", `despesas_estoque_centro_custo_${new Date().toISOString().slice(0, 10)}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-
-    triggerNotificacao('Planilha CSV de despesas gerada com sucesso.');
-  };
-
-  // Sincronização direta via API com o Hub Centralizador (/api/hub/despesas/ingestao)
-  const handleSincronizarHubApi = async () => {
+  // Carrega dados consolidados do backend real
+  const carregarDados = useCallback(async () => {
+    setCarregando(true);
     try {
-      setSincronizandoHub(true);
-      const pendentes = despesasEstoque.filter(d => d.statusHub === 'PENDENTE_EXPORTACAO');
-      const itensParaEnvio = pendentes.length > 0 ? pendentes : despesasEstoque;
+      const paramLocal = localAtivoId ? `?localId=${localAtivoId}` : '';
+      const res = await fetch(`/api/estoque-central${paramLocal}`);
+      const data = await res.json();
 
-      const payload = {
-        origem_modulo: 'ESTOQUE_CENTRAL',
-        cliente_id: 'HOSPITAL_360_MATRIZ',
-        lote_exportacao_id: `API-SYNC-EST-${Date.now()}`,
-        data_geracao: new Date().toISOString(),
-        despesas: itensParaEnvio.map(d => ({
-          id_transacao: d.id,
-          paciente_cpf: d.pacienteCpf,
-          paciente_nome: d.pacienteNome,
-          prontuario_episodio: d.prontuario,
-          centro_custo: d.centroCusto,
-          leito_identificador: d.leito,
-          item_codigo: d.lote,
-          item_descricao: d.medicamento,
-          lote_fabricante: d.lote,
-          quantidade: d.quantidade,
-          unidade_medida: 'UN',
-          valor_unitario_medio: d.valorUnitario,
-          valor_total_imputado: d.valorTotal,
-          data_consumo: d.dataHora
-        }))
-      };
+      if (data.success) {
+        setLocais(data.locais || []);
+        setProdutos(data.produtos || []);
+        setLotes(data.lotes || []);
+        if (data.metricas) setMetricas(data.metricas);
 
-      const res = await fetch('/api/hub/despesas/ingestao', {
+        if (!localAtivoId && data.locais && data.locais.length > 0) {
+          setLocalAtivoId(data.locais[0].id); // Inicia na CAF Central
+        }
+      }
+
+      // Carrega solicitações
+      const resSol = await fetch(`/api/estoque/solicitacoes${paramLocal}`);
+      const dataSol = await resSol.json();
+      if (dataSol.success) {
+        setSolicitacoes(dataSol.solicitacoes || []);
+      }
+    } catch {
+      triggerNotificacao('Erro ao conectar com o serviço de estoque.', 'erro');
+    } finally {
+      setCarregando(false);
+    }
+  }, [localAtivoId]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      void carregarDados();
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [carregarDados]);
+
+  // Local ativo selecionado
+  const localAtivo = useMemo(() => {
+    return locais.find(l => l.id === localAtivoId) || locais[0];
+  }, [locais, localAtivoId]);
+
+  // Abre perfil detalhado do medicamento
+  const handleAbrirPerfil = async (produtoId: string) => {
+    setPerfilMedicamentoId(produtoId);
+    try {
+      const res = await fetch('/api/estoque-central', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({ acao: 'CONSULTAR_PERFIL_MEDICAMENTO', produto_id: produtoId })
       });
-
       const data = await res.json();
       if (data.success) {
-        setDespesasEstoque(prev => prev.map(d => ({ ...d, statusHub: 'SINCRONIZADO' })));
-        triggerNotificacao(`Sincronização concluída com o Hub! Protocolo: ${data.protocolo} (${data.resumo.itens_processados} itens processados)`);
-      } else {
-        triggerNotificacao(`Erro na sincronização: ${data.error}`);
+        setDadosPerfil(data.perfil);
       }
-    } catch (err) {
-      console.error(err);
-      triggerNotificacao('Falha na comunicação com o Hub Centralizador.');
-    } finally {
-      setSincronizandoHub(false);
+    } catch {
+      triggerNotificacao('Falha ao obter perfil do medicamento.', 'erro');
     }
   };
 
-  const menuItens = [
-    {
-      id: 'visao_geral',
-      label: 'Visão Geral & Posição',
-      icon: Boxes,
-      badge: '1.248 itens',
-      badgeCor: 'bg-[#0E5C4C]/[0.12] text-[#0E5C4C] border border-[#0E5C4C]/20'
-    },
-    {
-      id: 'fefo',
-      label: 'Controle FEFO & Validade',
-      icon: Clock,
-      badge: '18 alertas',
-      badgeCor: 'bg-rose-100 text-rose-900 border border-rose-200'
-    },
-    {
-      id: 'nfe',
-      label: 'Entrada de NF-e (XML/SEFAZ)',
-      icon: FileCheck2,
-      badge: '2 pendentes',
-      badgeCor: 'bg-blue-100 text-blue-800 border border-blue-200'
-    },
-    {
-      id: 'transferencias',
-      label: 'Transferências CD ↔ Hospital',
-      icon: ArrowRightLeft,
-      badge: `${transferencias.filter(t => t.status === 'PENDENTE').length} pendentes`,
-      badgeCor: 'bg-[#0E5C4C]/[0.12] text-[#0E5C4C] border border-[#0E5C4C]/20'
-    },
-    {
-      id: 'recall',
-      label: 'Recall Sanitário ANVISA',
-      icon: ShieldAlert,
-      badge: 'Ativo',
-      badgeCor: 'bg-rose-50 text-rose-700 border border-rose-200'
-    },
-    {
-      id: 'despesas_hub',
-      label: 'Despesas & Centro de Custo',
-      icon: FileSpreadsheet,
-      badge: 'Hub 360',
-      badgeCor: 'bg-emerald-100 text-emerald-800 border border-emerald-200'
-    },
-    {
-      id: 'perfis_rbac',
-      label: 'Trilha de Auditoria & RBAC',
-      icon: Lock,
-      badge: null
-    }
-  ];
+  // Upload e Parse do arquivo XML real
+  const handleArquivoXmlSelecionado = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-  const pendentesCount = despesasEstoque.filter(d => d.statusHub === 'PENDENTE_EXPORTACAO').length;
-  const totalDespesasValor = despesasEstoque.reduce((acc, d) => acc + d.valorTotal, 0);
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const conteudoXml = event.target?.result as string;
+      setXmlNfeTexto(conteudoXml);
+      try {
+        const res = await fetch('/api/estoque/nfe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ xml: conteudoXml })
+        });
+        const data = await res.json();
+        if (data.success) {
+          setNfeProcessada(data);
+          // Inicializa campos da conferência cega
+          const initCega: { [nItem: number]: { lote: string; validade: string; qtd: number } } = {};
+          data.itens.forEach((it: { nItem: number; rastroDetectado?: { nLote: string; dVal: string }[]; qCom: number }) => {
+            initCega[it.nItem] = {
+              lote: it.rastroDetectado?.[0]?.nLote || '',
+              validade: it.rastroDetectado?.[0]?.dVal || '',
+              qtd: it.qCom
+            };
+          });
+          setContagemCega(initCega);
+          triggerNotificacao(`XML da NF-e ${data.nfe.numero} carregado. Preencha a conferência cega.`);
+        } else {
+          triggerNotificacao(data.error || 'Erro no XML.', 'erro');
+        }
+      } catch {
+        triggerNotificacao('Erro ao processar XML de NF-e.', 'erro');
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  // Confirmação da conferência cega e entrada no estoque
+  const handleConfirmarEntradaNfe = async () => {
+    if (!nfeProcessada) return;
+
+    const conferencias = nfeProcessada.itens.map(it => {
+      const contagem = contagemCega[it.nItem] || { lote: '', validade: '', qtd: 0 };
+      const qtdBase = contagem.qtd; // Conversão para unidade base
+      return {
+        nItem: it.nItem,
+        cProd: it.cProd,
+        xProd: it.xProd,
+        produto_id: it.produto_sugerido_id || produtos[0]?.id,
+        lote_contado: contagem.lote,
+        validade_contada: contagem.validade,
+        quantidade_contada_embalagem: contagem.qtd,
+        tipo_embalagem: it.uCom,
+        quantidade_contada_base: qtdBase,
+        quantidade_nfe_base: it.qCom,
+        divergencia_detectada: false
+      };
+    });
+
+    try {
+      const res = await fetch('/api/estoque/nfe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          xml: xmlNfeTexto,
+          conferencias,
+          usuario: activeRole.name,
+          localCafId: locais.find(l => l.tipo === 'CAF')?.id
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        triggerNotificacao('Entrada de NF-e e lotes confirmada na CAF!');
+        setNfeProcessada(null);
+        carregarDados();
+      } else {
+        triggerNotificacao(data.error || 'Falha na entrada.', 'erro');
+      }
+    } catch {
+      triggerNotificacao('Erro ao finalizar conferência cega.', 'erro');
+    }
+  };
+
+  // Criação de nova solicitação UBS -> CAF
+  const handleCriarSolicitacao = async () => {
+    if (!novaSolProdutoId || novaSolQtd <= 0) {
+      triggerNotificacao('Selecione o produto e quantidade válida.', 'alerta');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/estoque/solicitacoes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          acao: 'CRIAR',
+          localSolicitanteId: localAtivoId,
+          usuario: activeRole.name,
+          itens: [{ produtoId: novaSolProdutoId, quantidade: novaSolQtd }],
+          observacoes: novaSolObs
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        triggerNotificacao('Solicitação despachada para a CAF Central!');
+        setModalNovaSolicitacao(false);
+        setNovaSolQtd(30);
+        setNovaSolObs('');
+        carregarDados();
+      } else {
+        triggerNotificacao(data.error || 'Erro na solicitação.', 'erro');
+      }
+    } catch {
+      triggerNotificacao('Erro de conexão ao criar solicitação.', 'erro');
+    }
+  };
+
+  // Início de separação de solicitação (Abrir modal com sugestão FEFO)
+  const handleAbrirSeparacao = (sol: SolicitacaoEstoque) => {
+    setModalSeparacao(sol);
+    setJustificativaOverrideFefo('');
+    setAlertaOverrideVisivel(null);
+
+    // Sugere o lote FEFO para cada item da solicitação
+    const initEscolhas: { [itemId: string]: string } = {};
+    sol.itens.forEach(item => {
+      const lotesDisponiveis = lotes.filter(l => l.produto_id === item.produto_id && (l.saldo_total || 0) > 0);
+      const sugestao = FefoEngine.sugerirLoteFefo(lotesDisponiveis, 30);
+      if (sugestao?.loteSugerido) {
+        initEscolhas[item.id] = sugestao.loteSugerido.id;
+      } else if (lotesDisponiveis[0]) {
+        initEscolhas[item.id] = lotesDisponiveis[0].id;
+      }
+    });
+    setLoteEscolhidoSeparacao(initEscolhas);
+  };
+
+  // Efetiva a separação FEFO (ou bloqueia se desvio não justificado)
+  const handleConfirmarSeparacao = async () => {
+    if (!modalSeparacao) return;
+
+    // Checa se algum item possui desvio de FEFO
+    for (const item of modalSeparacao.itens) {
+      const loteEscolhidoId = loteEscolhidoSeparacao[item.id];
+      const lotesDisponiveis = lotes.filter(l => l.produto_id === item.produto_id && (l.saldo_total || 0) > 0);
+      const sugestao = FefoEngine.sugerirLoteFefo(lotesDisponiveis, 30);
+
+      if (sugestao?.loteSugerido && loteEscolhidoId && sugestao.loteSugerido.id !== loteEscolhidoId) {
+        const escolhido = lotes.find(l => l.id === loteEscolhidoId)!;
+        if (justificativaOverrideFefo.trim().length < 10) {
+          setAlertaOverrideVisivel({
+            solicitacaoItemId: item.id,
+            loteEscolhido: escolhido,
+            loteSugerido: sugestao.loteSugerido
+          });
+          triggerNotificacao('Atenção: Desvio de FEFO identificado. Preencha a justificativa técnica (mínimo 10 caracteres).', 'alerta');
+          return;
+        }
+      }
+    }
+
+    const separacoesPayload = modalSeparacao.itens.map(item => ({
+      solicitacaoItemId: item.id,
+      loteEscolhidoId: loteEscolhidoSeparacao[item.id],
+      quantidade: item.quantidade_solicitada,
+      justificativaOverride: justificativaOverrideFefo
+    }));
+
+    try {
+      const res = await fetch('/api/estoque/solicitacoes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          acao: 'SEPARAR',
+          solicitacaoId: modalSeparacao.id,
+          separacoes: separacoesPayload,
+          usuario: activeRole.name
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        triggerNotificacao('Separação concluída e remessa liberada para trânsito à UBS!');
+        setModalSeparacao(null);
+        setAlertaOverrideVisivel(null);
+        carregarDados();
+      } else {
+        triggerNotificacao(data.error || 'Erro na separação.', 'erro');
+      }
+    } catch {
+      triggerNotificacao('Erro ao conectar para separação.', 'erro');
+    }
+  };
+
+  // Confirmação de recebimento na UBS
+  const handleConfirmarRecebimento = async (solId: string, divergencia?: string) => {
+    try {
+      const res = await fetch('/api/estoque/solicitacoes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          acao: 'CONFIRMAR_RECEBIMENTO',
+          solicitacaoId: solId,
+          usuario: activeRole.name,
+          divergencia
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        triggerNotificacao(divergencia ? 'Recebimento registrado com ocorrência!' : 'Medicamentos recebidos na UBS e saldo creditado!');
+        carregarDados();
+      }
+    } catch {
+      triggerNotificacao('Falha ao confirmar recebimento.', 'erro');
+    }
+  };
+
+  // Dispensação ao paciente com validação FEFO
+  const handleDispensarPaciente = async () => {
+    if (!dispensacaoCpf || !dispensacaoProdId || dispensacaoQtd <= 0) {
+      triggerNotificacao('Preencha CPF do paciente, produto e quantidade.', 'alerta');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/estoque/dispensacao', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          pacienteCpf: dispensacaoCpf,
+          pacienteNome: dispensacaoNome || 'Paciente UBS',
+          localId: localAtivoId,
+          produtoId: dispensacaoProdId,
+          loteEscolhidoId: dispensacaoLoteId || undefined,
+          quantidade: dispensacaoQtd,
+          numeroReceita: dispensacaoReceita,
+          justificativaOverride: dispensacaoJustificativa,
+          usuario: activeRole.name
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        triggerNotificacao(`Dispensação confirmada! Paciente ${data.resultado.pacienteCpfMascarado} atendido.`);
+        setDispensacaoCpf('');
+        setDispensacaoNome('');
+        setDispensacaoReceita('');
+        setDispensacaoJustificativa('');
+        carregarDados();
+      } else {
+        triggerNotificacao(data.error || 'Erro na dispensação.', 'erro');
+      }
+    } catch {
+      triggerNotificacao('Erro ao processar dispensação.', 'erro');
+    }
+  };
+
+  // Ação de Recall Sanitário
+  const handleEfetuarRecall = async () => {
+    if (!modalRecallLoteId || !motivoRecall.trim()) {
+      triggerNotificacao('Informe o lote e o motivo técnico do recall.', 'alerta');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/estoque-central', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          acao: 'BLOQUEAR_RECALL',
+          lote_id: modalRecallLoteId,
+          motivo_recall: motivoRecall,
+          usuario: activeRole.name
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        triggerNotificacao('Lote bloqueado preventivamente em 100% dos locais de Itaquiraí!');
+        setModalRecallLoteId(null);
+        setMotivoRecall('');
+        carregarDados();
+      }
+    } catch {
+      triggerNotificacao('Erro ao emitir recall sanitário.', 'erro');
+    }
+  };
+
+  // Exportação oficial BNAFAR / Hórus
+  const handleDownloadBnafar = () => {
+    window.open('/api/estoque/relatorios?tipo=bnafar&formato=csv', '_blank');
+  };
+
+  const qtdSolicitacoesAbertas = solicitacoes.filter(s => s.status === 'ENVIADA' || s.status === 'LIBERADA').length;
+
+  const menuItens: MenuLateralItem[] = [
+    { id: 'visao_geral', label: 'Visão Geral & Catálogo', icon: Boxes },
+    { id: 'solicitacoes', label: 'Solicitações UBS → CAF', icon: Truck, badge: qtdSolicitacoesAbertas ? String(qtdSolicitacoesAbertas) : null },
+    { id: 'fefo', label: 'Gestão FEFO & Validade', icon: Clock },
+    { id: 'nfe', label: 'Entrada NF-e (XML 4.0)', icon: FileCheck2 },
+    { id: 'dispensacao', label: 'Dispensação ao Paciente', icon: User },
+    { id: 'recall', label: 'Recall & Bloqueio', icon: ShieldAlert },
+    { id: 'relatorios', label: 'Curva ABC & BNAFAR', icon: FileSpreadsheet },
+    { id: 'perfis_rbac', label: 'Trilha de Auditoria & RBAC', icon: History },
+  ];
 
   return (
     <>
@@ -592,8 +535,9 @@ export default function VigiaEstoqueCentralPage() {
         actions={
           <div className="flex items-center gap-2">
             <button
+              type="button"
               onClick={() => setSidebarAberta(!sidebarAberta)}
-              className="lg:hidden p-2 min-h-[44px] min-w-[44px] rounded-xl text-slate-600 hover:bg-slate-100 transition-all cursor-pointer flex items-center justify-center"
+              className="lg:hidden p-2 min-h-[44px] min-w-[44px] rounded-xl text-[#1B1F1C]/70 hover:bg-[#1B1F1C]/[0.06] transition-all cursor-pointer flex items-center justify-center"
               title={sidebarAberta ? 'Recolher menu' : 'Expandir menu'}
               aria-label={sidebarAberta ? 'Recolher menu' : 'Expandir menu'}
               aria-expanded={sidebarAberta}
@@ -602,42 +546,69 @@ export default function VigiaEstoqueCentralPage() {
             </button>
 
             <button
+              type="button"
               aria-label="Importar NF-e (XML)"
               title="Importar NF-e (XML)"
               onClick={() => setSecaoAtiva('nfe')}
               className="flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl text-xs font-bold bg-[#0E5C4C] text-white hover:bg-[#0A4A3D] transition-all shadow-xs cursor-pointer"
             >
-              <Plus className="w-3.5 h-3.5" />
+              <Upload className="w-3.5 h-3.5" />
               <span className="hidden lg:inline">Importar NF-e (XML)</span>
             </button>
 
             <button
-              aria-label="Nova Transferência"
-              title="Nova Transferência"
-              onClick={() => setSecaoAtiva('transferencias')}
-              className="hidden sm:flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl text-xs font-bold bg-marca-forte hover:bg-marca-hover text-white transition-all shadow-xs cursor-pointer"
+              type="button"
+              aria-label="Nova Solicitação à CAF"
+              title="Nova Solicitação à CAF"
+              onClick={() => setModalNovaSolicitacao(true)}
+              className="hidden sm:flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl text-xs font-bold bg-marca hover:bg-marca-hover text-white transition-all shadow-xs cursor-pointer"
             >
-              <ArrowRightLeft className="w-3.5 h-3.5" />
-              <span className="hidden lg:inline">Nova Transferência</span>
+              <Truck className="w-3.5 h-3.5" />
+              <span className="hidden lg:inline">Nova Solicitação</span>
             </button>
 
             <button
-              aria-label="Exportar Despesas Hub"
-              title="Exportar Despesas Hub"
-              onClick={() => setSecaoAtiva('despesas_hub')}
-              className="hidden md:flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition-all shadow-xs cursor-pointer"
+              type="button"
+              aria-label="Exportar BNAFAR/Hórus (CSV)"
+              title="Exportar BNAFAR/Hórus (CSV)"
+              onClick={handleDownloadBnafar}
+              className="hidden md:flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl text-xs font-bold bg-white border border-[#1B1F1C]/12 text-[#1B1F1C] hover:bg-[#1B1F1C]/[0.06] transition-all cursor-pointer"
             >
-              <FileSpreadsheet className="w-3.5 h-3.5" />
-              <span className="hidden lg:inline">Exportar Despesas Hub</span>
+              <Download className="w-3.5 h-3.5" />
+              <span className="hidden lg:inline">Exportar BNAFAR</span>
             </button>
           </div>
         }
       />
 
+      {/* Notificação flutuante */}
+      {notificacao && (
+        <div
+          role="alert"
+          aria-live="assertive"
+          className={`fixed top-20 right-4 left-4 sm:left-auto sm:max-w-md z-50 px-4 py-3 rounded-xl border bg-white shadow-[0_8px_24px_rgba(27,31,28,0.10),0_2px_8px_rgba(27,31,28,0.05)] flex items-center gap-3 ${
+            notificacao.tipo === 'sucesso'
+              ? 'border-[#0E5C4C]/30 text-[#0E5C4C]'
+              : notificacao.tipo === 'alerta'
+              ? 'border-[#8A6A16]/30 text-[#8A6A16]'
+              : 'border-[#9C3B2E]/30 text-[#9C3B2E]'
+          }`}
+        >
+          {notificacao.tipo === 'sucesso' && <CheckCircle2 className="w-5 h-5 shrink-0" />}
+          {notificacao.tipo === 'alerta' && <AlertTriangle className="w-5 h-5 shrink-0" />}
+          {notificacao.tipo === 'erro' && <AlertOctagon className="w-5 h-5 shrink-0" />}
+          <span className="text-xs font-bold flex-1">{notificacao.texto}</span>
+          <button
+            type="button"
+            onClick={() => setNotificacao(null)}
+            aria-label="Fechar notificação"
+            className="w-11 h-11 -my-2 -mr-2 inline-flex items-center justify-center rounded-lg hover:bg-[#1B1F1C]/[0.06] shrink-0"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
-      {/* ========================================================================= */}
-      {/* 2. CORPO PRINCIPAL COM SIDEBAR EXCLUSIVA DO PRODUTO */}
-      {/* ========================================================================= */}
       <div className="flex flex-1 relative overflow-x-clip">
         <ModuloMenuLateral
           moduloId="estoque-central"
@@ -649,201 +620,249 @@ export default function VigiaEstoqueCentralPage() {
           onFechar={() => setSidebarAberta(false)}
         />
 
-        {/* Área Central de Conteúdo */}
         <main className="flex-1 min-w-0 p-4 lg:p-6 space-y-6">
           {/* Breadcrumb */}
-          <div className="flex items-center gap-2 text-xs text-slate-500 font-medium pb-2 border-b border-[#E0E0E0]">
+          <div className="flex items-center gap-2 text-xs text-[#1B1F1C]/65 font-medium pb-2 border-b border-[#1B1F1C]/[0.08]">
             <span>Vigia Saúde</span>
-            <ChevronRight className="w-3 h-3 text-slate-400" />
-            <span>Almoxarifado CD</span>
-            <ChevronRight className="w-3 h-3 text-slate-400" />
-            <span className="font-bold text-slate-900">
-              {menuItens.find((m) => m.id === secaoAtiva)?.label || 'Painel'}
+            <ChevronRight className="w-3 h-3 text-[#1B1F1C]/40" />
+            <span>Almoxarifado &amp; CAF Itaquiraí</span>
+            <ChevronRight className="w-3 h-3 text-[#1B1F1C]/40" />
+            <span className="font-bold text-[#1B1F1C] truncate">
+              {menuItens.find((m) => m.id === secaoAtiva)?.label}
             </span>
           </div>
 
-          {/* Toast Notification Flutuante */}
-          {notificacao && (
-            <div className="p-3.5 bg-[#0E5C4C]/[0.08] border border-[#0E5C4C]/30 rounded-2xl flex items-center justify-between shadow-sm animate-in fade-in duration-200">
-              <div className="flex items-center gap-2 text-xs font-bold text-[#0E5C4C]">
-                <Info className="w-4 h-4 text-[#0E5C4C] shrink-0" />
-                <span>{notificacao}</span>
+          {/* Unidade operacional ativa (CAF + 9 farmácias de UBS) */}
+          <div className="bg-white border border-[#1B1F1C]/12 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-[0_1px_2px_rgba(27,31,28,0.05)]">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 rounded-xl bg-[#1B1F1C]/[0.05] text-[#1B1F1C]/70 flex items-center justify-center border border-[#1B1F1C]/[0.08] shrink-0">
+                <Building2 className="w-5 h-5" />
               </div>
-              <button 
-                type="button" 
-                onClick={() => setNotificacao(null)}
-                className="text-[#0E5C4C] hover:text-[#0E5C4C] p-1 min-h-[44px] min-w-[44px] flex items-center justify-center"
+              <div className="min-w-0">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-[#1B1F1C]/65">
+                  Unidade operacional ativa · Piloto Itaquiraí-MS
+                </div>
+                <div className="flex flex-wrap items-center gap-2 mt-0.5">
+                  <span className="font-display text-base font-semibold text-[#1B1F1C]">{localAtivo?.nome || 'Carregando unidades…'}</span>
+                  {localAtivo?.cnes && (
+                    <span className="font-mono text-[11px] px-2 py-0.5 rounded-full bg-[#1B1F1C]/[0.05] text-[#1B1F1C]/80 border border-[#1B1F1C]/12">
+                      CNES {localAtivo.cnes}
+                    </span>
+                  )}
+                  {localAtivo && (
+                    <span
+                      className="text-[10px] px-2 py-0.5 rounded-full font-semibold border text-[#1B1F1C]/75"
+                      style={
+                        localAtivo.tipo === 'CAF'
+                          ? { backgroundColor: `${CATEGORIA_COR.SUPRIMENTOS}1F`, borderColor: `${CATEGORIA_COR.SUPRIMENTOS}59` }
+                          : { backgroundColor: 'rgba(27,31,28,0.05)', borderColor: 'rgba(27,31,28,0.12)' }
+                      }
+                    >
+                      {localAtivo.tipo === 'CAF' ? 'Farmácia Central' : 'Farmácia UBS'}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 w-full md:w-auto min-w-0">
+              <label htmlFor="unidade-select" className="text-xs font-semibold text-[#1B1F1C]/70 hidden xl:inline">
+                Alternar estabelecimento
+              </label>
+              <select
+                id="unidade-select"
+                value={localAtivoId}
+                onChange={(e) => setLocalAtivoId(e.target.value)}
+                className="min-w-0 w-full md:w-80 min-h-[44px] bg-white border border-[#1B1F1C]/20 text-[#1B1F1C] text-xs font-semibold rounded-xl px-3 focus:outline-none focus:ring-2 focus:ring-[#0E5C4C]/20 focus:border-[#0E5C4C]"
               >
-                <X className="w-4 h-4" />
+                {locais.map(loc => (
+                  <option key={loc.id} value={loc.id}>
+                    {loc.tipo === 'CAF' ? '[CAF] ' : '[UBS] '}{loc.nome}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                onClick={carregarDados}
+                disabled={carregando}
+                aria-label="Atualizar dados do estoque"
+                title="Atualizar dados do estoque"
+                className="w-11 h-11 inline-flex items-center justify-center rounded-xl bg-white hover:bg-[#1B1F1C]/[0.06] text-[#1B1F1C]/70 border border-[#1B1F1C]/12 transition shrink-0"
+              >
+                <RefreshCw className={`w-4 h-4 ${carregando ? 'animate-spin' : ''}`} />
               </button>
+            </div>
+          </div>
+
+          {/* Perfis & matriz RBAC — só na seção "Trilha de Auditoria & RBAC" (IDENTIDADE_VISUAL § 4) */}
+          {secaoAtiva === 'perfis_rbac' && (
+            <div className="space-y-4">
+              <ModuloRbacBar
+                moduloId="estoque-central"
+                activeRole={activeRole}
+                onRoleChange={setActiveRole}
+              />
+              <div className="bg-white border border-[#1B1F1C]/12 rounded-2xl p-5 text-xs text-[#1B1F1C]/80 leading-relaxed">
+                <h2 className="font-display text-lg font-semibold text-[#1B1F1C] flex items-center gap-2">
+                  <History className="w-5 h-5 text-[#1B1F1C]/55" />
+                  Trilha de auditoria por medicamento
+                </h2>
+                <p className="mt-2">
+                  Toda entrada de NF-e, separação FEFO, recebimento na UBS, dispensação e recall fica registrada com usuário,
+                  data e justificativa. Abra <strong>Perfil &amp; Rastreio</strong> no catálogo para ver a linha do tempo completa
+                  de cada medicamento, da nota fiscal ao paciente.
+                </p>
+                <p className="mt-2 text-[#1B1F1C]/70">
+                  Perfil ativo nas ações desta tela: <strong className="text-[#1B1F1C]">{activeRole.name}</strong>.
+                </p>
+              </div>
             </div>
           )}
 
-          {/* PERFIS & MATRIZ RBAC — só aparece na seção "Trilha de Auditoria & RBAC" do menu lateral */}
-          {secaoAtiva === 'perfis_rbac' && (
-            <ModuloRbacBar
-              moduloId="estoque-central"
-              activeRole={activeRole}
-              onRoleChange={setActiveRole}
-              accentColor="#0E5C4C"
-              lightBg="bg-[#0E5C4C]/[0.08]"
-              lightBorder="border-[#0E5C4C]/20"
-            />
-          )}
-
-          {/* ========================================================================= */}
-          {/* SEÇÃO 1: VISÃO GERAL & POSIÇÃO DE ESTOQUE (CURVA ABC) */}
-          {/* ========================================================================= */}
+          {/* Seção 1: VISÃO GERAL */}
           {secaoAtiva === 'visao_geral' && (
-            <div className="space-y-6">
-              <div>
-                <h1 className="text-xl font-bold text-slate-900">Posição de Estoque &amp; Curva ABC</h1>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Monitoramento contínuo de inventário físico, criticidade e ponto de ressuprimento
-                </p>
-              </div>
-
-              {/* KPIS GLOBAIS DE ESTOQUE */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="flex flex-col gap-6">
+              {/* KPIs */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
                 <KpiCard
-                  title="Itens no CD Central"
-                  value="1.248"
-                  subtitle="Itens monitorados"
-                  icon={<Boxes className="w-5 h-5 text-[#0E5C4C]" />}
-                  trend={{ text: "+12 itens novos", isPositive: true }}
+                  title="Valor do Estoque"
+                  value={`R$ ${metricas.valor_total_estoque_consolidado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
+                  subtitle={`Consolidado em ${metricas.total_locais_ativos} estabelecimentos`}
+                  icon={<DollarSign className="w-5 h-5 text-[#0E5C4C]" />}
+                  trend={{ text: 'Auditoria real', isPositive: true }}
                 />
                 <KpiCard
-                  title="Valor Total em Estoque"
-                  value="R$ 4.890.412"
-                  subtitle="Custo médio apurado"
-                  icon={<TrendingUp className="w-5 h-5 text-[#0E5C4C]" />}
-                  trend={{ text: "Auditoria TCU Ativa", isPositive: true }}
+                  title="Medicamentos Padronizados"
+                  value={String(metricas.total_produtos_padronizados)}
+                  subtitle="Itens com CATMAT vinculado"
+                  icon={<Package className="w-5 h-5 text-[#0E5C4C]" />}
                 />
                 <KpiCard
-                  title="Lotes com Alerta FEFO"
-                  value="18 lotes"
-                  subtitle="Validade ≤ 60 dias"
-                  icon={<Clock className="w-5 h-5 text-[#0E5C4C]" />}
-                  trend={{ text: "Prioridade de saída", isAlert: true }}
+                  title="Lotes Bloqueados"
+                  value={String(metricas.lotes_em_quarentena_ou_bloqueio)}
+                  subtitle={`Quarentena ou recall · ${metricas.lotes_vencidos} vencidos`}
+                  icon={<ShieldAlert className="w-5 h-5 text-[#0E5C4C]" />}
+                  trend={{ text: 'Controle sanitário', isAlert: metricas.lotes_em_quarentena_ou_bloqueio > 0 }}
                 />
                 <KpiCard
-                  title="Risco de Ruptura"
-                  value="4 itens"
-                  subtitle="Abaixo do ponto de pedido"
-                  icon={<AlertOctagon className="w-5 h-5 text-[#0E5C4C]" />}
-                  trend={{ text: "Disparado alerta compras", isAlert: true }}
+                  title="Ponto de Ressuprimento"
+                  value={String(metricas.alertas_ponto_ressuprimento)}
+                  subtitle="Medicamentos com estoque crítico"
+                  icon={<AlertTriangle className="w-5 h-5 text-[#0E5C4C]" />}
+                  trend={{ text: 'Ressuprimento', isAlert: metricas.alertas_ponto_ressuprimento > 0 }}
                 />
               </div>
 
-              {/* TABELA DE POSIÇÃO DE ESTOQUE */}
-              <div className="bg-white border border-[#E0E0E0] rounded-2xl p-4 shadow-xs space-y-4">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                  <div className="relative w-full sm:w-80">
-                    <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                    <input
-                      type="text"
-                      placeholder="Buscar por medicamento, código ANVISA ou endereço..."
-                      value={busca}
-                      onChange={e => setBusca(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2 border border-[#E0E0E0] rounded-xl text-xs focus:outline-none focus:border-[#0E5C4C] transition-colors"
-                    />
+              {/* Tabela de Produtos Padronizados (Catálogo CATMAT) */}
+              <div className="bg-white border border-[#1B1F1C]/12 rounded-2xl p-5 shadow-[0_1px_2px_rgba(27,31,28,0.05)] flex flex-col gap-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="font-display text-lg font-semibold text-[#1B1F1C] flex items-center gap-2">
+                      <Database className="w-5 h-5 text-[#1B1F1C]/55" />
+                      Catálogo Municipal de Medicamentos (Itaquiraí-MS)
+                    </h2>
+                    <p className="text-xs text-[#1B1F1C]/70">
+                      Vínculo compulsório ao CATMAT (Compras.gov.br) com rastreabilidade da menor unidade dispensável.
+                    </p>
                   </div>
 
-                  <div className="flex items-center gap-2 w-full sm:w-auto">
-                    <button
-                      type="button"
-                      disabled={!hasPermission(activeRole, 'EXPORT')}
-                      onClick={() => triggerNotificacao('Relatório de Saldo Físico exportado em planilha auditada.')}
-                      className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border min-h-[44px] sm:min-h-0 touch-manipulation transition-all ${
-                        hasPermission(activeRole, 'EXPORT')
-                          ? 'border-[#E0E0E0] text-slate-700 hover:bg-slate-50'
-                          : 'opacity-50 cursor-not-allowed border-slate-200 text-slate-400'
-                      }`}
-                    >
-                      <Download className="w-3.5 h-3.5" />
-                      <span>Exportar Posição</span>
-                    </button>
+                  <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                    <div className="relative flex-1 sm:flex-none">
+                      <Search className="w-4 h-4 text-[#1B1F1C]/70 absolute left-3 top-2.5" />
+                      <input
+                        type="text"
+                        placeholder="Buscar por nome ou CATMAT..."
+                        value={busca}
+                        onChange={(e) => setBusca(e.target.value)}
+                        className="bg-white border border-[#1B1F1C]/20 text-[#1B1F1C] text-xs rounded-xl pl-9 pr-4 min-h-[40px] w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-[#0E5C4C]/20 focus:border-[#0E5C4C]"
+                      />
+                    </div>
+
+                    {localAtivo?.tipo === 'FARMACIA_UBS' && (
+                      <button
+                        onClick={() => setModalNovaSolicitacao(true)}
+                        className="flex items-center gap-2 px-3 py-2 bg-[#0E5C4C] hover:bg-[#0A4A3D] text-white rounded-xl text-xs font-semibold transition"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Solicitar à CAF
+                      </button>
+                    )}
                   </div>
                 </div>
 
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs">
-                    <thead>
-                      <tr className="border-b border-slate-200 text-slate-600 bg-slate-50/50">
-                        <th className="p-3 font-bold">Medicamento / Apresentação</th>
-                        <th className="p-3 font-bold">Curva ABC</th>
-                        <th className="p-3 font-bold text-right">Disponível</th>
-                        <th className="p-3 font-bold text-right">Comprometido</th>
-                        <th className="p-3 font-bold text-right">Total Físico</th>
-                        <th className="p-3 font-bold">Endereço no CD</th>
-                        <th className="p-3 font-bold text-center">Status</th>
-                        <th className="p-3 font-bold text-center">Ações</th>
+                    <thead className="text-[#1B1F1C]/65 border-b border-[#1B1F1C]/[0.08] font-bold uppercase tracking-wider text-[10.5px]">
+                      <tr>
+                        <th className="py-3 px-4">Medicamento / Princípio Ativo</th>
+                        <th className="py-3 px-3">Código CATMAT</th>
+                        <th className="py-3 px-3">Unidade Base</th>
+                        <th className="py-3 px-3 text-right">Saldo Local</th>
+                        <th className="py-3 px-3">Regulamentação</th>
+                        <th className="py-3 px-3 text-center">Ações</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {ITENS_ESTOQUE_MOCK.filter(i => 
-                        i.nome.toLowerCase().includes(busca.toLowerCase()) ||
-                        i.codigoAnvisa.includes(busca)
-                      ).map(item => (
-                        <tr key={item.id} className="hover:bg-[#0A4A3D]/20 transition-colors">
-                          <td className="p-3">
-                            <div className="font-bold text-slate-900">{item.nome}</div>
-                            <div className="text-[11px] text-slate-500">
-                              ANVISA: {item.codigoAnvisa} • {item.apresentacao}
-                            </div>
-                            {item.termolabil && (
-                              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md mt-1 border border-blue-200">
-                                <Snowflake className="w-3 h-3" />
-                                {item.temperatura}
-                              </span>
-                            )}
-                          </td>
-                          <td className="p-3">
-                            <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${
-                              item.categoria === 'A'
-                                ? 'bg-[#0E5C4C]/[0.08] text-[#0E5C4C] border-[#0E5C4C]/20'
-                                : item.categoria === 'B'
-                                ? 'bg-blue-50 text-blue-800 border-blue-200'
-                                : 'bg-slate-100 text-slate-700 border-slate-200'
-                            }`}>
-                              {item.curvaAbc}
-                            </span>
-                          </td>
-                          <td className="p-3 text-right font-mono font-bold text-slate-800">
-                            {item.saldoDisponivel.toLocaleString()} un
-                          </td>
-                          <td className="p-3 text-right font-mono text-slate-500">
-                            {item.saldoComprometido.toLocaleString()} un
-                          </td>
-                          <td className="p-3 text-right font-mono font-bold text-slate-900">
-                            {item.saldoTotal.toLocaleString()} un
-                          </td>
-                          <td className="p-3 font-mono text-[11px] text-slate-600">
-                            {item.endereco}
-                          </td>
-                          <td className="p-3 text-center">
-                            <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${
-                              item.status === 'NORMAL'
-                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                                : item.status === 'ATENCAO'
-                                ? 'bg-[#0E5C4C]/[0.08] text-[#0E5C4C] border-[#0E5C4C]/20'
-                                : 'bg-rose-50 text-rose-700 border-rose-200'
-                            }`}>
-                              {item.status === 'NORMAL' ? 'Estoque Normal' : item.status === 'ATENCAO' ? 'Ponto de Atenção' : 'Ruptura Iminente'}
-                            </span>
-                          </td>
-                          <td className="p-3 text-center">
-                            <button
-                              type="button"
-                              onClick={() => setModalAjuste(item)}
-                              title="Ajuste de Inventário Físico"
-                              className="p-1.5 rounded-lg border border-[#E0E0E0] text-slate-600 hover:text-[#0E5C4C] hover:border-[#0E5C4C]/40 transition-colors"
-                            >
-                              <History className="w-3.5 h-3.5" />
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
+                    <tbody className="divide-y divide-[#1B1F1C]/[0.08] text-[#1B1F1C]/80">
+                      {produtos
+                        .filter(p => !busca || p.nome.toLowerCase().includes(busca.toLowerCase()) || p.codigo_catmat.toLowerCase().includes(busca.toLowerCase()))
+                        .map(produto => {
+                          const lotesProd = lotes.filter(l => l.produto_id === produto.id);
+                          const saldoNaUnidade = lotesProd.reduce((acc, l) => acc + (l.saldo_total || 0), 0);
+                          const statusCritico = saldoNaUnidade <= produto.estoque_minimo_padrao;
+
+                          return (
+                            <tr key={produto.id} className="hover:bg-[#F6F3EC]/70 transition">
+                              <td className="py-3 px-4">
+                                <div className="font-bold text-[#1B1F1C]">{produto.nome}</div>
+                                <div className="text-[11px] text-[#1B1F1C]/70">{produto.principio_ativo} — {produto.concentracao}</div>
+                              </td>
+                              <td className="py-3 px-3">
+                                <span className="font-mono text-[#1B1F1C] font-semibold bg-[#1B1F1C]/[0.05] px-2 py-0.5 rounded border border-[#1B1F1C]/12">
+                                  {produto.codigo_catmat}
+                                </span>
+                              </td>
+                              <td className="py-3 px-3">
+                                <span className="px-2 py-0.5 rounded bg-[#1B1F1C]/[0.06] text-[#1B1F1C]/80 font-semibold whitespace-nowrap">
+                                  {produto.unidade_base}
+                                </span>
+                              </td>
+                              <td className="py-3 px-3 text-right">
+                                <span className={`font-bold ${statusCritico ? 'text-[#8A6A16]' : 'text-[#0E5C4C]'}`}>
+                                  {saldoNaUnidade.toLocaleString('pt-BR')} {produto.unidade_base}
+                                </span>
+                                {statusCritico && (
+                                  <div className="text-[10px] text-[#8A6A16] font-semibold">Abaixo do mín ({produto.estoque_minimo_padrao})</div>
+                                )}
+                              </td>
+                              <td className="py-3 px-3">
+                                <div className="flex flex-wrap gap-1">
+                                  {produto.controlado && (
+                                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#8A6A16]/10 text-[#8A6A16] border border-[#8A6A16]/25 font-semibold">
+                                      Port. 344
+                                    </span>
+                                  )}
+                                  {produto.termolabil && (
+                                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#1B1F1C]/[0.06] text-[#1B1F1C]/80 border border-[#1B1F1C]/12 flex items-center gap-1 font-semibold">
+                                      <Snowflake className="w-2.5 h-2.5" /> 2°C a 8°C
+                                    </span>
+                                  )}
+                                  {!produto.controlado && !produto.termolabil && (
+                                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#1B1F1C]/[0.06] text-[#1B1F1C]/70">Regular</span>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="py-3 px-3 text-center">
+                                <button
+                                  onClick={() => handleAbrirPerfil(produto.id)}
+                                  className="px-3 py-1.5 min-h-[36px] rounded-lg bg-white hover:bg-[#1B1F1C]/[0.06] text-[#1B1F1C] border border-[#1B1F1C]/12 font-bold text-[11px] inline-flex items-center gap-1.5 whitespace-nowrap transition"
+                                >
+                                  <Eye className="w-3.5 h-3.5 text-[#0E5C4C]" />
+                                  Perfil & Rastreio
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
                     </tbody>
                   </table>
                 </div>
@@ -851,472 +870,165 @@ export default function VigiaEstoqueCentralPage() {
             </div>
           )}
 
-          {/* ========================================================================= */}
-          {/* SEÇÃO 2: CONTROLE FEFO & VALIDADE */}
-          {/* ========================================================================= */}
-          {secaoAtiva === 'fefo' && (
-            <div className="space-y-6">
-              <div>
-                <h1 className="text-xl font-bold text-slate-900">Controle FEFO &amp; Validade de Lotes</h1>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Priorização de saída pelo First Expire, First Out (RDC 430/2020 ANVISA) para eliminação de perdas
-                </p>
-              </div>
+          {/* Seção 2: SOLICITAÇÕES UBS -> CAF */}
+          {secaoAtiva === 'solicitacoes' && (
+            <div className="flex flex-col gap-6">
+              <div className="bg-white border border-[#1B1F1C]/12 rounded-2xl p-5 shadow-[0_1px_2px_rgba(27,31,28,0.05)] flex flex-col gap-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="font-display text-lg font-semibold text-[#1B1F1C] flex items-center gap-2">
+                      <Truck className="w-5 h-5 text-[#1B1F1C]/55" />
+                      Fluxo de Solicitações e Reposição (UBS → CAF Central)
+                    </h2>
+                    <p className="text-xs text-[#1B1F1C]/70">
+                      As 9 UBS solicitam reposição em unidades base. A CAF Central efetua a separação obrigatória por FEFO.
+                    </p>
+                  </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-white border border-[#E0E0E0] rounded-2xl p-4 shadow-xs">
-                  <div className="text-xs font-bold text-slate-500 mb-1">Alertas Vermelhos (≤ 30 dias)</div>
-                  <div className="text-2xl font-bold text-rose-600">3 Lotes</div>
-                  <div className="text-[11px] text-slate-500 mt-1">Disparada transferência obrigatória</div>
-                </div>
-                <div className="bg-white border border-[#E0E0E0] rounded-2xl p-4 shadow-xs">
-                  <div className="text-xs font-bold text-slate-500 mb-1">Alertas Amarelos (≤ 60 dias)</div>
-                  <div className="text-2xl font-bold text-[#0E5C4C]">15 Lotes</div>
-                  <div className="text-[11px] text-slate-500 mt-1">Sugerido consumo prioritário em UTI</div>
-                </div>
-                <div className="bg-white border border-[#E0E0E0] rounded-2xl p-4 shadow-xs">
-                  <div className="text-xs font-bold text-slate-500 mb-1">Lotes Válidos (&gt; 90 dias)</div>
-                  <div className="text-2xl font-bold text-emerald-600">1.230 Lotes</div>
-                  <div className="text-[11px] text-slate-500 mt-1">Conformidade plena com plano terapêutico</div>
-                </div>
-              </div>
-
-              <div className="bg-white border border-[#E0E0E0] rounded-2xl p-4 shadow-xs overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead>
-                    <tr className="border-b border-slate-200 text-slate-600 bg-slate-50/50">
-                      <th className="p-3 font-bold">Lote / Batch ID</th>
-                      <th className="p-3 font-bold">Medicamento &amp; Fabricante</th>
-                      <th className="p-3 font-bold">Data de Validade</th>
-                      <th className="p-3 font-bold text-center">Dias Restantes</th>
-                      <th className="p-3 font-bold text-right">Saldo do Lote</th>
-                      <th className="p-3 font-bold">Condição Térmica</th>
-                      <th className="p-3 font-bold text-center">Ação FEFO</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {LOTES_FEFO_MOCK.map(lote => (
-                      <tr key={lote.batchId} className="hover:bg-[#0A4A3D]/20 transition-colors">
-                        <td className="p-3 font-mono font-bold text-slate-900">{lote.batchId}</td>
-                        <td className="p-3">
-                          <div className="font-bold text-slate-900">{lote.medicamento}</div>
-                          <div className="text-[11px] text-slate-500">{lote.fabricante}</div>
-                        </td>
-                        <td className="p-3 font-mono">{lote.validade}</td>
-                        <td className="p-3 text-center">
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
-                            lote.diasParaVencer <= 30
-                              ? 'bg-rose-50 text-rose-700 border-rose-200 animate-pulse'
-                              : lote.diasParaVencer <= 60
-                              ? 'bg-[#0E5C4C]/[0.08] text-[#0E5C4C] border-[#0E5C4C]/20'
-                              : 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                          }`}>
-                            {lote.diasParaVencer} dias
-                          </span>
-                        </td>
-                        <td className="p-3 text-right font-mono font-bold text-slate-800">
-                          {lote.quantidadeDisponivel.toLocaleString()} un
-                        </td>
-                        <td className="p-3 text-[11px] text-slate-600">{lote.temperaturaExigida}</td>
-                        <td className="p-3 text-center">
-                          <button
-                            type="button"
-                            onClick={() => triggerNotificacao(`Lote ${lote.batchId} colocado como prioridade máxima no roteiro de dispensação!`)}
-                            className="px-2.5 py-1 rounded-lg bg-[#0E5C4C]/[0.08] hover:bg-[#0A4A3D]/[0.12] text-[#0E5C4C] border border-[#0E5C4C]/20 text-[11px] font-bold transition-colors"
-                          >
-                            Priorizar Saída
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {/* ========================================================================= */}
-          {/* SEÇÃO 3: ENTRADA DE NF-E (XML/SEFAZ) */}
-          {/* ========================================================================= */}
-          {secaoAtiva === 'nfe' && (
-            <div className="space-y-6">
-              <div>
-                <h1 className="text-xl font-bold text-slate-900">Entrada de NF-e (XML/SEFAZ)</h1>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Importação automatizada de DANFE/XML com conferência cega e vinculação de lotes ao estoque
-                </p>
-              </div>
-
-              <div className="bg-white border-2 border-dashed border-[#0E5C4C]/30 rounded-3xl p-8 text-center bg-[#0E5C4C]/20">
-                <div className="w-12 h-12 rounded-2xl bg-[#0E5C4C]/[0.12] text-[#0E5C4C] mx-auto flex items-center justify-center mb-3">
-                  <Upload className="w-6 h-6" />
-                </div>
-                <h3 className="text-sm font-bold text-slate-900 mb-1">
-                  Arraste o arquivo XML da NF-e aqui ou clique para selecionar
-                </h3>
-                <p className="text-xs text-slate-500 mb-4 max-w-md mx-auto">
-                  Compatível com layout padrão NF-e 4.0 SEFAZ e emissões de distribuidores farmacêuticos homologados
-                </p>
-                <div className="flex justify-center gap-3">
                   <button
-                    type="button"
-                    onClick={() => triggerNotificacao('Arquivo XML NF-e 004.891.201 carregado! 3 itens e 3 lotes identificados para conferência cega.')}
-                    className="px-4 py-2 rounded-xl text-xs font-bold bg-[#0E5C4C] hover:bg-[#0A4A3D] text-white shadow-xs transition-colors"
+                    onClick={() => setModalNovaSolicitacao(true)}
+                    className="flex items-center gap-2 px-3 py-2 bg-[#0E5C4C] hover:bg-[#0A4A3D] text-white rounded-xl text-xs font-semibold transition"
                   >
-                    Simular Upload de NF-e (Distribuidora Nacional)
+                    <Plus className="w-4 h-4" />
+                    Nova Solicitação
                   </button>
                 </div>
-              </div>
 
-              {/* Lista de Notas Fiscais Recebidas Recentes */}
-              <div className="bg-white border border-[#E0E0E0] rounded-2xl p-4 shadow-xs">
-                <h3 className="text-sm font-bold text-slate-900 mb-3">Notas Fiscais em Processo de Conferência</h3>
-                <div className="space-y-3">
-                  <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
-                    <div>
-                      <div className="font-bold text-slate-900">NF-e 004.891.201 - Distribuidora Farmacêutica Nacional S/A</div>
-                      <div className="text-[11px] text-slate-500 font-mono mt-0.5">
-                        Chave: 3526 0912 3456 7800 0190 5500 1004 8912 0110 4918 2741 • Valor: R$ 97.000,00
-                      </div>
-                      <div className="text-[11px] text-[#0E5C4C] font-semibold mt-1">
-                        Vinculado ao Pedido de Compra: PdC-2026-0001 (Empenho EMP-2026/894120)
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#0E5C4C]/[0.12] text-[#0E5C4C] border border-[#0E5C4C]/20">
-                        Aguardando Conferência Cega
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => triggerNotificacao('Conferência cega iniciada. Formulário de contagem liberado para o conferente.')}
-                        className="px-3 py-1.5 rounded-xl bg-marca-forte text-white text-xs font-bold hover:bg-marca-hover"
-                      >
-                        Conferir
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+                <div className="divide-y divide-[#1B1F1C]/[0.08]">
+                  {solicitacoes.length === 0 ? (
+                    <div className="py-8 text-center text-[#1B1F1C]/65 text-xs">Nenhuma solicitação em andamento no momento.</div>
+                  ) : (
+                    solicitacoes.map(sol => (
+                      <div key={sol.id} className="py-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-xs font-bold text-[#1B1F1C] bg-[#1B1F1C]/[0.05] px-2 py-0.5 rounded border border-[#1B1F1C]/12">
+                              {sol.numero_solicitacao}
+                            </span>
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider border ${
+                              sol.status === 'ENVIADA' ? 'bg-[#8A6A16]/10 text-[#8A6A16] border-[#8A6A16]/25' :
+                              sol.status === 'LIBERADA' ? 'bg-[#1B1F1C]/[0.06] text-[#1B1F1C]/80 border-[#1B1F1C]/15' :
+                              sol.status === 'RECEBIDA' ? 'bg-[#0E5C4C]/[0.08] text-[#0E5C4C] border-[#0E5C4C]/25' :
+                              'bg-[#1B1F1C]/[0.06] text-[#1B1F1C]/70 border-[#1B1F1C]/15'
+                            }`}>
+                              {sol.status}
+                            </span>
+                          </div>
+                          <div className="text-xs text-[#1B1F1C]/80">
+                            <strong>{sol.local_solicitante_nome}</strong> solicita para <strong>{sol.local_origem_nome}</strong>
+                          </div>
+                          <div className="text-[11px] text-[#1B1F1C]/65">
+                            Criado em: {new Date(sol.criado_em).toLocaleString('pt-BR')} por {sol.solicitado_por}
+                          </div>
+                          {sol.itens.map(it => (
+                            <div key={it.id} className="text-[11px] text-[#1B1F1C]/70 mt-1">
+                              • {it.quantidade_solicitada}x {it.produto_nome} ({it.unidade_base})
+                              {it.quantidade_separada > 0 && ` — Separados: ${it.quantidade_separada}`}
+                            </div>
+                          ))}
+                        </div>
 
-          {/* ========================================================================= */}
-          {/* SEÇÃO 4: TRANSFERÊNCIAS CD ↔ HOSPITAL */}
-          {/* ========================================================================= */}
-          {secaoAtiva === 'transferencias' && (
-            <div className="space-y-6">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                <div>
-                  <h1 className="text-xl font-bold text-slate-900">Transferências CD ↔ Farmácias Satélites</h1>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Envio de suprimentos do Centro de Distribuição para as unidades hospitalares e satélites
-                  </p>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => triggerNotificacao('Formulário de Nova Transferência aberto. Selecione o destino e os lotes.')}
-                  className="px-3 py-2 rounded-xl text-xs font-bold bg-[#0E5C4C] hover:bg-[#0A4A3D] text-white shadow-xs transition-colors"
-                >
-                  + Nova Transferência
-                </button>
-              </div>
-
-              <div className="bg-white border border-[#E0E0E0] rounded-2xl p-4 shadow-xs overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead>
-                    <tr className="border-b border-slate-200 text-slate-600 bg-slate-50/50">
-                      <th className="p-3 font-bold">Código / Rastreio</th>
-                      <th className="p-3 font-bold">Destino Hospitalar</th>
-                      <th className="p-3 font-bold text-center">Itens</th>
-                      <th className="p-3 font-bold">Solicitante</th>
-                      <th className="p-3 font-bold">Data/Hora</th>
-                      <th className="p-3 font-bold text-center">Status</th>
-                      <th className="p-3 font-bold text-center">Ações</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {transferencias.map(tr => (
-                      <tr key={tr.id} className="hover:bg-[#0A4A3D]/20 transition-colors">
-                        <td className="p-3 font-mono font-bold text-slate-900">{tr.rastreio}</td>
-                        <td className="p-3 font-bold text-slate-800">{tr.destino}</td>
-                        <td className="p-3 text-center font-mono">{tr.itensQtd} itens</td>
-                        <td className="p-3 text-slate-600">{tr.solicitante}</td>
-                        <td className="p-3 font-mono text-slate-500">{tr.dataHora}</td>
-                        <td className="p-3 text-center">
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
-                            tr.status === 'RECEBIDO'
-                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                              : tr.status === 'TRANSITO'
-                              ? 'bg-blue-50 text-blue-700 border-blue-200'
-                              : 'bg-[#0E5C4C]/[0.08] text-[#0E5C4C] border-[#0E5C4C]/20'
-                          }`}>
-                            {tr.status}
-                          </span>
-                        </td>
-                        <td className="p-3 text-center">
-                          {tr.status === 'PENDENTE' && (
+                        {/* Ações de Separação / Recebimento */}
+                        <div className="flex items-center gap-2">
+                          {sol.status === 'ENVIADA' && (
                             <button
-                              type="button"
-                              onClick={() => handleAprovarTransferencia(tr.id)}
-                              className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold transition-colors"
+                              onClick={() => handleAbrirSeparacao(sol)}
+                              className="px-3 py-1.5 bg-marca hover:bg-marca-hover text-white rounded-xl text-xs font-semibold transition flex items-center gap-1.5"
                             >
-                              Aprovar Saída
+                              <Boxes className="w-3.5 h-3.5" />
+                              Separar por FEFO (CAF)
                             </button>
                           )}
-                          {tr.status !== 'PENDENTE' && (
-                            <span className="text-[11px] text-slate-400 font-mono">Despachado</span>
+
+                          {sol.status === 'LIBERADA' && (
+                            <div className="flex items-center gap-2">
+                              <span className="text-[11px] font-semibold text-[#1B1F1C]/80 bg-[#1B1F1C]/[0.06] px-2 py-1 rounded-full border border-[#1B1F1C]/12 flex items-center gap-1">
+                                <Truck className="w-3 h-3 animate-pulse" /> Em Trânsito
+                              </span>
+                              <button
+                                onClick={() => handleConfirmarRecebimento(sol.id)}
+                                className="px-3 py-1.5 bg-[#0E5C4C] hover:bg-[#0A4A3D] text-white rounded-xl text-xs font-semibold transition"
+                              >
+                                Confirmar Recebimento na UBS
+                              </button>
+                            </div>
                           )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
 
-          {/* ========================================================================= */}
-          {/* SEÇÃO 5: RECALL SANITÁRIO ANVISA */}
-          {/* ========================================================================= */}
-          {secaoAtiva === 'recall' && (
-            <div className="space-y-6">
-              <div>
-                <h1 className="text-xl font-bold text-slate-900">Recall Sanitário &amp; Bloqueio Cautelar ANVISA</h1>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Interrupção emergencial de dispensação por desvio de qualidade ou resolução RE sanitária
-                </p>
-              </div>
-
-              <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4 text-xs text-rose-800 space-y-1">
-                <div className="font-bold flex items-center gap-2">
-                  <ShieldAlert className="w-4 h-4 text-rose-600" />
-                  <span>Procedimento Operacional Padrão de Quarentena Sanitária (POP-CD-09)</span>
-                </div>
-                <p>
-                  Ao registrar um recall, o lote é marcado como <strong>BLOQUEADO</strong> no banco de dados. 
-                  Nenhuma farmácia, enfermaria ou centro cirúrgico conseguirá bipar ou dispensar este item.
-                </p>
-              </div>
-
-              <div className="bg-white border border-[#E0E0E0] rounded-2xl p-6 shadow-xs space-y-4">
-                <h3 className="text-sm font-bold text-slate-900">Disparo de Bloqueio Emergencial de Lote</h3>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-xs font-bold text-slate-700 block mb-1">
-                      Número do BatchID ou Lote do Fabricante
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Ex: VG-LOT-2025-0081 ou LOTE-FAB-9921"
-                      className="w-full text-xs p-2.5 border border-[#E0E0E0] rounded-xl focus:border-rose-500 focus:outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-bold text-slate-700 block mb-1">
-                      Número da Resolução RE / ANVISA
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Ex: Resolução RE nº 3.481/2026"
-                      className="w-full text-xs p-2.5 border border-[#E0E0E0] rounded-xl focus:border-rose-500 focus:outline-none"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-1">
-                    Motivo Técnico do Recall / Desvio de Qualidade
-                  </label>
-                  <textarea
-                    rows={3}
-                    placeholder="Descreva a suspeita de desvio de qualidade, alteração físico-química ou contaminação..."
-                    className="w-full text-xs p-2.5 border border-[#E0E0E0] rounded-xl focus:border-rose-500 focus:outline-none"
-                  />
-                </div>
-
-                <div className="flex justify-end pt-3 border-t border-slate-100">
-                  <button
-                    type="button"
-                    disabled={!hasPermission(activeRole, 'APPROVE')}
-                    onClick={() => triggerNotificacao('Alerta de Recall executado! Lote bloqueado em 100% da rede hospitalar.')}
-                    className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all min-h-[44px] ${
-                      hasPermission(activeRole, 'APPROVE')
-                        ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-xs'
-                        : 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
-                    }`}
-                  >
-                    Disparar Bloqueio Imediato em Rede
-                  </button>
+                          {sol.status === 'RECEBIDA' && (
+                            <span className="text-xs text-[#0E5C4C] font-bold flex items-center gap-1">
+                              <CheckCircle2 className="w-4 h-4" /> Saldo Creditado
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
             </div>
           )}
 
-          {/* ========================================================================= */}
-          {/* SEÇÃO 6: RELATÓRIO DE DESPESAS & CENTRO DE CUSTO (CUSTO DO PACIENTE) */}
-          {/* ========================================================================= */}
-          {secaoAtiva === 'despesas_hub' && (
-            <div className="space-y-6">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                <div>
-                  <h1 className="text-xl font-bold text-slate-900">Relatório de Despesas &amp; Injeção no Hub</h1>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Geração de despesas do estoque por centro de custo e paciente para apuração do Custo Door-to-Door no Hub
-                  </p>
-                </div>
-
-                {/* Ações de Exportação e Sincronização */}
-                <div className="flex items-center gap-2 flex-wrap">
-                  <button
-                    type="button"
-                    onClick={handleExportarJsonDespesas}
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-white text-slate-700 border border-[#E0E0E0] hover:bg-slate-50 shadow-2xs transition-all"
-                  >
-                    <Download className="w-3.5 h-3.5 text-[#0E5C4C]" />
-                    <span>Exportar JSON (Hub Contract)</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={handleExportarCsvDespesas}
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-white text-slate-700 border border-[#E0E0E0] hover:bg-slate-50 shadow-2xs transition-all"
-                  >
-                    <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>Exportar Planilha CSV</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    disabled={sincronizandoHub}
-                    onClick={handleSincronizarHubApi}
-                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition-all disabled:opacity-50"
-                  >
-                    <RefreshCw className={`w-3.5 h-3.5 ${sincronizandoHub ? 'animate-spin' : ''}`} />
-                    <span>{sincronizandoHub ? 'Sincronizando...' : 'Sincronizar com Hub 360'}</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Cards de Resumo das Despesas Geradas */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-white border border-[#E0E0E0] rounded-2xl p-4 shadow-xs">
-                  <div className="text-xs font-bold text-slate-500 mb-1">Total Imputado no Mês</div>
-                  <div className="text-2xl font-bold text-slate-900">
-                    R$ {totalDespesasValor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                  </div>
-                  <div className="text-[11px] text-emerald-600 font-semibold mt-1">
-                    100% rastreado com lote FEFO
-                  </div>
-                </div>
-
-                <div className="bg-white border border-[#E0E0E0] rounded-2xl p-4 shadow-xs">
-                  <div className="text-xs font-bold text-slate-500 mb-1">Centro de Custo Líder</div>
-                  <div className="text-2xl font-bold text-[#0E5C4C]">UTI Adulto</div>
-                  <div className="text-[11px] text-slate-500 mt-1">
-                    R$ 1.669,00 (87% dos itens críticos)
-                  </div>
-                </div>
-
-                <div className="bg-white border border-[#E0E0E0] rounded-2xl p-4 shadow-xs">
-                  <div className="text-xs font-bold text-slate-500 mb-1">Média por Paciente</div>
-                  <div className="text-2xl font-bold text-blue-600">R$ 562,35</div>
-                  <div className="text-[11px] text-slate-500 mt-1">
-                    Em conformidade com tabela SIGTAP
-                  </div>
-                </div>
-
-                <div className="bg-white border border-[#E0E0E0] rounded-2xl p-4 shadow-xs">
-                  <div className="text-xs font-bold text-slate-500 mb-1">Status no Hub 360</div>
-                  <div className="text-2xl font-bold text-slate-900">
-                    {pendentesCount > 0 ? `${pendentesCount} Pendentes` : '100% Sincronizado'}
-                  </div>
-                  <div className={`text-[11px] font-semibold mt-1 ${pendentesCount > 0 ? 'text-[#0E5C4C]' : 'text-emerald-600'}`}>
-                    {pendentesCount > 0 ? 'Aguardando exportação para o Hub' : 'Alimentando Custo do Paciente'}
-                  </div>
-                </div>
-              </div>
-
-              {/* Tabela de Despesas Detalhadas com Filtros */}
-              <div className="bg-white border border-[#E0E0E0] rounded-2xl p-4 shadow-xs space-y-4">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-slate-700">Filtrar Centro de Custo:</span>
-                    <select
-                      value={filtroCentroCusto}
-                      onChange={(e) => setFiltroCentroCusto(e.target.value)}
-                      className="text-xs p-2 border border-[#E0E0E0] rounded-xl bg-slate-50 font-medium text-slate-800"
-                    >
-                      <option value="TODOS">Todos os Centros de Custo</option>
-                      <option value="UTI_GERAL">UTI Geral / Coronária</option>
-                      <option value="CENTRO_CIRURGICO">Centro Cirúrgico</option>
-                      <option value="ENFERMARIA_2">Enfermaria 2º Andar</option>
-                      <option value="PRONTO_SOCORRO">Pronto-Socorro</option>
-                    </select>
-                  </div>
-
-                  <div className="text-xs text-slate-500 font-mono">
-                    Mostrando {despesasEstoque.filter(d => filtroCentroCusto === 'TODOS' || d.centroCusto === filtroCentroCusto).length} despesas
+          {/* Seção 3: GESTÃO FEFO */}
+          {secaoAtiva === 'fefo' && (
+            <div className="flex flex-col gap-6">
+              <div className="bg-white border border-[#1B1F1C]/12 rounded-2xl p-5 shadow-[0_1px_2px_rgba(27,31,28,0.05)] flex flex-col gap-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="font-display text-lg font-semibold text-[#1B1F1C] flex items-center gap-2">
+                      <Clock className="w-5 h-5 text-[#1B1F1C]/55" />
+                      Motor de Validade FEFO (First Expired, First Out)
+                    </h2>
+                    <p className="text-xs text-[#1B1F1C]/70">
+                      Lotes ordenados estritamente por validade ascendente. Destaque regulatório para itens ≤ 30, ≤ 60 e ≤ 90 dias.
+                    </p>
                   </div>
                 </div>
 
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs">
-                    <thead>
-                      <tr className="border-b border-slate-200 text-slate-600 bg-slate-50/50">
-                        <th className="p-3 font-bold">ID Transação</th>
-                        <th className="p-3 font-bold">Data/Hora</th>
-                        <th className="p-3 font-bold">Paciente &amp; Prontuário</th>
-                        <th className="p-3 font-bold">Centro de Custo</th>
-                        <th className="p-3 font-bold">Medicamento &amp; Lote FEFO</th>
-                        <th className="p-3 font-bold text-center">Qtd</th>
-                        <th className="p-3 font-bold text-right">Valor Unitário</th>
-                        <th className="p-3 font-bold text-right">Total Imputado</th>
-                        <th className="p-3 font-bold text-center">Status Hub</th>
+                    <thead className="text-[#1B1F1C]/65 border-b border-[#1B1F1C]/[0.08] font-bold uppercase tracking-wider text-[10.5px]">
+                      <tr>
+                        <th className="py-3 px-4">Medicamento / Lote</th>
+                        <th className="py-3 px-3">Fabricante</th>
+                        <th className="py-3 px-3">Data de Validade</th>
+                        <th className="py-3 px-3">Classificação FEFO</th>
+                        <th className="py-3 px-3 text-right">Saldo Base</th>
+                        <th className="py-3 px-3">Status Sanitário</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {despesasEstoque
-                        .filter(d => filtroCentroCusto === 'TODOS' || d.centroCusto === filtroCentroCusto)
-                        .map(item => (
-                          <tr key={item.id} className="hover:bg-[#0A4A3D]/20 transition-colors">
-                            <td className="p-3 font-mono font-bold text-slate-900">{item.id}</td>
-                            <td className="p-3 font-mono text-slate-500">{item.dataHora}</td>
-                            <td className="p-3">
-                              <div className="font-bold text-slate-900">{item.pacienteNome}</div>
-                              <div className="text-[11px] text-slate-500 font-mono">
-                                CPF: {item.pacienteCpf} • {item.prontuario} ({item.leito})
-                              </div>
+                    <tbody className="divide-y divide-[#1B1F1C]/[0.08] text-[#1B1F1C]/80">
+                      {lotes.map(lote => {
+                        const classeVal = FefoEngine.classificarValidade(lote.data_validade);
+                        return (
+                          <tr key={lote.id} className="hover:bg-[#F6F3EC]/70 transition">
+                            <td className="py-3 px-4">
+                              <div className="font-bold text-[#1B1F1C]">{lote.produto_nome}</div>
+                              <div className="font-mono text-[11px] text-[#1B1F1C]/70">Lote: {lote.numero_lote}</div>
                             </td>
-                            <td className="p-3">
-                              <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
-                                {item.centroCusto}
+                            <td className="py-3 px-3 text-[#1B1F1C]/70">{lote.fabricante}</td>
+                            <td className="py-3 px-3 font-mono font-medium text-[#1B1F1C]">
+                              {lote.data_validade}
+                            </td>
+                            <td className="py-3 px-3">
+                              <span className={`text-[11px] px-2 py-0.5 rounded-full font-bold border ${classeVal.badgeColor}`}>
+                                {classeVal.label}
                               </span>
                             </td>
-                            <td className="p-3">
-                              <div className="font-bold text-slate-800">{item.medicamento}</div>
-                              <div className="text-[11px] text-[#0E5C4C] font-mono">Lote: {item.lote}</div>
+                            <td className="py-3 px-3 text-right font-bold text-[#1B1F1C]">
+                              {(lote.saldo_total || 0).toLocaleString('pt-BR')}
                             </td>
-                            <td className="p-3 text-center font-mono font-bold">{item.quantidade} un</td>
-                            <td className="p-3 text-right font-mono text-slate-600">
-                              R$ {item.valorUnitario.toFixed(2)}
-                            </td>
-                            <td className="p-3 text-right font-mono font-bold text-slate-900">
-                              R$ {item.valorTotal.toFixed(2)}
-                            </td>
-                            <td className="p-3 text-center">
-                              <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
-                                item.statusHub === 'SINCRONIZADO'
-                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                                  : 'bg-[#0E5C4C]/[0.08] text-[#0E5C4C] border-[#0E5C4C]/20 animate-pulse'
+                            <td className="py-3 px-3">
+                              <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
+                                lote.status === 'LIBERADO' ? 'bg-[#0E5C4C]/[0.08] text-[#0E5C4C] border border-[#0E5C4C]/25' :
+                                lote.status === 'QUARENTENA' ? 'bg-[#8A6A16]/10 text-[#8A6A16] border border-[#8A6A16]/25' :
+                                'bg-[#9C3B2E]/[0.08] text-[#9C3B2E] border border-[#9C3B2E]/25'
                               }`}>
-                                {item.statusHub === 'SINCRONIZADO' ? 'Ingerido no Hub' : 'Pendente'}
+                                {lote.status}
                               </span>
                             </td>
                           </tr>
-                        ))}
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
@@ -1324,116 +1036,627 @@ export default function VigiaEstoqueCentralPage() {
             </div>
           )}
 
-          {/* ========================================================================= */}
-          {/* SEÇÃO 7: TRILHA DE AUDITORIA & RBAC DO ESTOQUE */}
-          {/* ========================================================================= */}
-          {secaoAtiva === 'perfis_rbac' && (
-            <div className="space-y-6">
-              <div>
-                <h1 className="text-xl font-bold text-slate-900">Perfis de Acesso &amp; Matriz RBAC do Estoque</h1>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Gestão isolada de papéis, permissões de almoxarifado e segregação de funções (SoD)
-                </p>
-              </div>
+          {/* Seção 4: ENTRADA NF-E REAL */}
+          {secaoAtiva === 'nfe' && (
+            <div className="flex flex-col gap-6">
+              <div className="bg-white border border-[#1B1F1C]/12 rounded-2xl p-5 shadow-[0_1px_2px_rgba(27,31,28,0.05)] flex flex-col gap-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="font-display text-lg font-semibold text-[#1B1F1C] flex items-center gap-2">
+                      <FileCheck2 className="w-5 h-5 text-[#1B1F1C]/55" />
+                      Importação de NF-e 4.0 Real & Conferência Cega
+                    </h2>
+                    <p className="text-xs text-[#1B1F1C]/70">
+                      Processamento de XML oficial com leitura obrigatória do grupo de rastreabilidade &lt;rastro&gt; (nLote, dVal, dFab).
+                    </p>
+                  </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {roles.map(role => (
-                  <div key={role.id} className="p-5 rounded-2xl border border-[#E0E0E0] bg-white shadow-xs">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-[#0E5C4C]/[0.08] text-[#0E5C4C] border border-[#0E5C4C]/20">
-                        {role.level}
-                      </span>
-                      {role.id === activeRole.id && (
-                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
-                          Perfil Ativo
-                        </span>
-                      )}
-                    </div>
-                    <h4 className="text-sm font-bold text-slate-900 mb-1">{role.name}</h4>
-                    <p className="text-xs text-slate-600 mb-3">{role.description}</p>
-                    
-                    <div className="text-[11px] text-slate-500 pt-2 border-t border-slate-100">
-                      Responsável Padrão: <strong>{role.responsavelPadrao}</strong>
+                  <input
+                    type="file"
+                    accept=".xml"
+                    ref={fileInputRef}
+                    onChange={handleArquivoXmlSelecionado}
+                    className="hidden"
+                  />
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex items-center gap-2 px-4 py-2 bg-[#0E5C4C] hover:bg-[#0A4A3D] text-white rounded-xl text-xs font-semibold transition"
+                  >
+                    <Upload className="w-4 h-4" />
+                    Upload Arquivo XML (NF-e 4.0)
+                  </button>
+                </div>
+
+                {nfeProcessada ? (
+                  <div className="border border-[#1B1F1C]/12 bg-[#F6F3EC]/60 rounded-xl p-4 flex flex-col gap-4">
+                    <div className="flex flex-wrap justify-between items-center bg-white border border-[#1B1F1C]/[0.08] p-3 rounded-lg text-xs text-[#1B1F1C]/80">
+                      <div>
+                        <strong>Emitente:</strong> {nfeProcessada.nfe.emitenteNome} (CNPJ: {nfeProcessada.nfe.emitenteCnpj})
+                      </div>
+                      <div>
+                        <strong>NF-e:</strong> {nfeProcessada.nfe.numero} (Série {nfeProcessada.nfe.serie}) — <strong>Total:</strong> R$ {nfeProcessada.nfe.valorTotal.toFixed(2)}
+                      </div>
                     </div>
 
-                    <div className="mt-3 pt-2 border-t border-slate-100 flex flex-wrap gap-1">
-                      {role.permissions.map(p => (
-                        <span key={p} className="text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded bg-slate-100 text-slate-700">
-                          {p}
-                        </span>
+                    <h3 className="text-sm font-bold text-[#8A6A16] flex items-center gap-2">
+                      <Eye className="w-4 h-4" />
+                      Conferência Cega do Almoxarifado (Digite a contagem física real)
+                    </h3>
+
+                    <div className="space-y-3">
+                      {nfeProcessada.itens.map(it => (
+                        <div key={it.nItem} className="bg-white p-3 rounded-lg border border-[#1B1F1C]/12 text-xs flex flex-wrap items-center justify-between gap-3">
+                          <div>
+                            <div className="font-bold text-[#1B1F1C]">{it.xProd}</div>
+                            <div className="text-[11px] text-[#1B1F1C]/70">Código Fornecedor: {it.cProd} — Unidade Comercial: {it.uCom}</div>
+                          </div>
+
+                          <div className="flex items-center gap-3">
+                            <div>
+                              <label className="text-[10px] text-[#1B1F1C]/70 block">Lote Contado</label>
+                              <input
+                                type="text"
+                                value={contagemCega[it.nItem]?.lote || ''}
+                                onChange={(e) => setContagemCega(prev => ({
+                                  ...prev,
+                                  [it.nItem]: { ...prev[it.nItem], lote: e.target.value }
+                                }))}
+                                placeholder="Digite o Lote"
+                                className="bg-white border border-[#1B1F1C]/20 text-[#1B1F1C] px-2 py-1 rounded text-xs w-32"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[10px] text-[#1B1F1C]/70 block">Validade</label>
+                              <input
+                                type="date"
+                                value={contagemCega[it.nItem]?.validade || ''}
+                                onChange={(e) => setContagemCega(prev => ({
+                                  ...prev,
+                                  [it.nItem]: { ...prev[it.nItem], validade: e.target.value }
+                                }))}
+                                className="bg-white border border-[#1B1F1C]/20 text-[#1B1F1C] px-2 py-1 rounded text-xs"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[10px] text-[#1B1F1C]/70 block">Quantidade</label>
+                              <input
+                                type="number"
+                                value={contagemCega[it.nItem]?.qtd || 0}
+                                onChange={(e) => setContagemCega(prev => ({
+                                  ...prev,
+                                  [it.nItem]: { ...prev[it.nItem], qtd: Number(e.target.value) }
+                                }))}
+                                className="bg-white border border-[#1B1F1C]/20 text-[#1B1F1C] px-2 py-1 rounded text-xs w-20"
+                              />
+                            </div>
+                          </div>
+                        </div>
                       ))}
                     </div>
+
+                    <div className="flex justify-end gap-3 mt-2">
+                      <button
+                        onClick={() => setNfeProcessada(null)}
+                        className="px-4 py-2 min-h-[40px] bg-white hover:bg-[#1B1F1C]/[0.06] text-[#1B1F1C] border border-[#1B1F1C]/12 rounded-xl text-xs font-bold"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        onClick={handleConfirmarEntradaNfe}
+                        className="px-4 py-2 bg-[#0E5C4C] hover:bg-[#0A4A3D] text-white rounded-xl text-xs font-bold"
+                      >
+                        Aprovar Conferência & Efetivar Entrada CAF
+                      </button>
+                    </div>
                   </div>
-                ))}
+                ) : (
+                  <div className="py-12 border-2 border-dashed border-[#1B1F1C]/15 rounded-2xl flex flex-col items-center justify-center text-center p-6">
+                    <FileCode className="w-12 h-12 text-[#1B1F1C]/35 mb-3" />
+                    <div className="text-sm font-semibold text-[#1B1F1C]/80">Nenhuma NF-e em conferência</div>
+                    <div className="text-xs text-[#1B1F1C]/65 max-w-sm mt-1">
+                      Faça o upload do XML 4.0 da nota emitida pelo fornecedor para carregar os lotes e iniciar a conferência física cega.
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Seção 5: DISPENSAÇÃO AO PACIENTE */}
+          {secaoAtiva === 'dispensacao' && (
+            <div className="flex flex-col gap-6">
+              <div className="bg-white border border-[#1B1F1C]/12 rounded-2xl p-5 shadow-[0_1px_2px_rgba(27,31,28,0.05)] flex flex-col gap-4">
+                <div>
+                  <h2 className="font-display text-lg font-semibold text-[#1B1F1C] flex items-center gap-2">
+                    <User className="w-5 h-5 text-[#1B1F1C]/55" />
+                    Dispensação de Medicamento ao Paciente (Farmácia UBS)
+                  </h2>
+                  <p className="text-xs text-[#1B1F1C]/70">
+                    Dispensação direta em unidade base (comprimidos). Cada dispensação alimenta o custeio da jornada do paciente no núcleo.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                  <div>
+                    <label className="text-[#1B1F1C]/70 block mb-1">CPF do Paciente (Obrigatório)</label>
+                    <input
+                      type="text"
+                      placeholder="000.000.000-00"
+                      value={dispensacaoCpf}
+                      onChange={(e) => setDispensacaoCpf(e.target.value)}
+                      className="w-full bg-white border border-[#1B1F1C]/20 text-[#1B1F1C] px-3 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0E5C4C]/20 focus:border-[#0E5C4C]"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[#1B1F1C]/70 block mb-1">Nome do Paciente</label>
+                    <input
+                      type="text"
+                      placeholder="Nome completo do cidadão"
+                      value={dispensacaoNome}
+                      onChange={(e) => setDispensacaoNome(e.target.value)}
+                      className="w-full bg-white border border-[#1B1F1C]/20 text-[#1B1F1C] px-3 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0E5C4C]/20 focus:border-[#0E5C4C]"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[#1B1F1C]/70 block mb-1">Medicamento Padronizado</label>
+                    <select
+                      value={dispensacaoProdId}
+                      onChange={(e) => {
+                        setDispensacaoProdId(e.target.value);
+                        // Auto-sugere lote FEFO
+                        const lotesDisponiveis = lotes.filter(l => l.produto_id === e.target.value && (l.saldo_total || 0) > 0);
+                        const sug = FefoEngine.sugerirLoteFefo(lotesDisponiveis, 0);
+                        if (sug?.loteSugerido) setDispensacaoLoteId(sug.loteSugerido.id);
+                      }}
+                      className="w-full bg-white border border-[#1B1F1C]/20 text-[#1B1F1C] px-3 py-2 rounded-xl focus:outline-none"
+                    >
+                      <option value="">Selecione o medicamento...</option>
+                      {produtos.map(p => (
+                        <option key={p.id} value={p.id}>{p.nome} ({p.unidade_base})</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[#1B1F1C]/70 block mb-1">Quantidade (Unidade Base / Comprimidos)</label>
+                    <input
+                      type="number"
+                      value={dispensacaoQtd}
+                      onChange={(e) => setDispensacaoQtd(Number(e.target.value))}
+                      className="w-full bg-white border border-[#1B1F1C]/20 text-[#1B1F1C] px-3 py-2 rounded-xl"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[#1B1F1C]/70 block mb-1">Nº Receita / Notificação (Portaria 344)</label>
+                    <input
+                      type="text"
+                      placeholder="Ex: NOT-2026-9921"
+                      value={dispensacaoReceita}
+                      onChange={(e) => setDispensacaoReceita(e.target.value)}
+                      className="w-full bg-white border border-[#1B1F1C]/20 text-[#1B1F1C] px-3 py-2 rounded-xl"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[#1B1F1C]/70 block mb-1">Justificativa (Se houver desvio de FEFO)</label>
+                    <input
+                      type="text"
+                      placeholder="Obrigatório caso não utilize o lote sugerido pelo FEFO"
+                      value={dispensacaoJustificativa}
+                      onChange={(e) => setDispensacaoJustificativa(e.target.value)}
+                      className="w-full bg-white border border-[#1B1F1C]/20 text-[#1B1F1C] px-3 py-2 rounded-xl"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end mt-2">
+                  <button
+                    onClick={handleDispensarPaciente}
+                    className="px-5 py-2.5 bg-[#0E5C4C] hover:bg-[#0A4A3D] text-white rounded-xl text-xs font-bold transition flex items-center gap-2"
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    Confirmar Dispensação & Integrar Custo
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Seção 6: RECALL & BLOQUEIO */}
+          {secaoAtiva === 'recall' && (
+            <div className="flex flex-col gap-6">
+              <div className="bg-white border border-[#1B1F1C]/12 rounded-2xl p-5 shadow-[0_1px_2px_rgba(27,31,28,0.05)] flex flex-col gap-4">
+                <div>
+                  <h2 className="font-display text-lg font-semibold text-[#1B1F1C] flex items-center gap-2">
+                    <ShieldAlert className="w-5 h-5 text-[#1B1F1C]/55" />
+                    Módulo de Recall Sanitário & Bloqueio Imediato
+                  </h2>
+                  <p className="text-xs text-[#1B1F1C]/70">
+                    Bloqueia instantaneamente um lote em todas as farmácias municipais de Itaquiraí e exibe a lista de pacientes que receberam o lote.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                  <div>
+                    <label className="text-[#1B1F1C]/70 block mb-1">Lote a ser Bloqueado</label>
+                    <select
+                      value={modalRecallLoteId || ''}
+                      onChange={(e) => setModalRecallLoteId(e.target.value)}
+                      className="w-full bg-white border border-[#1B1F1C]/20 text-[#1B1F1C] px-3 py-2 rounded-xl"
+                    >
+                      <option value="">Selecione o lote...</option>
+                      {lotes.map(l => (
+                        <option key={l.id} value={l.id}>
+                          {l.numero_lote} — {l.produto_nome} (Vcto: {l.data_validade})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[#1B1F1C]/70 block mb-1">Motivo Técnico / Alerta ANVISA</label>
+                    <input
+                      type="text"
+                      placeholder="Ex: Resolução RE nº 1.420/2026 - Desvio de qualidade"
+                      value={motivoRecall}
+                      onChange={(e) => setMotivoRecall(e.target.value)}
+                      className="w-full bg-white border border-[#1B1F1C]/20 text-[#1B1F1C] px-3 py-2 rounded-xl"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end mt-2">
+                  <button
+                    onClick={handleEfetuarRecall}
+                    className="px-5 py-2.5 bg-[#9C3B2E] hover:bg-[#7E2F24] text-white rounded-xl text-xs font-bold transition flex items-center gap-2"
+                  >
+                    <AlertOctagon className="w-4 h-4" />
+                    Emitir Bloqueio de Recall em 100% dos Locais
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Seção 7: RELATÓRIOS & BNAFAR */}
+          {secaoAtiva === 'relatorios' && (
+            <div className="flex flex-col gap-6">
+              <div className="bg-white border border-[#1B1F1C]/12 rounded-2xl p-5 shadow-[0_1px_2px_rgba(27,31,28,0.05)] flex flex-col gap-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="font-display text-lg font-semibold text-[#1B1F1C] flex items-center gap-2">
+                      <FileSpreadsheet className="w-5 h-5 text-[#1B1F1C]/55" />
+                      Relatórios Gerenciais & Exportação Federal BNAFAR/Hórus
+                    </h2>
+                    <p className="text-xs text-[#1B1F1C]/70">
+                      Geração de dados em conformidade com o Ministério da Saúde para prestação de contas do SUS.
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={handleDownloadBnafar}
+                    className="flex items-center gap-2 px-4 py-2 bg-[#0E5C4C] hover:bg-[#0A4A3D] text-white rounded-xl text-xs font-semibold transition"
+                  >
+                    <Download className="w-4 h-4" />
+                    Exportar BNAFAR/Hórus (CSV)
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs mt-2">
+                  <div className="bg-[#F6F3EC]/60 p-4 rounded-xl border border-[#1B1F1C]/[0.08]">
+                    <div className="text-[#1B1F1C]/70 font-medium">Curva A (Alto Valor)</div>
+                    <div className="font-display text-xl font-semibold text-[#1B1F1C] mt-1">75% do Valor Total</div>
+                    <div className="text-[11px] text-[#1B1F1C]/65 mt-1">Insulinas, Meropenem e Imunoglobulinas</div>
+                  </div>
+                  <div className="bg-[#F6F3EC]/60 p-4 rounded-xl border border-[#1B1F1C]/[0.08]">
+                    <div className="text-[#1B1F1C]/70 font-medium">Curva B (Médio Impacto)</div>
+                    <div className="font-display text-xl font-semibold text-[#1B1F1C] mt-1">15% do Valor Total</div>
+                    <div className="text-[11px] text-[#1B1F1C]/65 mt-1">Antibióticos orais e anti-hipertensivos</div>
+                  </div>
+                  <div className="bg-[#F6F3EC]/60 p-4 rounded-xl border border-[#1B1F1C]/[0.08]">
+                    <div className="text-[#1B1F1C]/70 font-medium">Curva C (Giro Rápido)</div>
+                    <div className="font-display text-xl font-semibold text-[#1B1F1C] mt-1">10% do Valor Total</div>
+                    <div className="text-[11px] text-[#1B1F1C]/65 mt-1">Dipirona, Paracetamol, Soro fisiológico</div>
+                  </div>
+                </div>
               </div>
             </div>
           )}
         </main>
       </div>
 
-      {/* ========================================================================= */}
-      {/* 3. MODAIS OPERACIONAIS */}
-      {/* ========================================================================= */}
+      {/* MODAL: ALERTA DE OVERRIDE FEFO COM JUSTIFICATIVA OBRIGATÓRIA */}
+      {alertaOverrideVisivel && (
+        <div className="fixed inset-0 z-50 bg-[#1B1F1C]/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white border-2 border-[#8A6A16]/40 rounded-2xl max-w-lg w-full p-6 shadow-[0_8px_24px_rgba(27,31,28,0.10),0_2px_8px_rgba(27,31,28,0.05)] flex flex-col gap-4">
+            <div className="flex items-center gap-3 text-[#8A6A16]">
+              <AlertTriangle className="w-8 h-8 shrink-0" />
+              <div>
+                <h3 className="text-base font-bold text-[#1B1F1C]">Alerta de Desvio de FEFO</h3>
+                <p className="text-xs text-[#8A6A16]">Existe lote com validade mais próxima disponível no almoxarifado.</p>
+              </div>
+            </div>
 
-      {/* MODAL AJUSTE DE INVENTÁRIO */}
-      {modalAjuste && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/25 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white rounded-3xl border border-[#E0E0E0] shadow-2xl max-w-lg w-full p-6">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-4">
-              <h3 className="text-sm font-bold text-slate-900">
-                Ajuste de Inventário Físico
-              </h3>
+            <div className="bg-[#F6F3EC]/60 p-3 rounded-xl border border-[#1B1F1C]/[0.08] text-xs space-y-2">
+              <div className="flex justify-between">
+                <span className="text-[#1B1F1C]/70">Lote Sugerido pelo FEFO:</span>
+                <span className="font-bold text-[#0E5C4C]">{alertaOverrideVisivel.loteSugerido.numero_lote} (Vence: {alertaOverrideVisivel.loteSugerido.data_validade})</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[#1B1F1C]/70">Lote Selecionado pelo Operador:</span>
+                <span className="font-bold text-[#8A6A16]">{alertaOverrideVisivel.loteEscolhido.numero_lote} (Vence: {alertaOverrideVisivel.loteEscolhido.data_validade})</span>
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold text-[#1B1F1C]/80 block mb-1">
+                Justificativa Técnica Obrigatória (Mínimo 10 caracteres):
+              </label>
+              <textarea
+                rows={3}
+                value={justificativaOverrideFefo}
+                onChange={(e) => setJustificativaOverrideFefo(e.target.value)}
+                placeholder="Ex: Lote reservado por autorização clínica específica para protocolo especial..."
+                className="w-full bg-white border border-[#1B1F1C]/20 text-[#1B1F1C] text-xs p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8A6A16]/20 focus:border-[#8A6A16]"
+              />
+              <div className="text-[11px] text-[#1B1F1C]/65 mt-1">
+                Caracteres digitados: {justificativaOverrideFefo.trim().length} / 10 mínimos
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 mt-2">
               <button
-                type="button"
-                onClick={() => setModalAjuste(null)}
-                className="w-8 h-8 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 min-h-[44px] min-w-[44px]"
+                onClick={() => setAlertaOverrideVisivel(null)}
+                className="px-4 py-2 min-h-[40px] bg-white hover:bg-[#1B1F1C]/[0.06] text-[#1B1F1C] border border-[#1B1F1C]/12 rounded-xl text-xs font-bold"
               >
-                <X className="w-4 h-4" />
+                Voltar e Trocar Lote
+              </button>
+              <button
+                disabled={justificativaOverrideFefo.trim().length < 10}
+                onClick={handleConfirmarSeparacao}
+                className="px-4 py-2 bg-[#8A6A16] hover:bg-[#6E5511] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-xs font-bold transition"
+              >
+                Confirmar Override Auditado
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: SEPARAÇÃO DE SOLICITAÇÃO NA CAF */}
+      {modalSeparacao && (
+        <div className="fixed inset-0 z-50 bg-[#1B1F1C]/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white border border-[#1B1F1C]/12 rounded-2xl max-w-2xl w-full p-6 shadow-[0_8px_24px_rgba(27,31,28,0.10),0_2px_8px_rgba(27,31,28,0.05)] flex flex-col gap-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="font-display text-lg font-semibold text-[#1B1F1C] flex items-center gap-2">
+                  <Boxes className="w-5 h-5 text-[#1B1F1C]/55" />
+                  Separação de Medicamentos — {modalSeparacao.numero_solicitacao}
+                </h3>
+                <p className="text-xs text-[#1B1F1C]/70">Destino: {modalSeparacao.local_solicitante_nome}</p>
+              </div>
+              <button onClick={() => setModalSeparacao(null)} className="w-11 h-11 -mr-2 -mt-2 inline-flex items-center justify-center rounded-lg text-[#1B1F1C]/60 hover:text-[#1B1F1C] hover:bg-[#1B1F1C]/[0.06]" aria-label="Fechar">
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="space-y-3 text-xs">
-              <div>Medicamento: <strong>{modalAjuste.nome}</strong></div>
-              <div>Endereço Atual: <span className="font-mono">{modalAjuste.endereco}</span></div>
-              <div>Saldo Atual: <strong>{modalAjuste.saldoTotal} unidades</strong></div>
+            <div className="space-y-4">
+              {modalSeparacao.itens.map(item => {
+                const lotesDisponiveis = lotes.filter(l => l.produto_id === item.produto_id && (l.saldo_total || 0) > 0);
+                const sugestao = FefoEngine.sugerirLoteFefo(lotesDisponiveis, 30);
+                const escolhidoId = loteEscolhidoSeparacao[item.id];
+                const ehDesvio = sugestao?.loteSugerido && escolhidoId && sugestao.loteSugerido.id !== escolhidoId;
 
-              <div>
-                <label className="font-bold text-slate-700 block mb-1">Quantidade Real Contada</label>
-                <input
-                  type="number"
-                  defaultValue={modalAjuste.saldoTotal}
-                  className="w-full p-2.5 border border-[#E0E0E0] rounded-xl text-xs"
-                />
-              </div>
+                return (
+                  <div key={item.id} className="bg-[#F6F3EC]/60 p-4 rounded-xl border border-[#1B1F1C]/[0.08] text-xs flex flex-col gap-2">
+                    <div className="flex justify-between items-center">
+                      <span className="font-bold text-[#1B1F1C] text-sm">{item.produto_nome}</span>
+                      <span className="text-[#1B1F1C] font-bold">{item.quantidade_solicitada} {item.unidade_base}</span>
+                    </div>
 
-              <div>
-                <label className="font-bold text-slate-700 block mb-1">Justificativa de Divergência</label>
-                <textarea
-                  rows={2}
-                  placeholder="Motivo da divergência (quebra de frasco, inventário cego ou erro de contagem)..."
-                  className="w-full p-2.5 border border-[#E0E0E0] rounded-xl text-xs"
-                />
-              </div>
+                    <div>
+                      <label className="text-[#1B1F1C]/70 block mb-1">Selecione o Lote (Sugerido por FEFO):</label>
+                      <select
+                        value={escolhidoId || ''}
+                        onChange={(e) => setLoteEscolhidoSeparacao(prev => ({ ...prev, [item.id]: e.target.value }))}
+                        className={`w-full bg-white border px-3 py-2 min-h-[40px] rounded-xl text-xs ${
+                          ehDesvio ? 'border-[#8A6A16] text-[#8A6A16]' : 'border-[#1B1F1C]/20 text-[#1B1F1C]'
+                        }`}
+                      >
+                        {lotesDisponiveis.map(l => (
+                          <option key={l.id} value={l.id}>
+                            {l.numero_lote} — Vcto: {l.data_validade} ({FefoEngine.calcularDiasAteVencimento(l.data_validade)} dias) — Saldo CAF: {l.saldo_total}
+                            {sugestao?.loteSugerido?.id === l.id ? ' [⭐ RECOMENDADO FEFO]' : ''}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {ehDesvio && (
+                      <div className="p-2.5 rounded-lg bg-[#8A6A16]/[0.08] border border-[#8A6A16]/25 text-[11px] text-[#8A6A16] font-semibold flex items-center gap-2">
+                        <AlertTriangle className="w-4 h-4 shrink-0 text-[#8A6A16]" />
+                        Desvio de FEFO: Você selecionou um lote com validade mais distante. Uma justificativa será exigida.
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
 
-            <div className="mt-5 pt-4 border-t border-slate-100 flex justify-end gap-2">
+            <div className="flex justify-end gap-3 mt-4">
               <button
-                type="button"
-                onClick={() => setModalAjuste(null)}
-                className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 min-h-[44px]"
+                onClick={() => setModalSeparacao(null)}
+                className="px-4 py-2 min-h-[40px] bg-white hover:bg-[#1B1F1C]/[0.06] text-[#1B1F1C] border border-[#1B1F1C]/12 rounded-xl text-xs font-bold"
               >
                 Cancelar
               </button>
               <button
-                type="button"
-                onClick={() => {
-                  triggerNotificacao('Ajuste de inventário registrado com trilha de auditoria.');
-                  setModalAjuste(null);
-                }}
-                className="px-4 py-2 rounded-xl text-xs font-bold bg-[#0E5C4C] hover:bg-[#0A4A3D] text-white min-h-[44px]"
+                onClick={handleConfirmarSeparacao}
+                className="px-5 py-2.5 bg-marca hover:bg-marca-hover text-white rounded-xl text-xs font-bold"
               >
-                Salvar Ajuste
+                Concluir Separação & Despachar Remessa
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: NOVA SOLICITAÇÃO UBS -> CAF */}
+      {modalNovaSolicitacao && (
+        <div className="fixed inset-0 z-50 bg-[#1B1F1C]/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white border border-[#1B1F1C]/12 rounded-2xl max-w-md w-full p-6 shadow-[0_8px_24px_rgba(27,31,28,0.10),0_2px_8px_rgba(27,31,28,0.05)] flex flex-col gap-4">
+            <div className="flex justify-between items-center">
+              <h3 className="font-display text-lg font-semibold text-[#1B1F1C] flex items-center gap-2">
+                <Truck className="w-5 h-5 text-[#1B1F1C]/55" />
+                Nova Solicitação de Medicamentos
+              </h3>
+              <button onClick={() => setModalNovaSolicitacao(false)} className="w-11 h-11 -mr-2 -mt-2 inline-flex items-center justify-center rounded-lg text-[#1B1F1C]/60 hover:text-[#1B1F1C] hover:bg-[#1B1F1C]/[0.06]" aria-label="Fechar">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div>
+                <label className="text-[#1B1F1C]/70 block mb-1">Unidade Solicitante</label>
+                <input
+                  type="text"
+                  disabled
+                  value={localAtivo?.nome || ''}
+                  className="w-full bg-[#F6F3EC] border border-[#1B1F1C]/12 text-[#1B1F1C]/70 px-3 py-2 rounded-xl"
+                />
+              </div>
+
+              <div>
+                <label className="text-[#1B1F1C]/70 block mb-1">Medicamento</label>
+                <select
+                  value={novaSolProdutoId}
+                  onChange={(e) => setNovaSolProdutoId(e.target.value)}
+                  className="w-full bg-white border border-[#1B1F1C]/20 text-[#1B1F1C] px-3 py-2 rounded-xl"
+                >
+                  <option value="">Selecione o medicamento...</option>
+                  {produtos.map(p => (
+                    <option key={p.id} value={p.id}>{p.nome} ({p.unidade_base})</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-[#1B1F1C]/70 block mb-1">Quantidade Solicitada (Unidade Base)</label>
+                <input
+                  type="number"
+                  value={novaSolQtd}
+                  onChange={(e) => setNovaSolQtd(Number(e.target.value))}
+                  className="w-full bg-white border border-[#1B1F1C]/20 text-[#1B1F1C] px-3 py-2 rounded-xl"
+                />
+              </div>
+
+              <div>
+                <label className="text-[#1B1F1C]/70 block mb-1">Observações da UBS</label>
+                <textarea
+                  rows={2}
+                  value={novaSolObs}
+                  onChange={(e) => setNovaSolObs(e.target.value)}
+                  placeholder="Ex: Reforço para campanha de vacinação / Hipertensos cadastrados"
+                  className="w-full bg-white border border-[#1B1F1C]/20 text-[#1B1F1C] px-3 py-2 rounded-xl"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 mt-2">
+              <button
+                onClick={() => setModalNovaSolicitacao(false)}
+                className="px-4 py-2 min-h-[40px] bg-white hover:bg-[#1B1F1C]/[0.06] text-[#1B1F1C] border border-[#1B1F1C]/12 rounded-xl text-xs font-bold"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleCriarSolicitacao}
+                className="px-4 py-2 bg-[#0E5C4C] hover:bg-[#0A4A3D] text-white rounded-xl text-xs font-bold"
+              >
+                Enviar à CAF Central
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* GAVETA LATERAL: PERFIL COMPLETO DO MEDICAMENTO & RASTREABILIDADE */}
+      {perfilMedicamentoId && dadosPerfil && (
+        <div className="fixed inset-0 z-50 bg-[#1B1F1C]/40 backdrop-blur-xs flex justify-end">
+          <div className="bg-white border-l border-[#1B1F1C]/12 w-full max-w-xl h-full p-6 overflow-y-auto flex flex-col gap-6 shadow-[0_8px_24px_rgba(27,31,28,0.10),0_2px_8px_rgba(27,31,28,0.05)] animate-slide-left">
+            <div className="flex justify-between items-start border-b border-[#1B1F1C]/[0.08] pb-4">
+              <div>
+                <span className="text-[11px] font-mono text-[#1B1F1C] bg-[#1B1F1C]/[0.05] px-2 py-0.5 rounded border border-[#1B1F1C]/12">
+                  {dadosPerfil.produto.codigo_catmat}
+                </span>
+                <h3 className="font-display text-lg font-semibold text-[#1B1F1C] mt-1">{dadosPerfil.produto.nome}</h3>
+                <p className="text-xs text-[#1B1F1C]/70">{dadosPerfil.produto.principio_ativo} — {dadosPerfil.produto.concentracao}</p>
+              </div>
+              <button onClick={() => setPerfilMedicamentoId(null)} className="w-11 h-11 -mr-2 -mt-2 inline-flex items-center justify-center rounded-lg text-[#1B1F1C]/60 hover:text-[#1B1F1C] hover:bg-[#1B1F1C]/[0.06]" aria-label="Fechar">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Ficha CATMAT */}
+            {dadosPerfil.catmat && (
+              <div className="bg-[#F6F3EC]/60 p-4 rounded-xl border border-[#1B1F1C]/[0.08] text-xs flex flex-col gap-1.5">
+                <div className="font-bold text-[#1B1F1C]/80 flex items-center gap-1.5">
+                  <Database className="w-4 h-4 text-[#1B1F1C]/55" />
+                  Dados Oficiais CATMAT (Compras.gov.br)
+                </div>
+                <div className="text-[#1B1F1C]/70">{dadosPerfil.catmat.descricao}</div>
+                <div className="text-[11px] text-[#1B1F1C]/65">PDM: {dadosPerfil.catmat.nome_pdm} | Classe: {dadosPerfil.catmat.classe_pdm}</div>
+              </div>
+            )}
+
+            {/* Saldo Consolidado por Estabelecimento (CAF + 9 UBS de Itaquiraí) */}
+            <div className="flex flex-col gap-2">
+              <h4 className="text-xs font-bold text-[#1B1F1C] uppercase tracking-wider">
+                Distribuição de Saldos nos 10 Estabelecimentos de Saúde
+              </h4>
+              <div className="bg-white rounded-xl border border-[#1B1F1C]/12 divide-y divide-[#1B1F1C]/[0.08] text-xs">
+                {dadosPerfil.saldosPorLocal.map(loc => (
+                  <div key={loc.localId} className="p-3 flex justify-between items-center">
+                    <div>
+                      <div className="font-medium text-[#1B1F1C]">{loc.localNome}</div>
+                      <div className="text-[10px] text-[#1B1F1C]/65">CNES: {loc.cnes}</div>
+                    </div>
+                    <span className="font-bold text-[#1B1F1C]">
+                      {loc.saldo.toLocaleString('pt-BR')} {dadosPerfil.produto.unidade_base}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Linha do Tempo de Rastreabilidade (NF -> UBS -> Paciente) */}
+            <div className="flex flex-col gap-2">
+              <h4 className="text-xs font-bold text-[#1B1F1C] uppercase tracking-wider flex items-center gap-2">
+                <History className="w-4 h-4 text-[#1B1F1C]/55" />
+                Trilha de Auditoria & Rastreabilidade de Movimentações
+              </h4>
+              <div className="space-y-2">
+                {dadosPerfil.historicoMovimentacoes.length === 0 ? (
+                  <div className="text-xs text-[#1B1F1C]/65 py-3 text-center">Nenhuma movimentação registrada.</div>
+                ) : (
+                  dadosPerfil.historicoMovimentacoes.map(mov => (
+                    <div key={mov.id} className="p-3 bg-[#F6F3EC]/60 border border-[#1B1F1C]/[0.08] rounded-xl text-xs flex flex-col gap-1">
+                      <div className="flex justify-between items-center">
+                        <span className="font-bold text-[#1B1F1C]">{mov.tipo}</span>
+                        <span className="text-[10px] text-[#1B1F1C]/65">{new Date(mov.dataHora).toLocaleString('pt-BR')}</span>
+                      </div>
+                      <div className="text-[#1B1F1C]/80">
+                        Qtd: <strong>{mov.quantidade}</strong> | Lote: <strong>{mov.numeroLote}</strong>
+                      </div>
+                      <div className="text-[11px] text-[#1B1F1C]/70">
+                        {mov.origem && `Origem: ${mov.origem}`} {mov.destino && `→ Destino: ${mov.destino}`}
+                      </div>
+                      {mov.justificativa && (
+                        <div className="text-[10px] text-[#8A6A16] bg-[#8A6A16]/[0.08] p-1.5 rounded mt-1">
+                          {mov.justificativa}
+                        </div>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
           </div>
         </div>

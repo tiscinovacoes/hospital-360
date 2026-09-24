@@ -180,7 +180,7 @@ export function VigiaSidebarLayout({
   }, [moduloId, pathname]);
 
   const logoId = moduloAtual && moduloAtual.id !== 'home' ? (moduloAtual.id as ModuloLogoId) : null;
-  const tema = logoId && logoId !== 'admin-perfis' ? MODULO_THEMES[logoId] : null;
+  const tema = logoId && logoId in MODULO_THEMES ? MODULO_THEMES[logoId as keyof typeof MODULO_THEMES] : null;
   const tagModulo = tema?.tagRegulatoria ?? (logoId === 'admin-perfis' ? 'LGPD / RBAC' : undefined);
   const corCategoria = logoId ? CATEGORIA_COR[categoriaDoModulo(logoId)] : null;
   // Avatar: tom forte da categoria dentro do módulo, azul da marca no hub.
