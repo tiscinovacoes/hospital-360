@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { ArrowLeft, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { CATEGORIA_COR, MODULO_THEMES } from './ModuloLayoutShell';
+import { CATEGORIA_COR, CATEGORIA_COR_FORTE, MODULO_THEMES } from './ModuloLayoutShell';
 import { ModuloLogo, ModuloLogoId, categoriaDoModulo } from './ModuloLogo';
 
 export interface MenuLateralItem {
@@ -44,7 +44,7 @@ const TAG_FORA_DO_TEMA: Partial<Record<ModuloLogoId, string>> = {
  * Estrutura herdada da Escala Médica, ajustada ao guia v2.1:
  * - painel flutuante em cartão (raio 16px, teto do guia — não 24px);
  * - cartão de identidade no topo com a logo do módulo e a tag regulatória;
- * - item ativo em azul marca-forte #496C92 (a cor de categoria fica só na identidade);
+ * - logo e item ativo no tom forte da categoria (texto branco ≥ 4,5:1);
  * - desktop: painel fixo abaixo do cabeçalho, sempre visível;
  * - mobile: gaveta flutuante, fechada por padrão.
  */
@@ -58,7 +58,9 @@ export function ModuloMenuLateral({
   onFechar,
   rodape,
 }: ModuloMenuLateralProps) {
-  const cor = CATEGORIA_COR[categoriaDoModulo(moduloId)];
+  const categoria = categoriaDoModulo(moduloId);
+  const cor = CATEGORIA_COR[categoria];
+  const corForte = CATEGORIA_COR_FORTE[categoria];
   const tag = moduloId === 'admin-perfis' ? TAG_FORA_DO_TEMA[moduloId] : MODULO_THEMES[moduloId].tagRegulatoria;
 
   return (
@@ -122,6 +124,7 @@ export function ModuloMenuLateral({
                 type="button"
                 title={item.label}
                 aria-current={ativo ? 'page' : undefined}
+                style={ativo ? { backgroundColor: corForte } : undefined}
                 onClick={() => {
                   onSelect(item.id);
                   if (typeof window !== 'undefined' && window.innerWidth < 1024) onFechar();
@@ -130,7 +133,7 @@ export function ModuloMenuLateral({
                   'w-full min-h-[44px] lg:min-h-[40px] flex items-center justify-between gap-2 px-3 py-2 rounded-xl text-xs text-left transition-colors cursor-pointer',
                   'focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0E5C4C]',
                   ativo
-                    ? 'bg-marca-forte text-white font-bold shadow-sm'
+                    ? 'text-white font-bold shadow-sm'
                     : 'text-[#1B1F1C]/75 font-semibold hover:bg-[#F6F3EC] hover:text-[#1B1F1C]'
                 )}
               >

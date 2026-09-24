@@ -686,3 +686,64 @@ Manter o padrão da v2.2, mas trocar o preto pelo azul da identidade visual, ape
 ### Observação:
 - Nenhuma alteração de banco (DDL) nesta implantação — só o app `nucleo/` e documentação.
 - A prévia e a produção usam o mesmo projeto Supabase.
+
+---
+
+## [2026-09-24] - v2.5.9 (Azul Vigia #0066CC e Cor da Categoria nos Pontos de Identidade do Módulo)
+
+### Versão / Etapa da Alteração:
+- v2.5.9 — Design System v2.4.0. Proposta validada no Figma pelo usuário ("ok") antes de ir para o código.
+
+### O que mudou:
+- **Azul padrão Vigia `#0066CC`** (branco 5,57:1) nos tokens `marca` e `marca-forte`; hover `#0052A3`. Afeta o quadrado da logo "Vigia Saúde 360", o painel de destaque do hub, o avatar no hub e os botões de marca.
+- **Cor da categoria em 4 pontos do módulo**, no tom forte (`CATEGORIA_COR_FORTE`, branco ≥ 4,5:1): logo do módulo no cabeçalho, logo no cartão do menu lateral, item ativo do menu e avatar.
+  - Suprimentos `#407F71` · Assistencial `#496C92` · Operação `#946E2C` · Financeiro `#607889`
+- Logo de módulo sem o dot de categoria quando o quadrado já está na cor da categoria (o dot fica só no tom papel, no hero do hub).
+- Iniciais do avatar em branco (o creme não passava de 4,5:1 no dourado).
+
+### Arquivos tocados:
+- `nucleo/src/app/globals.css` (tokens de marca)
+- `nucleo/src/components/ModuloLayoutShell.tsx` (`CATEGORIA_COR_FORTE`)
+- `nucleo/src/components/ModuloLogo.tsx` (tom `categoria`, dot só no tom `papel`)
+- `nucleo/src/components/ModuloMenuLateral.tsx` (item ativo na cor da categoria)
+- `nucleo/src/components/VigiaSidebarLayout.tsx` (avatar por categoria, hover da logo Vigia)
+- `IDENTIDADE_VISUAL (1).md` (v2.4.0)
+- Figma "Vigia Saúde 360 — Padrão de Módulos": variáveis `categoria-forte/*`, `marca*` = `#0066CC`, componente Logo de Módulo e template atualizados, seção "07 · Cor por categoria (aprovado)"
+
+### Verificação:
+- `tsc --noEmit` sem erros; lint sem erros (só avisos antigos)
+- Hub, Estoque Central, Laboratório, Escala Médica e Financeiro Split a 1440px: cores conferidas no DOM e sem rolagem horizontal
+
+### Observação:
+- Nenhuma alteração de banco (DDL).
+
+### Próximo passo:
+- Validar na prévia do `dev`; subir para produção quando o usuário autorizar.
+
+---
+
+## [2026-09-24] - v2.5.10 (Guia de Identidade Visual Padronizado — v2.4.0 como Referência Única)
+
+### O que mudou:
+- `IDENTIDADE_VISUAL (1).md` reescrito: descreve só as regras vigentes; versões antigas foram para uma tabela de histórico no fim. Removidas as regras contraditórias (dot em toda logo, tinta como fundo de identidade, azul `#5B84B1` como marca, tokens `--vs2-*` que não existem no código).
+- Novas seções: fontes da verdade (código, Figma, guia), onde cada cor pode aparecer (§ 2.5), contraste medido (§ 2.6), moldura do módulo (§ 4), tokens reais do código com o nome da variável no Figma (§ 8) e checklist de novo módulo (§ 9).
+- Sinalizado no guia: terracota com texto branco dá 4,16:1 — só serve para rótulo grande (≥ 18,66px bold); rótulos menores devem usar `#A8531F` (5,35:1). Cor não foi alterada.
+- `nucleo/src/app/globals.css`: tokens `--color-cat-*-forte` adicionados (espelham `CATEGORIA_COR_FORTE`) e comentários atualizados. Sem mudança visual.
+- Figma: seção 06 · Regras e seção 01 · Fundamentos atualizadas para a v2.4 (textos, valores da marca e amostras `categoria-forte/*`).
+
+### Arquivos tocados:
+- `IDENTIDADE_VISUAL (1).md`, `nucleo/src/app/globals.css`, `Vigia-Custos-LOG-Execucao.md`
+
+---
+
+## [2026-09-24] - v2.5.11 (Implantação em Produção: dev → master)
+
+### Versão / Etapa da Alteração:
+- Implantação autorizada pelo usuário ("após isso suba para produção") das entregas v2.5.9 e v2.5.10.
+
+### O que vai para produção:
+- Azul Vigia `#0066CC` na marca e cor da categoria na logo do módulo, item ativo e avatar (v2.5.9)
+- Guia de identidade padronizado e tokens `--color-cat-*-forte` (v2.5.10)
+
+### Observação:
+- Nenhuma alteração de banco (DDL).

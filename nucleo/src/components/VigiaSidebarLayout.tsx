@@ -25,7 +25,7 @@ import {
   Layers,
   UserCog
 } from 'lucide-react';
-import { CATEGORIA_COR, ModuloId, MODULO_THEMES } from './ModuloLayoutShell';
+import { CATEGORIA_COR, CATEGORIA_COR_FORTE, ModuloId, MODULO_THEMES } from './ModuloLayoutShell';
 import { ModuloLogo, ModuloLogoId, categoriaDoModulo } from './ModuloLogo';
 
 interface NavItem {
@@ -183,6 +183,8 @@ export function VigiaSidebarLayout({
   const tema = logoId && logoId !== 'admin-perfis' ? MODULO_THEMES[logoId] : null;
   const tagModulo = tema?.tagRegulatoria ?? (logoId === 'admin-perfis' ? 'LGPD / RBAC' : undefined);
   const corCategoria = logoId ? CATEGORIA_COR[categoriaDoModulo(logoId)] : null;
+  // Avatar: tom forte da categoria dentro do módulo, azul da marca no hub.
+  const corAvatar = logoId ? CATEGORIA_COR_FORTE[categoriaDoModulo(logoId)] : undefined;
   const tituloAtual =
     activeTitle || tema?.nome || moduloAtual?.name || 'Hub de Módulos & Catálogo de Soluções';
 
@@ -206,7 +208,7 @@ export function VigiaSidebarLayout({
               className={`items-center gap-2.5 group cursor-pointer shrink-0 ${logoId ? 'hidden sm:flex' : 'flex'}`}
               title="Ir para o Hub de Módulos"
             >
-              <div className="w-9 h-9 flex-shrink-0 bg-marca rounded-xl flex items-center justify-center text-[#F6F3EC] shadow-sm group-hover:bg-marca-forte transition-colors">
+              <div className="w-9 h-9 flex-shrink-0 bg-marca rounded-xl flex items-center justify-center text-[#F6F3EC] shadow-sm group-hover:bg-marca-hover transition-colors">
                 <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
                   <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-1 6h2v4h4v2h-4v4h-2v-4H7v-2h4V7z" />
                 </svg>
@@ -283,7 +285,9 @@ export function VigiaSidebarLayout({
 
             {/* Avatar do Usuário Conectado */}
             <div className="flex items-center gap-2 pl-1 sm:pl-2">
-              <div className="w-9 h-9 min-w-[36px] min-h-[36px] sm:w-10 sm:h-10 rounded-xl bg-marca-forte text-[#F6F3EC] font-black text-xs flex items-center justify-center shadow-sm">
+              <div className="w-9 h-9 min-w-[36px] min-h-[36px] sm:w-10 sm:h-10 rounded-xl bg-marca-forte text-white font-black text-xs flex items-center justify-center shadow-sm"
+                style={corAvatar ? { backgroundColor: corAvatar } : undefined}
+              >
                 JS
               </div>
               <div className="hidden xl:block text-left leading-tight">

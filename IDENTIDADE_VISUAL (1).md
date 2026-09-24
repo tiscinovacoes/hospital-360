@@ -1,592 +1,475 @@
 # Vigia Saúde 360 — Identidade Visual
 > Sistema Governamental de Custeio, Compras Públicas e Gestão Hospitalar
-> Design System v2.3.0 — azul da marca substitui a tinta nas superfícies de identidade (logo, item ativo, hero, avatar)
+> Design System **v2.4.0** — referência única e vigente
 
 ---
 
-## Nota de versão
+## Como usar este guia
 
-A v1.0.0 (`#1A56DB`, Inter, cards multicoloridos por módulo) foi avaliada e descartada por parecer genérica — "SaaS azul de template". A v2.0.0 reduziu para 4 cores de categoria saturadas (que coincidiam numericamente com as cores de ação/status) a partir do esboço em [https://claude.ai/artifact/Rk8UxQdFTS2HQy8zwn3znH](https://claude.ai/artifact/Rk8UxQdFTS2HQy8zwn3znH) (Hub de Módulos + Compras &amp; Atas).
+Este documento descreve **só o que vale hoje**. O que mudou entre versões fica no [Histórico](#10-histórico-de-versões), no fim — nenhuma regra antiga continua valendo por estar escrita mais acima.
 
-**v2.1.0 (atual)** — as 4 cores de categoria ficam mais leves/menos saturadas e uma delas volta a ser azul (clínico, `#5B84B1`), a pedido explícito, para reforçar a leitura "saúde hospitalar" nos módulos assistenciais. Isso **revisa** a regra da v2.0 de "nunca reintroduzir azul": o que ficou proibido foi o azul institucional saturado `#1A56DB` da v1 dominando a tela inteira, não um tom de categoria pontual e suave. Cores de **ação** (`#0E5C4C` teal, `#C1622D` terracota) e de **status** (`#8A6A16` ocre, `#9C3B2E` tijolo) permanecem exatamente iguais — só a identidade de categoria (dot, tarja, tag regulatória, item de menu) mudou. Ver § 2.1 para a paleta completa e § 8 para o status do rollout nos 13 módulos (concluído).
+Três fontes precisam dizer a mesma coisa. Se divergirem, corrija as três no mesmo commit:
 
-**v2.2.0** — padroniza a moldura de todo módulo, a partir da barra lateral da Escala Médica (a preferida), ajustada às regras deste guia. Três componentes novos em § 4: **Logo de Módulo** (uma marca por módulo, na família da logo Vigia), **Cabeçalho** (centralizado no hub, com a logo do módulo nos módulos) e **Menu lateral de módulo** (painel arredondado único para os 12 módulos). Nenhuma cor muda. Modelo no Figma para os próximos módulos: [Vigia Saúde 360 — Padrão de Módulos](https://www.figma.com/design/oNgeLR3Td97EmqdHqdkTuU).
+| Fonte | Onde | O que guarda |
+|---|---|---|
+| **Código** | `nucleo/src/app/globals.css` (`@theme`) e `nucleo/src/components/ModuloLayoutShell.tsx` | Tokens que viram classes Tailwind e as cores de categoria em TypeScript |
+| **Figma** | [Vigia Saúde 360 — Padrão de Módulos](https://www.figma.com/design/oNgeLR3Td97EmqdHqdkTuU) | Variáveis de cor, componentes (Logo de Módulo, Item de Menu, Menu Lateral) e o template de módulo |
+| **Este guia** | `IDENTIDADE_VISUAL (1).md` | As regras de uso e o porquê delas |
 
-**v2.3.0** — a tinta `#1B1F1C` deixa de ser o fundo das superfícies de **identidade de marca** (logo, item ativo do menu, painel de destaque, avatar, botões escuros de ação) e dá lugar ao **azul clínico da categoria Assistencial** (`#5B84B1`, já usado em § 2.1), agora também como cor da marca. Dois tons: `marca` (#5B84B1, só para ícone — contraste gráfico) e `marca-forte` (#496C92, para qualquer superfície com texto branco, 5,5:1 AA). A tinta continua sendo a cor de **texto** em toda a interface — só o papel de fundo de identidade mudou. Nada além dessas superfícies muda: cor de categoria, cor de ação (teal/terracota) e cor de status seguem exatamente como na v2.1.
+---
 
-Princípios da mudança:
-- **Menos cor, mais hierarquia.** Um único acento de ação (teal) e um único acento de destaque (terracota), em vez de uma cor própria por módulo espalhada em ícones, fundos e bordas.
-- **Tipografia com identidade.** Serifada (Fraunces) nos títulos para fugir do sans-serif genérico (Inter/Roboto/Arial) que qualquer produto usa.
-- **Papel, não branco puro.** Fundo levemente creme (`#F6F3EC`), texto quase-preto quente (`#1B1F1C`), no lugar do cinza-azulado `slate`.
-- **Categoria como sinal discreto** (um ponto de 9px), não como bloco colorido de card inteiro.
-- A geometria dos componentes (raio, grid, alturas de toque ≥44px) **não muda** — só a pele. Isso barateia a execução: é recolorir/retipografar, não redesenhar.
+## Princípios
+
+1. **Azul Vigia é a marca.** `#0066CC` identifica o produto: logo "Vigia Saúde 360", painel de destaque do hub, avatar no hub e botões de marca.
+2. **A categoria identifica o módulo.** Dentro de um módulo, a logo do módulo, o item ativo do menu e o avatar usam o tom forte da categoria do módulo. Fora desses pontos, a categoria aparece só em detalhes suaves (tag, dot).
+3. **Ação e status têm cor própria e fixa.** Teal para ação, terracota para o único destaque da tela, ocre para atenção, tijolo para crítico. Essas cores nunca identificam módulo.
+4. **Papel e tinta, não branco e cinza.** Fundo creme `#F6F3EC`, texto quase-preto quente `#1B1F1C`.
+5. **Tipografia com identidade.** Fraunces (serifada) nos títulos; Public Sans no resto.
+6. **Contraste AA sempre.** Texto ≥ 4,5:1; ícone e elemento gráfico ≥ 3:1. Toda cor deste guia vem com o contraste já medido (§ 2.6).
+7. **Cor sólida, nunca degradê.**
 
 ---
 
 ## Sumário
 
-1. [Logotipo](#1-logotipo)
-2. [Paleta de Cores](#2-paleta-de-cores)
+1. [Marca](#1-marca)
+2. [Cores](#2-cores)
 3. [Tipografia](#3-tipografia)
-4. [Componentes](#4-componentes)
-5. [Ícones](#5-ícones)
-6. [Tokens de Design](#6-tokens-de-design)
-7. [Espaçamento e Raio](#7-espaçamento-e-raio)
-8. [Como Executar nos Módulos](#8-como-executar-nos-módulos)
+4. [Moldura do Módulo](#4-moldura-do-módulo)
+5. [Componentes](#5-componentes)
+6. [Ícones](#6-ícones)
+7. [Espaçamento, Raio e Sombra](#7-espaçamento-raio-e-sombra)
+8. [Tokens](#8-tokens)
+9. [Novo Módulo — Checklist](#9-novo-módulo--checklist)
+10. [Histórico de Versões](#10-histórico-de-versões)
 
 ---
 
-## 1. Logotipo
+## 1. Marca
 
 ### Composição
 
-Mesma geometria de escudo já usada no código (`VigiaSidebarLayout.tsx`) — só a pele muda. Dois elementos indissociáveis:
+Dois elementos indissociáveis (código: `VigiaSidebarLayout.tsx`):
 
-- **Ícone** — escudo com cruz da saúde vazada, cor única (tinta, não mais azul sobre fundo colorido por módulo)
-- **Wordmark** — "Vigia" em Fraunces 600 (serifada) + "Saúde" em Public Sans 600 na cor teal — "360" como sufixo pequeno, versalete, cor neutra
-
-### Variações
-
-| Variação | Fundo | Uso |
-|---|---|---|
-| **Principal** | Papel `#F6F3EC` | Documentos, telas de conteúdo |
-| **Negativa** | Tinta `#1B1F1C` | Sidebar (topo), hero de destaque, splash |
-| **Monocromática** | Qualquer | Impressão, carimbos, escala de cinza |
-
-### Ícone SVG
-
-Mesmo `path` do escudo atual (`VigiaSidebarLayout.tsx:222`), recolorido:
+- **Símbolo** — escudo com cruz da saúde vazada, em papel `#F6F3EC`, dentro de um quadrado **azul Vigia `#0066CC`** de 36px, raio 12px. Hover do quadrado: `#0052A3`.
+- **Wordmark** — "Vigia" em Fraunces 700 tinta + "Saúde 360" em Fraunces 700 **teal `#0E5C4C`**.
 
 ```svg
-<svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-1 6h2v4h4v2h-4v4h-2v-4H7v-2h4V7z"
-        fill="#1B1F1C"/>
+<!-- Quadrado 36px, raio 12px, fundo #0066CC; escudo 20px -->
+<svg viewBox="0 0 24 24" width="20" height="20" fill="#F6F3EC">
+  <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-1 6h2v4h4v2h-4v4h-2v-4H7v-2h4V7z"/>
 </svg>
 ```
 
-Sobre fundo escuro (sidebar/hero), inverter para `fill="#F6F3EC"`. Nunca reintroduzir o preenchimento azul (`#1A56DB`) ou o ponto verde de "IA" da v1 — o acento de IA/automação passa a ser textual ("IA" em caixa alta, cor teal), não um elemento gráfico extra no ícone.
+### Variações
 
-### Espaço de Proteção
+| Variação | Quadrado | Escudo | Wordmark | Uso |
+|---|---|---|---|---|
+| **Principal** | `#0066CC` | papel | tinta + teal | Cabeçalho, documentos, telas sobre papel ou branco |
+| **Negativa** | papel | `#0066CC` | papel | Sobre o azul Vigia (painel de destaque, splash) |
+| **Monocromática** | tinta | papel | tinta | Impressão, carimbos, escala de cinza |
 
-Inalterado: área livre equivalente à altura do ícone (`x`) em todos os lados.
-
-### Regras de Uso
+### Regras
 
 | | Regra |
 |---|---|
-| ✅ | Usar somente as variações aprovadas |
-| ✅ | Manter o espaço de proteção sempre |
-| ❌ | Distorcer as proporções do logotipo |
-| ❌ | Reintroduzir azul `#1A56DB` (institucional v1) ou verde `#0E9F6E` no **ícone do logo** — regra específica do escudo; não se aplica ao azul clínico de categoria (§ 2.1), que é tom diferente e uso diferente |
-| ❌ | Aplicar sobre fundos com baixo contraste |
-| ❌ | Adicionar sombras, gradientes ou contornos externos |
+| ✅ | Espaço de proteção igual à altura do quadrado em todos os lados |
+| ✅ | Só as três variações acima |
+| ❌ | Pintar o quadrado da marca com cor de categoria, de ação ou de status |
+| ❌ | Distorcer, girar, contornar, sombrear ou aplicar degradê |
 | ❌ | Recriar o escudo com outros elementos gráficos |
 
 ---
 
-## 2. Paleta de Cores
+## 2. Cores
 
-### Tinta & Papel — Base Neutra
+### 2.1 Base neutra — tinta e papel
 
-| Tom | Hex | Uso |
+| Nome | Valor | Uso |
 |---|---|---|
-| **Tinta ★** | `#1B1F1C` | Texto principal, títulos (o hero e as superfícies de identidade passaram para a **Marca** na v2.3) |
-| **Tinta 70%** | `rgba(27,31,28,.70)` | Texto secundário, descrições |
-| **Tinta 45%** | `rgba(27,31,28,.45)` | Labels, captions, placeholders |
-| **Tinta 12%** | `rgba(27,31,28,.12)` | Bordas de cards, divisores |
-| **Tinta 8%** | `rgba(27,31,28,.08)` | Divisores internos sutis (footer de card, linha de tabela) |
-| **Papel ★** | `#F6F3EC` | Background de página (substitui o `#F9FAFB` cinza-azulado) |
-| **Papel 2** | `#EFEAE0` | Sidebar, painéis secundários, rail lateral |
-| **Branco** | `#FFFFFF` | Cards, inputs, superfícies elevadas sobre o papel |
+| **Tinta** | `#1B1F1C` | Texto principal e títulos |
+| Tinta 70% | `rgba(27,31,28,.70)` | Texto secundário, descrições |
+| Tinta 45% | `rgba(27,31,28,.45)` | Labels, captions, placeholders |
+| Tinta 12% | `rgba(27,31,28,.12)` | Bordas de card, divisores |
+| Tinta 8% | `rgba(27,31,28,.08)` | Divisores internos (linha de tabela, rodapé de card) |
+| **Papel** | `#F6F3EC` | Fundo de página; texto e ícone sobre azul Vigia |
+| Papel 2 | `#EFEAE0` | Painéis secundários |
+| **Branco** | `#FFFFFF` | Cards, inputs, menu lateral, cabeçalho |
 
-### Marca — Superfícies de Identidade (v2.3)
+### 2.2 Azul Vigia — marca
 
-| Tom | Hex | Uso |
+| Nome | Valor | Uso |
 |---|---|---|
-| **Marca ★** | `#5B84B1` | Quadrado da logo Vigia e das Logos de Módulo (só ícone — contraste gráfico 3,9:1, não serve para texto) |
-| **Marca-forte** | `#496C92` | Qualquer superfície de identidade com texto branco: item ativo do menu, painel de destaque (hero), avatar, botões escuros de ação — 5,5:1 (AA) |
-| **Marca-hover** | `#3C5A7A` | Hover de superfícies marca-forte |
+| **Marca** | `#0066CC` | Quadrado da logo Vigia, painel de destaque do hub, avatar no hub, botões de marca |
+| Marca-hover | `#0052A3` | Hover de tudo que é `#0066CC` |
 
-Mesma matiz do azul clínico de § 2.1 (categoria Assistencial) — o azul passa a ser também a cor da marca, não só de uma categoria. Nas Logos de Módulo da categoria Assistencial, o dot de 9px fica da mesma cor do quadrado; o anel branco de 2px mantém o dot visível.
+O azul Vigia não identifica módulo. Dentro do módulo, os pontos de identidade usam a categoria (§ 2.3).
 
-### Teal Institucional — Primary / Ação
+### 2.3 Categorias de módulo
 
-| Tom | Hex | Uso |
+Todo módulo pertence a uma de quatro categorias. Cada categoria tem **dois tons** e dois derivados:
+
+- **Forte** — superfície com texto ou ícone por cima. Usado em **exatamente três lugares**: logo do módulo, item ativo do menu lateral e avatar dentro do módulo.
+- **Base** — detalhe gráfico, nunca fundo de texto. Usado no dot de categoria e como origem do fundo e da borda da tag.
+- **Fundo da tag** — base a 12% (Operação 14%).
+- **Borda da tag** — base a 35%.
+
+| Categoria | Módulos | Forte | Base | Fundo da tag | Borda da tag |
+|---|---|---|---|---|---|
+| **Suprimentos** | Compras & Atas, Estoque Central, Farmácia | `#407F71` | `#4E9B8A` | `rgba(78,155,138,.12)` | `rgba(78,155,138,.35)` |
+| **Assistencial** | Gestão Clínica, Laboratório, Censo & Leitos, Regulação | `#496C92` | `#5B84B1` | `rgba(91,132,177,.12)` | `rgba(91,132,177,.35)` |
+| **Operação** | Escala Médica, Mensageria, Ingestão | `#946E2C` | `#C99A4A` | `rgba(201,154,74,.14)` | `rgba(201,154,74,.35)` |
+| **Financeiro & Governança** | Custo do Paciente, Fintech Split, Segurança LGPD, Perfis & Acessos | `#607889` | `#7C93A3` | `rgba(124,147,163,.12)` | `rgba(124,147,163,.35)` |
+
+A lista de módulos por categoria vem de `MODULO_THEMES` (`ModuloLayoutShell.tsx`); se ela mudar, este quadro muda junto.
+
+### 2.4 Ação e status
+
+| Nome | Valor | Hover | Fundo 8–10% | Significado |
+|---|---|---|---|---|
+| **Teal** | `#0E5C4C` | `#0A4A3D` | `rgba(14,92,76,.08)` | Ação recorrente, links, foco, sucesso, "ativo" |
+| **Terracota** | `#C1622D` | `#A8531F` | `rgba(193,98,45,.08)` | O único destaque quente da tela (botão primário) |
+| **Ocre** | `#8A6A16` | `#6E5511` | `rgba(138,106,22,.10)` | Atenção, pendente, em análise, prazo próximo |
+| **Tijolo** | `#9C3B2E` | `#7E2F24` | `rgba(156,59,46,.08)` | Erro, crítico, esgotado, rejeição |
+
+Atenção e crítico são dessaturados de propósito: tinta sobre papel, não luz de alerta.
+
+### 2.5 Onde cada cor pode aparecer
+
+| Superfície | Cor | Texto/ícone por cima |
 |---|---|---|
-| **Escuro** | `#0A4A3D` | Hover de botões/links primários |
-| **Principal ★** | `#0E5C4C` | Cor de ação: CTAs secundários, links, estado ativo, "sucesso" |
-| **8% (fundo)** | `rgba(14,92,76,.08)` | Background de badge/pill "ativo" |
+| Quadrado da logo Vigia | Marca `#0066CC` | Papel |
+| Painel de destaque do hub | Marca `#0066CC` | Papel sólido |
+| Avatar — no hub | Marca `#0066CC` | Branco |
+| Avatar — no módulo | Forte da categoria | Branco |
+| Logo de Módulo | Forte da categoria | Papel |
+| Item ativo do menu lateral | Forte da categoria | Branco |
+| Tag regulatória | Fundo 12% + borda 35% da categoria | Tinta 75% |
+| Dot de categoria (só na logo em tom papel) | Base da categoria | — |
+| Botão primário | Terracota | Branco |
+| Botão de ação recorrente | Teal 8% | Teal |
+| Botão de marca (ação escura do módulo) | Marca `#0066CC` | Branco |
+| Badge de status | Fundo 8–10% do status | Cor do status |
 
-### Terracota — Accent / Destaque
+Tudo que não está nesta tabela é tinta, papel ou branco.
 
-| Tom | Hex | Uso |
+### 2.6 Contraste medido
+
+| Combinação | Razão | Serve para |
 |---|---|---|
-| **Principal ★** | `#C1622D` | CTA primário (a única cor "quente" de destaque na tela), banner central |
-| **8% (fundo)** | `rgba(193,98,45,.08)` | Background de badge de destaque, hover sutil |
+| Branco sobre `#0066CC` | 5,57:1 | Texto (AA) |
+| Papel sobre `#0066CC` | 5,02:1 | Texto (AA) |
+| Branco sobre forte Suprimentos `#407F71` | 4,67:1 | Texto (AA) |
+| Branco sobre forte Assistencial `#496C92` | 5,46:1 | Texto (AA) |
+| Branco sobre forte Operação `#946E2C` | 4,64:1 | Texto (AA) |
+| Branco sobre forte Financeiro `#607889` | 4,62:1 | Texto (AA) |
+| Papel sobre os tons fortes | 4,17–4,93:1 | Ícone (≥ 3:1) |
+| Tinta sobre papel | 15,05:1 | Texto (AAA) |
+| Branco sobre teal | 7,91:1 | Texto (AAA) |
+| Branco sobre tijolo | 6,82:1 | Texto (AA) |
+| Branco sobre ocre | 5,06:1 | Texto (AA) |
+| Branco sobre terracota | 4,16:1 | **Só texto grande** (≥ 18,66px bold) — ver § 5.1 |
 
-Substitui o azul `#1A56DB` como cor de ação primária — o teal assume o papel de "ação/confiança", o terracota assume o papel de "chamada à atenção pontual" (era o que o azul fazia demais, em tudo).
-
-### Ocre — Atenção
-
-| Tom | Hex | Uso |
-|---|---|---|
-| **Principal ★** | `#8A6A16` | Atenção, pendente, prazo próximo (substitui o amarelo `#FACA15`) |
-| **8% (fundo)** | `rgba(138,106,22,.10)` | Background de badge/alerta de atenção |
-
-### Tijolo — Crítico
-
-| Tom | Hex | Uso |
-|---|---|---|
-| **Principal ★** | `#9C3B2E` | Erro, rejeição, esgotado, crítico (substitui o vermelho `#F05252`) |
-| **8% (fundo)** | `rgba(156,59,46,.08)` | Background de badge/alerta crítico |
-
-Os tons de atenção e crítico ficam **dessaturados** de propósito — nada de amarelo/vermelho neon de dashboard genérico; devem parecer tinta sobre papel, não luz de alerta.
-
-### Semântica de Cores
-
-| Cor | Hex | Significado | Exemplos |
-|---|---|---|---|
-| 🟢 Teal | `#0E5C4C` | Ação, confiança, ativo/sucesso | Links, CTA secundário, ATA vigente, sem divergência |
-| 🟠 Terracota | `#C1622D` | Destaque, chamada à ação primária | Botão principal, módulo central em destaque |
-| 🟡 Ocre | `#8A6A16` | Requer verificação | Em análise, saldo em 80%+, renovação pendente |
-| 🔴 Tijolo | `#9C3B2E` | Falha ou urgência | Ata esgotada, rejeição, dispensa emergencial |
-| ⚫ Tinta | `#1B1F1C` | Categoria "Financeiro/Governança" (neutra) | Dot de categoria, texto padrão |
-
-### 2.1 Cor por categoria de módulo v2.1 (dot de 9px, não card colorido)
-
-Tons suavizados/dessaturados em relação à v2.0 — mesma família de matiz onde aplicável, mais um azul clínico novo. **Nunca usar degradê** — sempre cor sólida. Estes tons são exclusivos de identidade de categoria (dot, tarja de 3px no topo do card, tag regulatória, dot de item de menu); não usar em botões, badges de status ou qualquer elemento de ação.
-
-| Categoria | Cor do dot v2.1 | Cor v2.0 (substituída) | Fundo sutil (12–14%) |
-|---|---|---|---|
-| Suprimentos & Atas | Verde-menta `#4E9B8A` | ~~Teal `#0E5C4C`~~ | `rgba(78,155,138,.12)` |
-| Clínico & Assistencial | Azul clínico `#5B84B1` | ~~Terracota `#C1622D`~~ | `rgba(91,132,177,.12)` |
-| Pessoas & Operação | Dourado `#C99A4A` | ~~Ocre `#8A6A16`~~ | `rgba(201,154,74,.14)` |
-| Financeiro & Governança | Azul-acinzentado `#7C93A3` | ~~Tinta 70%~~ | `rgba(124,147,163,.12)` |
-
-Tons de referência extra (uso pontual em gráficos/ilustrações, não são cor de categoria fixa): Cyan Clínico `#4FA3AE`, Verde-Menta `#5FA88C`, Azul Sereno `#6E92C9`, Lavanda Suave `#8B87BE`.
+Os tons **base** das categorias não passam para texto branco (2,6–3,9:1). Por isso nunca são fundo de texto.
 
 ---
 
 ## 3. Tipografia
 
-### Fontes
-
-| Função | Família | Pesos | Importação |
+| Função | Família | Pesos | Token |
 |---|---|---|---|
-| **Display / Títulos** | Fraunces | 500, 600, 700 | Google Fonts |
-| **Corpo / UI** | Public Sans | 400, 500, 600, 700 | Google Fonts |
-| **Mono / Dados** | JetBrains Mono | 400, 500 | Google Fonts (mantido da v1) |
+| **Títulos** | Fraunces | 500, 600, 700 | `font-display` |
+| **Corpo e interface** | Public Sans | 400, 500, 600, 700 | `font-sans` |
+| **Dados** | JetBrains Mono | 400, 500 | `font-mono` |
 
 ```css
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 ```
 
-**Fallback stack:**
-```css
---font-display: 'Fraunces', Georgia, serif;
---font-body: 'Public Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-```
+- **Fraunces:** título de tela, título de card de destaque, nome do módulo no menu, número de KPI, título do painel de destaque. Nunca em texto corrido, label ou tabela.
+- **Public Sans:** todo o resto.
+- **JetBrains Mono:** códigos, IDs, CATMAT, lotes, valores em tabela.
+- Inter, Roboto e Arial não aparecem na interface.
 
-Substituem **Inter** como fonte principal — Inter/Roboto/Arial ficam reservadas para nunca mais aparecer na UI de conteúdo (são a marca registrada do "template genérico de IA" que motivou a troca).
-
-### Regra de uso: quando serifada, quando sans
-
-- **Fraunces (serifada):** `H1`/`Display`/`H2` de página e de card em destaque (título de módulo, número de KPI, título de hero). Nunca em textos correntes, labels ou tabelas.
-- **Public Sans:** todo o resto — corpo, labels, botões, inputs, navegação, tabelas.
-
-### Escala Tipográfica
-
-| Nível | Tamanho | Peso | Fonte | Uso |
+| Nível | Tamanho | Peso | Fonte | Exemplo |
 |---|---|---|---|---|
-| Display | 34px | 600 | Fraunces | Hero do módulo central, título de tela cheia |
-| H1 | 25–26px | 600 | Fraunces | Cabeçalho de tela |
-| H2 | 15–17px | 600 | Fraunces | Título de card/seção em destaque |
-| H3 | 14px | 700 | Public Sans | Cabeçalho de tabela/painel (sans, não serifado) |
-| Body Large | 14px | 400 | Public Sans | Texto corrido principal |
-| Body Small | 12.5px | 400 | Public Sans | Texto de apoio, descrição de card |
-| Caption / Overline | 10–11px | 700, versalete, `letter-spacing: .5–1.5px` | Public Sans | Categoria, labels de KPI, tags |
-| Mono | 12.5px | 400–500 | JetBrains Mono | Códigos, IDs, CATMAT, valores R$ em tabela |
-
-### Exemplos Reais
-
-```
-Display   Custo do Paciente          (Fraunces 600, 34px, tinta ou papel sobre hero)
-H1        Atas, Contratos & Empenhos  (Fraunces 600, 26px)
-H2        Compras Públicas & Gestão de Atas  (Fraunces 600, 17px, título de card)
-H3        ATAS DE REGISTRO DE PREÇOS  (Public Sans 700, 14px)
-Overline  SUPRIMENTOS · LEI 14.133/21 (Public Sans 700, 10px, versalete)
-Body      Conformidade com a Lei 14.133/21 — trava preventiva CMED/BPS ativa.
-Mono      ARP-2026/042-SMS · R$ 812.400,00
-```
+| Display | 30–34px | 600 | Fraunces | Custo do Paciente (Core 360) |
+| H1 | 25–26px | 600 | Fraunces | Relatório de Despesas & Injeção no Hub |
+| H2 | 15–17px | 600 | Fraunces | Compras Públicas & Gestão de Atas |
+| H3 | 14px | 700 | Public Sans | ATAS DE REGISTRO DE PREÇOS |
+| Corpo | 14px | 400 | Public Sans | Texto corrido |
+| Corpo pequeno | 12–12,5px | 400 | Public Sans | Descrição de card |
+| Overline | 10–11px | 700, caixa alta, espaçamento .5–1.5px | Public Sans | SUPRIMENTOS · LEI 14.133/21 |
+| Mono | 12–12,5px | 400–500 | JetBrains Mono | ARP-2026/042-SMS · R$ 812.400,00 |
 
 ---
 
-## 4. Componentes
+## 4. Moldura do Módulo
 
-### Botões
+Todo módulo tem a mesma moldura: **cabeçalho + menu lateral + conteúdo**. Modelo pronto no Figma, seção "05 · Template de módulo".
 
-| Variante | Background | Texto | Hover | Uso |
-|---|---|---|---|---|
-| `primary` | `#C1622D` (terracota) | `#FFFFFF` | `#A8531F` | **Única** ação de destaque por tela (ex.: "Novo Pedido de Compra") |
-| `secondary` | `rgba(14,92,76,.08)` | `#0E5C4C` (teal) | `rgba(14,92,76,.14)` | Ação recorrente, não-destrutiva |
-| `outline` | transparente | `#1B1F1C` | `rgba(27,31,28,.06)` | Ação terciária ("Voltar ao Hub", "Ver documentação") |
-| `ghost` | transparente | `rgba(27,31,28,.7)` | `rgba(27,31,28,.06)` | Tabs, ação sutil dentro de lista |
-| `danger` | `#9C3B2E` | `#FFFFFF` | `#7E2F24` | Excluir, rejeitar, ação destrutiva |
+### 4.1 Logo de Módulo
 
-Regra dura: **no máximo um botão `primary` (terracota) visível por tela.** É o que substitui o "tudo é azul" da v1 — se duas ações competem, a segunda é `secondary` ou `outline`.
+Código: `ModuloLogo.tsx`. Figma: componente "Logo de Módulo" (propriedades `categoria`, `tamanho`, `Símbolo`).
 
-```css
-.btn {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 10px 18px; border-radius: 8px;
-  font-family: 'Public Sans', sans-serif; font-size: 13px; font-weight: 700;
-  border: none; cursor: pointer; transition: background .15s, color .15s;
-}
-.btn-primary   { background: #C1622D; color: #fff; }
-.btn-primary:hover { background: #A8531F; }
-.btn-secondary { background: rgba(14,92,76,.08); color: #0E5C4C; }
-.btn-outline   { background: transparent; border: 1px solid rgba(27,31,28,.12); color: #1B1F1C; }
-.btn-ghost     { background: transparent; color: rgba(27,31,28,.7); }
-.btn-danger    { background: #9C3B2E; color: #fff; }
-```
+- Quadrado no **tom forte da categoria**, símbolo lucide em papel, traço `1.75`.
+- Um símbolo por módulo, registrado em `MODULO_LOGO_ICONE` — cabeçalho, menu e hub leem dali.
+- É decorativa (`aria-hidden`): o nome do módulo sempre aparece ao lado.
 
----
+| Tamanho | Lado / raio | Símbolo | Uso |
+|---|---|---|---|
+| `sm` | 28px / 8px | 16px | Cabeçalho do módulo |
+| `md` | 36px / 12px | 20px | Cartão do menu lateral, cards do hub |
+| `lg` | 40px / 12px | 20px | Destaques |
 
-### Badges / Status (pill)
+**Tom papel** (`tom="papel"`) — só sobre o azul Vigia (painel de destaque do hub): quadrado papel, símbolo tinta e **dot de categoria** de 9px no canto superior direito (cor base, anel de 2px `#0066CC`). É o único lugar onde o dot aparece.
 
-| Status | Background | Texto |
-|---|---|---|
-| Ativo / Sucesso | `rgba(14,92,76,.08)` | `#0E5C4C` |
-| Atenção / Em análise | `rgba(138,106,22,.10)` | `#8A6A16` |
-| Crítico / Esgotado | `rgba(156,59,46,.08)` | `#9C3B2E` |
-| Neutro / Expirado | `rgba(27,31,28,.06)` | `rgba(27,31,28,.6)` |
+### 4.2 Cabeçalho
 
-Marcador: um `●` (caractere, não `<div>` de bolinha) na cor do texto, antes do label — mais leve que o dot separado da v1.
+Branco, 64px de altura, borda inferior tinta 8%.
 
-```css
-.pill {
-  display: inline-flex; align-items: center; gap: 5px;
-  padding: 4px 10px; border-radius: 20px;
-  font-family: 'Public Sans', sans-serif; font-size: 11px; font-weight: 700;
-}
-```
+- **Hub:** acompanha a coluna central (`max-w-7xl`, respiro 16/24/32px). Logo Vigia + "Hub de Módulos & Catálogo de Soluções" + tag.
+- **Módulo:** `logo Vigia | Logo de Módulo sm + título + tag regulatória`, alinhado à borda do menu lateral (16px).
+- **Tag regulatória:** pílula com fundo e borda da categoria (§ 2.3) e texto tinta 75%. Aparece a partir de 1280px.
+- **Ações da página:** ícone + rótulo a partir de 1024px; abaixo disso, só o ícone, com `aria-label`. A faixa de ações encolhe e rola; o bloco de identidade tem largura mínima, então o título nunca some.
+- **Avatar:** 36–40px, raio 12px, iniciais em branco; forte da categoria no módulo, azul Vigia no hub.
+- **Celular:** a Logo de Módulo ocupa o lugar da logo Vigia; "Ver Módulos" some, porque o rodapé do menu lateral já leva ao hub.
 
----
+### 4.3 Menu lateral
 
-### Cards de Módulo (grid do Hub)
+Código: `ModuloMenuLateral.tsx`. Figma: componente "Menu Lateral de Módulo".
 
-Substituem os cards com ícone colorido em bloco da v1. Estrutura:
-
-```
-┌──────────────────────────────┐
-│ ● Suprimentos            ↗   │  ← dot 9px + overline + seta (tinta 30%)
-│                               │
-│ Compras Públicas & Atas       │  ← H2 Fraunces 17px
-│ Conformidade — Lei 14.133/21  │  ← caption, tinta 45%
-│ Descrição em duas linhas...   │  ← body small, tinta 70%
-│ ─────────────────────────────│
-│ Trava CMED & BPS ativa   Acessar → │  ← métrica (cor da categoria) + link
-└──────────────────────────────┘
-```
-
-Fundo branco, borda `1px solid rgba(27,31,28,.12)`, raio `12px`, padding `22px`. **Nenhum ícone de card colorido de fundo** — a única cor viva no card é o dot de categoria e a métrica no footer.
-
-**v2.2:** o dot solto dá lugar à **Logo de Módulo** (md, 36px) ao lado do overline — o dot de categoria continua lá, no canto da logo. A logo é tinta, como a logo Vigia, então a regra acima vale: nada de bloco na cor do módulo.
-
----
-
-### Painel de Destaque (hero de módulo central)
-
-Fundo `marca-forte` `#496C92` (v2.3; era tinta), texto papel **sólido**, raio `16px`, padding `40px 48px`. Overline e ícones em papel, H1 em Fraunces papel, CTA primário terracota + CTA outline papel. No azul, terracota como texto (1,3:1), teal como ícone (1,5:1) e papel com transparência (< 4,5:1) ficam ilegíveis — por isso tudo que é texto ou ícone sobre o painel vai em papel sólido. Usar **no máximo um por tela** — é o elemento que "grita", tudo mais no hub deve ficar quieto ao redor dele.
-
----
-
-### Logo de Módulo (v2.2)
-
-Cada módulo tem uma marca própria, da **mesma família da logo Vigia Saúde 360**: quadrado no **azul da marca `#5B84B1`** com o símbolo lucide em papel (traço `1.75`) e o **dot de categoria de 9px no canto** (anel branco de 2px). A cor de categoria continua restrita ao dot, como em § 2.1 — o quadrado nunca é pintado com a cor do módulo, nem com a cor de ação (teal).
-
-| Tamanho | Lado / raio | Uso |
-|---|---|---|
-| `sm` | 28px / 8px | Cabeçalho do módulo |
-| `md` | 36px / 12px | Cartão de identidade do menu lateral, cards do hub |
-| `lg` | 40px / 12px | Destaques |
-
-Sobre fundo `marca-forte` (hero do hub) usa o tom **papel**: quadrado papel, símbolo tinta. Código: `nucleo/src/components/ModuloLogo.tsx` — `MODULO_LOGO_ICONE` é a fonte única módulo → símbolo; cabeçalho, menu lateral e hub leem dali.
-
----
-
-### Cabeçalho (v2.2)
-
-- **Hub:** o conteúdo do cabeçalho acompanha a coluna central da página (`max-w-7xl`, respiro `16/24/32px`), então a marca começa no mesmo x do conteúdo.
-- **Módulo:** `marca Vigia Saúde 360 | Logo de Módulo sm + título + tag regulatória`, alinhado à borda do menu lateral (16px). A tag usa fundo 12% e borda 35% da categoria com **texto em tinta 75%** (a cor de categoria como texto não passa no contraste AA). O quadrado da marca "Vigia Saúde 360" e o avatar do usuário usam `marca-forte`.
-- **Ações da página:** ícone + rótulo a partir de 1024px; abaixo, só o ícone, com `aria-label`. A faixa de ações encolhe e rola; o bloco de identidade tem largura mínima, então o título nunca vai a zero.
-- **Celular:** a Logo de Módulo ocupa o lugar da marca; "Ver Módulos" some, porque o rodapé do menu lateral já leva ao hub.
-
----
-
-### Menu lateral de módulo (v2.2)
-
-Painel único para todos os módulos (`nucleo/src/components/ModuloMenuLateral.tsx`), com a estrutura da barra da Escala Médica ajustada a este guia:
-
-- **Painel:** branco, borda tinta 12%, raio `16px` (teto de § 7 — a Escala usava 24px), sombra baixa.
-- **Desktop:** 256px, fixo abaixo do cabeçalho (`top: 80px`, altura `100dvh − 96px`), sempre visível.
-- **Celular:** gaveta flutuante de 288px, **fechada ao abrir a página**, véu tinta 25%, sombra alta, botão fechar; escolher um item fecha a gaveta.
-- **Topo:** cartão de identidade em papel com a Logo de Módulo `md`, o nome em Fraunces e a tag regulatória.
-- **Item:** raio `12px`, 40px (desktop) / 44px (celular); **ativo em `marca-forte` com texto branco** (5,5:1 AA — não na cor do módulo, como fazia a Escala); rótulo quebra em até 2 linhas em vez de cortar.
+- **Painel:** branco, borda tinta 12%, raio 16px, sombra baixa.
+- **Desktop (≥ 1024px):** 256px, fixo abaixo do cabeçalho (`top: 80px`, altura `100dvh − 96px`), sempre visível.
+- **Celular:** gaveta flutuante de 288px, **fechada ao abrir a página**, véu tinta 25%, sombra alta, botão fechar de 44px; escolher um item fecha a gaveta.
+- **Cartão de identidade:** fundo papel, borda tinta 8%, Logo de Módulo `md`, nome em Fraunces 14px, tag regulatória.
+- **Item:** raio 12px, altura 40px (desktop) / 44px (celular), ícone 16px + rótulo 12px; o rótulo quebra em até 2 linhas.
+  - Padrão: texto tinta 75%, ícone tinta 55%, hover fundo papel.
+  - **Ativo: fundo no forte da categoria, texto e ícone brancos**, `aria-current="page"`.
+  - Badge: pílula tinta 6% com borda tinta 12%; no item ativo, branco 20%.
 - **Rodapé:** cartão de status opcional (prop `rodape`) + "Voltar ao Hub de Módulos".
 
-**Novo módulo — checklist:** (1) registrar o id em `ModuloId`/`MODULO_THEMES`; (2) escolher o símbolo em `MODULO_LOGO_ICONE`; (3) usar `<ModuloMenuLateral moduloId … />`; (4) contêiner `flex flex-1 relative overflow-x-clip` e `main` `flex-1 min-w-0 p-4 lg:p-6`; (5) estado do menu começa `false` e o botão de menu leva `aria-expanded`. O mesmo passo a passo, com os componentes prontos, está no [Figma](https://www.figma.com/design/oNgeLR3Td97EmqdHqdkTuU).
+### 4.4 Área de conteúdo
+
+Contêiner `flex flex-1 relative overflow-x-clip`; `main` com `flex-1 min-w-0 p-4 lg:p-6 space-y-6`. Breadcrumb → título (H1) e subtítulo → KPIs → conteúdo. Nenhuma tela pode ter rolagem horizontal, de 320px a 1440px.
 
 ---
 
-### Alertas
+## 5. Componentes
 
-| Tipo | Background | Borda esq. | Texto |
+### 5.1 Botões
+
+| Variante | Fundo | Texto | Hover | Uso |
+|---|---|---|---|---|
+| `primary` | Terracota `#C1622D` | Branco | `#A8531F` | **Uma** ação de destaque por tela |
+| `marca` | Azul Vigia `#0066CC` | Branco | `#0052A3` | Ação principal do módulo quando não há terracota na tela |
+| `action` | Teal `#0E5C4C` | Branco | `#0A4A3D` | Ação de fluxo (importar, sincronizar, exportar) |
+| `secondary` | Teal 8% | Teal | Teal 14% | Ação recorrente, não destrutiva |
+| `outline` | Branco, borda tinta 12% | Tinta | Tinta 6% | Ação terciária |
+| `ghost` | Transparente | Tinta 70% | Tinta 6% | Tabs, ação dentro de lista |
+| `danger` | Tijolo `#9C3B2E` | Branco | `#7E2F24` | Excluir, rejeitar |
+
+- No máximo **um** botão `primary` visível por tela.
+- Raio 8–12px, altura mínima 44px em toque, texto 12–13px bold, ícone 16px.
+- **Terracota com texto branco dá 4,16:1**: use rótulo de 18,66px bold ou mais (como no painel de destaque), ou o hover `#A8531F` (5,35:1) como cor de repouso quando o rótulo for menor.
+- Abaixo de 1024px, botões do cabeçalho mostram só o ícone e levam `aria-label`.
+
+### 5.2 Badges de status
+
+Pílula (`rounded-full`), 10–11px bold, padding 2–4px × 8–10px.
+
+| Status | Fundo | Texto |
+|---|---|---|
+| Ativo / sucesso | Teal 8% | Teal |
+| Atenção / em análise | Ocre 10% | Ocre |
+| Crítico / esgotado | Tijolo 8% | Tijolo |
+| Neutro / expirado | Tinta 6% | Tinta 60% |
+
+Badges regulatórios com cor obrigatória por norma (ex.: **Tarja Preta** da ANVISA) mantêm a cor da norma.
+
+### 5.3 Card de módulo (hub)
+
+```
+┌───────────────────────────────────┐
+│ [logo] SUPRIMENTOS      Nova Aba ↗ │  ← Logo md + overline tinta 45%
+│                                    │
+│ Compras Públicas & Atas            │  ← Fraunces 17px
+│ Lei 14.133/21                      │  ← 12px semibold, tinta 45%
+│ Descrição em duas linhas...        │  ← 12px, tinta 70%
+│ ────────────────────────────────── │
+│ Métrica do módulo    Abrir Módulo ↗ │
+└───────────────────────────────────┘
+```
+
+Branco, borda tinta 12%, raio 12px, padding 20px. Hover: borda tinta 30% e título em teal. A única cor de categoria no card é a logo.
+
+### 5.4 Painel de destaque
+
+Fundo **azul Vigia `#0066CC`**, raio 16px, padding 24px (32px a partir de 640px). Tudo que é texto ou ícone vai em **papel sólido** — papel com transparência, teal e terracota como texto ficam ilegíveis no azul. Logo de Módulo em tom papel. CTA primário terracota + CTAs outline papel. **No máximo um por tela.**
+
+### 5.5 Card de KPI
+
+Branco, borda tinta 12%, raio 10–12px, padding 16×18px. Overline 10px tinta 45% → valor 26px bold → nota 11px na cor semântica. Sem ícone decorativo.
+
+### 5.6 Tabela
+
+- Cabeçalho branco, 10,5–12px, tinta 45–70%, borda inferior tinta 8%.
+- Linhas separadas por tinta 8%; hover discreto em papel.
+- IDs e códigos em mono tinta; valores monetários em mono 600.
+- Status em badge (§ 5.2); categorias de custo em pílula neutra.
+
+### 5.7 Alertas
+
+Fundo 6–8% do status, borda esquerda de 3px na cor do status, texto na cor do status, raio 6px, 12px.
+
+### 5.8 Campos
+
+| Estado | Borda | Fundo | Anel |
 |---|---|---|---|
-| Ativo/Sucesso | `rgba(14,92,76,.06)` | `#0E5C4C` | `#0E5C4C` |
-| Atenção | `rgba(138,106,22,.08)` | `#8A6A16` | `#8A6A16` |
-| Crítico | `rgba(156,59,46,.06)` | `#9C3B2E` | `#9C3B2E` |
+| Padrão | Tinta 18% | Branco | — |
+| Foco | Teal | Branco | Teal 15%, 2px |
+| Erro | Tijolo | Tijolo 5% | — |
 
-```css
-.alert {
-  display: flex; gap: 12px; padding: 10px 14px;
-  border-radius: 6px; border-left: 3px solid;
-  font-family: 'Public Sans', sans-serif; font-size: 12px; line-height: 1.5;
-}
-```
+Raio 8px, padding 9×12px, 12,5px. Foco visível sempre (`focus-visible:ring-2` teal).
 
 ---
 
-### Cards de KPI
+## 6. Ícones
 
-```
-┌─────────────────────┐
-│ ATAS ATIVAS         │  ← overline 10px, tinta 45%, versalete
-│                     │
-│ 12                  │  ← valor: Fraunces 26px 600
-│ +2 este mês         │  ← delta: 11px, cor semântica
-└─────────────────────┘
-```
-
-Padding `16px 18px` · Borda `1px solid rgba(27,31,28,.12)` · Raio `10px` · Fundo branco. Sem ícone — o valor grande em serifada já carrega a hierarquia.
-
----
-
-### Tabela de Dados
-
-- Cabeçalho: fundo branco (não cinza), texto `10.5px` versalete tinta 45%, borda inferior `1px solid rgba(27,31,28,.08)`
-- Linhas separadas por `1px solid rgba(27,31,28,.08)`, sem hover-fundo agressivo
-- Códigos/IDs: `font-mono`, tinta 100% (não mais azul — o mono já é o sinal de "isto é um código")
-- Valores monetários: `font-mono font-weight:600`
-- Status: badge pill (seção 4)
-
----
-
-### Campos de Entrada
-
-| Estado | Border | Background | Ring |
-|---|---|---|---|
-| Padrão | `rgba(27,31,28,.12)` | `#FFFFFF` | — |
-| Focus | `#0E5C4C` | `#FFFFFF` | `rgba(14,92,76,.15)` 2px |
-| Erro | `#9C3B2E` | `rgba(156,59,46,.05)` | — |
-
-```css
-input {
-  padding: 9px 12px; border-radius: 8px;
-  border: 1px solid rgba(27,31,28,.12);
-  font-family: 'Public Sans', sans-serif; font-size: 12.5px;
-  outline: none; transition: border-color .15s, box-shadow .15s;
-}
-input:focus { border-color: #0E5C4C; box-shadow: 0 0 0 2px rgba(14,92,76,.15); }
-input.error { border-color: #9C3B2E; background: rgba(156,59,46,.05); }
-```
-
----
-
-## 5. Ícones
-
-**Biblioteca:** [`lucide-react`](https://lucide.dev) — mantida da v1, sem mudança de dependência.
-**Stroke-width padrão:** `1.5px`.
-
-### Mudança de uso (não de biblioteca)
-
-Na v1, cada módulo tinha um ícone grande dentro de um bloco colorido (`w-12 h-12 rounded-2xl bg-{cor}`). Na v2:
-
-- Ícone de navegação/sidebar: `stroke: rgba(27,31,28,.7)`, sem bloco de fundo colorido — só o próprio traço.
-- Estado ativo: ícone em `#FFFFFF` sobre fundo `#1B1F1C` (não mais a cor do módulo).
-- Categoria é sinalizada pelo **dot de 9px** ao lado do label/overline, não pela cor do ícone.
-- Ícones seguem monocromáticos (tinta) em 95% dos casos; cor só aparece em badges/pills e no dot de categoria.
-- **Exceção v2.3 — Logo de Módulo:** o símbolo do módulo vai dentro de um quadrado em **azul da marca** (nunca na cor do módulo), como a logo Vigia. Vale só para a logo; ícones de navegação continuam sem bloco de fundo.
-
-### Tamanhos Contextuais (inalterado da v1)
+- Biblioteca: [`lucide-react`](https://lucide.dev).
+- Traço `1.5` na interface; `1.75` dentro da Logo de Módulo.
+- Monocromáticos: tinta 55–70% em navegação; branco no item ativo; papel sobre azul Vigia.
+- Sem bloco de fundo colorido — **a única exceção é a Logo de Módulo** (§ 4.1).
 
 | Tamanho | Uso |
 |---|---|
-| `12px` | Badges, chips |
-| `15–16px` | Navegação, inputs, labels |
-| `20px` | Botões com ícone |
-| `24–26px` | Cabeçalhos de seção |
-| `32px` | Estados vazios |
+| 12–14px | Badges, chips, breadcrumb |
+| 16px | Navegação, botões, inputs |
+| 20px | Logo de Módulo `md`/`lg` |
+| 24px | Cabeçalho de seção |
+| 32px | Estado vazio |
 
 ---
 
-## 6. Tokens de Design
+## 7. Espaçamento, Raio e Sombra
 
-### Variáveis CSS (`--vs2-*`)
+**Espaçamento:** escala do Tailwind (múltiplos de 4px). Respiro de página 16px no celular, 24px no desktop.
 
-Novo prefixo `--vs2-*` para não colidir com o `--vs-*` da v1 durante a migração incremental (permite os dois coexistirem enquanto módulos são migrados um a um).
-
-```css
-:root {
-  /* ── Tinta & Papel ── */
-  --vs2-ink:      #1B1F1C;
-  --vs2-ink-70:   rgba(27,31,28,.70);
-  --vs2-ink-45:   rgba(27,31,28,.45);
-  --vs2-ink-30:   rgba(27,31,28,.30);
-  --vs2-ink-12:   rgba(27,31,28,.12);
-  --vs2-ink-08:   rgba(27,31,28,.08);
-  --vs2-paper:    #F6F3EC;
-  --vs2-paper-2:  #EFEAE0;
-
-  /* ── Marca (v2.3) — superfícies de identidade: logo, item ativo, hero, avatar ── */
-  --vs2-marca:       #5B84B1;  /* só ícone (logo) */
-  --vs2-marca-forte: #496C92;  /* superfícies com texto branco */
-  --vs2-marca-hover: #3C5A7A;
-
-  /* ── Teal — ação/confiança ── */
-  --vs2-teal:      #0E5C4C;
-  --vs2-teal-dark: #0A4A3D;
-  --vs2-teal-08:   rgba(14,92,76,.08);
-
-  /* ── Terracota — destaque ── */
-  --vs2-terracotta:    #C1622D;
-  --vs2-terracotta-dk: #A8531F;
-  --vs2-terracotta-08: rgba(193,98,45,.08);
-
-  /* ── Ocre — atenção ── */
-  --vs2-ochre:    #8A6A16;
-  --vs2-ochre-08: rgba(138,106,22,.10);
-
-  /* ── Tijolo — crítico ── */
-  --vs2-brick:    #9C3B2E;
-  --vs2-brick-08: rgba(156,59,46,.08);
-
-  /* ── Categorias v2.1 — identidade de módulo (dot/tarja/tag), não usar em ação/status ── */
-  --vs2-cat-suprimentos:          #4E9B8A;
-  --vs2-cat-suprimentos-subtle:   rgba(78,155,138,.12);
-  --vs2-cat-assistencial:         #5B84B1;
-  --vs2-cat-assistencial-subtle:  rgba(91,132,177,.12);
-  --vs2-cat-operacao:             #C99A4A;
-  --vs2-cat-operacao-subtle:      rgba(201,154,74,.14);
-  --vs2-cat-financeiro:           #7C93A3;
-  --vs2-cat-financeiro-subtle:    rgba(124,147,163,.12);
-
-  /* ── Tipografia ── */
-  --vs2-font-display: 'Fraunces', Georgia, serif;
-  --vs2-font-body:    'Public Sans', -apple-system, sans-serif;
-  --vs2-font-mono:    'JetBrains Mono', monospace;
-
-  /* ── Estrutura (herdada da v1, sem mudança) ── */
-  --vs2-radius: 8px;
-  --vs2-shadow-sm: 0 1px 2px rgba(27,31,28,.05);
-  --vs2-shadow:    0 1px 4px rgba(27,31,28,.06), 0 4px 12px rgba(27,31,28,.05);
-}
-```
-
-### Mapeamento Tailwind → Token (v2)
-
-| Classe Tailwind | Token v2 | Token v1 substituído |
+| Raio | Valor | Uso |
 |---|---|---|
-| `bg-background` | `--vs2-paper` | `--vs-gray-50` (`#F9FAFB`) |
-| `text-foreground` | `--vs2-ink` | `--vs-gray-900` (`#111928`) |
-| `bg-primary` | `--vs2-terracotta` | `--vs-blue-700` (`#1A56DB`) |
-| `bg-secondary` / ação recorrente | `--vs2-teal` | — (não existia; era tudo azul) |
-| `bg-marca` / `bg-marca-forte` / `hover:bg-marca-hover` | `--color-marca*` (`@theme` em `globals.css`) | fundos em tinta (`#1B1F1C`) das superfícies de identidade, até a v2.2 |
-| `bg-accent` | `--vs2-terracotta` | `--vs-green` (`#0E9F6E`) |
-| `bg-destructive` | `--vs2-brick` | `--vs-red` (`#F05252`) |
-| `bg-warning` | `--vs2-ochre` | `--vs-yellow` (`#FACA15`) |
-| `border-border` | `--vs2-ink-12` | `--vs-gray-200` (`#E5E7EB`) |
-| `text-muted-foreground` | `--vs2-ink-45` | `--vs-gray-500` (`#6B7280`) |
+| `rounded-md` | 6px | Alertas, botões pequenos |
+| `rounded-lg` | 8px | Botões, inputs, Logo de Módulo `sm` |
+| `rounded-xl` | 12px | Cards, itens de menu, logo Vigia, Logo de Módulo `md`/`lg`, avatar |
+| `rounded-2xl` | 16px | Menu lateral, painel de destaque, modais — **teto**, nada acima disso |
+| `rounded-full` | — | Badges, tags, dots |
 
----
-
-## 7. Espaçamento e Raio
-
-Escala de espaçamento **inalterada** da v1 (`space-1` a `space-16`) — a mudança é só de cor e tipografia, não de grid.
-
-### Raios de Borda — uma correção
-
-| Classe Tailwind | Valor | Uso | Mudança vs. v1 |
-|---|---|---|---|
-| `rounded-md` | 6px | Botões `sm`, inputs pequenos | inalterado |
-| `rounded-lg` | 8px | Botões, inputs, cards pequenos | inalterado |
-| `rounded-xl` | 12px | Cards de conteúdo | inalterado |
-| `rounded-2xl` | 16px | Painel de destaque (hero), modais | **teto máximo** — não usar raio maior |
-| `rounded-full` | 9999px | Badges pill, avatares | inalterado |
-
-A v1 usava `rounded-3xl` (24px) no banner do hub — na v2 isso fica em `rounded-2xl` (16px) no máximo. Cantos muito arredondados reforçam o efeito "template fofo"; a v2 é levemente mais reta.
-
-### Sombras
-
-Mesmas três elevações da v1, só com a cor da sombra trocada de preto puro para tinta (`rgba(27,31,28,…)` em vez de `rgba(0,0,0,…)`) — sombra mais quente, coerente com o papel:
+**Sombras** em tinta, nunca preto puro:
 
 ```css
-/* Elevação baixa — cards, inputs */
+/* baixa — cards, inputs, menu lateral no desktop */
 box-shadow: 0 1px 2px rgba(27,31,28,.05);
-
-/* Elevação média — dropdowns, tooltips */
+/* média — dropdowns, tooltips */
 box-shadow: 0 1px 4px rgba(27,31,28,.06), 0 4px 12px rgba(27,31,28,.05);
-
-/* Elevação alta — modais, overlays */
+/* alta — modais, gaveta do menu no celular */
 box-shadow: 0 8px 24px rgba(27,31,28,.10), 0 2px 8px rgba(27,31,28,.05);
 ```
 
 ---
 
-## 8. Como Executar nos Módulos
+## 8. Tokens
 
-**Status v2.0 → v2.1: concluído.** Os passos 1–3 abaixo foram aplicados em `CATEGORIA_THEME`
-(`ModuloLayoutShell.tsx`), `ModuleCard` (`src/components/ui/module-card.tsx`) e no Hub —
-os 13 módulos herdam a cor de categoria v2.1 automaticamente por consumirem `MODULO_THEMES`,
-sem precisar editar cada `page.tsx`. O que **não** mudou: botões primário/secundário (terracota/teal)
-e badges de status (sucesso/atenção/crítico) dentro de cada módulo — esses continuam usando
-`#0E5C4C`/`#C1622D`/`#8A6A16`/`#9C3B2E` diretamente, porque são cor de AÇÃO/STATUS, não de categoria.
+### 8.1 Código — `globals.css` (`@theme` do Tailwind v4)
 
-Ordem original (referência histórica) — do centro (que todo módulo herda) para as pontas, para não migrar tela por tela do zero:
+Cada `--color-*` vira classe: `--color-marca` → `bg-marca`, `text-marca`, `ring-marca`…
 
-1. **`MODULO_THEMES` (`nucleo/src/components/ModuloLayoutShell.tsx`)** — hoje dá uma cor própria (azul, verde, âmbar, roxo...) a cada `moduloId`. Reduzir para: todo módulo herda o mesmo par tinta/papel; o único campo que varia por módulo passa a ser o **dot de categoria** (teal/terracota/ocre/tinta), não mais um `primaryBg`/`lightBg` inteiro por módulo.
-2. **`VigiaSidebarLayout.tsx`** — recolorir escudo, wordmark (Fraunces + teal), fundo da sidebar (`paper-2`), estado ativo do item de navegação (fundo tinta, não mais `currentTheme.primaryBg`).
-3. **`(modulos)/page.tsx` (Hub)** — já prototipado no esboço; aplicar hero escuro + grid monocromático com dot.
-4. **Demais 11 módulos**, um a um, reaproveitando os componentes já re-skinados nos passos 1–3 (botões, badges, tabela, KPI card) — a maior parte do trabalho por módulo é achar `#1A56DB`/`bg-blue-*`/`rounded-3xl`/`font-sans` e trocar pelo token v2 correspondente da tabela da seção 6, não redesenhar a tela.
-5. **Tipografia global** — importar Fraunces + Public Sans em `layout.tsx` root e trocar a classe base de `font-sans` (Inter) para `font-body` (Public Sans), reservando `font-display` (Fraunces) só para `h1`/`h2` de destaque via classe utilitária.
+| Token | Valor | Figma |
+|---|---|---|
+| `--color-surface` | `#F6F3EC` | `papel` |
+| `--color-surface-subtle` | `#EFEAE0` | — |
+| `--color-surface-elevated` | `#FFFFFF` | `branco` |
+| `--color-foreground` | `#1B1F1C` | `tinta` |
+| `--color-foreground-muted` | tinta 70% | — |
+| `--color-foreground-subtle` | tinta 45% | — |
+| `--color-border` | tinta 12% | `borda` |
+| `--color-border-subtle` | tinta 8% | `tinta-alfa/8` |
+| `--color-input-border` | tinta 18% | — |
+| `--color-marca` / `--color-marca-forte` | `#0066CC` | `marca` / `marca-forte` |
+| `--color-marca-hover` | `#0052A3` | `marca-hover` |
+| `--color-action` / `-hover` / `-subtle` | `#0E5C4C` / `#0A4A3D` / 8% | `acao/teal` |
+| `--color-primary` / `-hover` / `-subtle` | `#C1622D` / `#A8531F` / 8% | `acao/terracota` |
+| `--color-warning` / `-hover` / `-subtle` | `#8A6A16` / `#6E5511` / 10% | — |
+| `--color-critical` / `-hover` / `-subtle` | `#9C3B2E` / `#7E2F24` / 8% | `status/critico` |
+| `--color-cat-{categoria}` | base (§ 2.3) | `categoria/{categoria}` |
+| `--color-cat-{categoria}-forte` | forte (§ 2.3) | `categoria-forte/{categoria}` |
+| `--color-cat-{categoria}-subtle` | fundo da tag | `categoria-fundo/{categoria}` |
+| `--color-cat-{categoria}-border` | borda da tag | `categoria-borda/{categoria}` |
+| `--font-display` / `--font-sans` | Fraunces / Public Sans | — |
 
-Este documento é a referência para essa execução — qualquer PR de reskin de módulo deve apontar para a seção correspondente aqui, não inventar tom de cor novo.
+`{categoria}` = `suprimentos`, `assistencial`, `operacao`, `financeiro`.
+
+### 8.2 Código — TypeScript (`ModuloLayoutShell.tsx`)
+
+Usado onde a cor depende do módulo em tempo de execução (logo, item ativo, avatar, tag):
+
+```ts
+CATEGORIA_COR        // base:  SUPRIMENTOS #4E9B8A · ASSISTENCIAL #5B84B1 · OPERACAO #C99A4A · FINANCEIRO #7C93A3
+CATEGORIA_COR_FORTE  // forte: SUPRIMENTOS #407F71 · ASSISTENCIAL #496C92 · OPERACAO #946E2C · FINANCEIRO #607889
+```
+
+Os valores precisam bater com `--color-cat-*` e `--color-cat-*-forte`.
+
+### 8.3 Figma
+
+Coleção **"Vigia Saúde 360 · Cores"** com as variáveis da coluna Figma acima, e coleção **"Vigia Saúde 360 · Superfície"** (modos Clara/Escura) com `icone/traço` para o símbolo da logo.
+
+---
+
+## 9. Novo Módulo — Checklist
+
+1. Registrar o id em `ModuloId` e em `MODULO_THEMES`, com nome, tag regulatória e **categoria**.
+2. Escolher o símbolo lucide em `MODULO_LOGO_ICONE`.
+3. Usar `<ModuloMenuLateral moduloId … />` com o título curto do módulo.
+4. Contêiner `flex flex-1 relative overflow-x-clip`; `main` `flex-1 min-w-0 p-4 lg:p-6 space-y-6`.
+5. Estado do menu começa `false`; o botão de menu leva `aria-expanded` e `aria-label` "Expandir/Recolher menu".
+6. Botões do cabeçalho: rótulo `hidden lg:inline` + `aria-label`.
+7. Nenhuma cor fora de § 2.5. Conferir contraste (§ 2.6) e ausência de rolagem horizontal de 320px a 1440px.
+8. Se criar componente novo, criar também no Figma e registrar aqui.
+
+---
+
+## 10. Histórico de Versões
+
+| Versão | O que mudou |
+|---|---|
+| **v2.4.0** (atual) | Azul Vigia `#0066CC` na marca (logo Vigia, painel de destaque, avatar no hub, botões de marca). Logo de módulo, item ativo e avatar no módulo passam ao tom forte da categoria; o dot sai da logo (fica só no tom papel). Guia reescrito como referência única. |
+| v2.3.0 | A tinta deixa de ser fundo das superfícies de identidade e dá lugar a um azul `#5B84B1`/`#496C92` (substituído na v2.4). |
+| v2.2.0 | Moldura única de módulo: Logo de Módulo, cabeçalho centralizado e menu lateral arredondado. Template no Figma. |
+| v2.1.0 | Cores de categoria suavizadas; Assistencial passa a azul clínico `#5B84B1`. |
+| v2.0.0 | Troca do visual "SaaS azul" da v1 por papel/tinta, Fraunces + Public Sans, teal/terracota e 4 categorias. |
+| v1.0.0 | Azul `#1A56DB`, Inter e cards coloridos por módulo — descartada. |
 
 ---
 
 ## Referência Rápida
 
 ```
-TERRACOTA (ação)   #C1622D   ████  Botão primário, destaque único por tela
-TEAL (confiança)    #0E5C4C   ████  Links, ativo, sucesso
-OCRE (atenção)      #8A6A16   ████  Pendente, em análise
-TIJOLO (crítico)    #9C3B2E   ████  Erro, esgotado, emergencial
-TINTA               #1B1F1C   ████  Texto, hero escuro, sidebar
-PAPEL               #F6F3EC   ████  Fundo de página
+MARCA            #0066CC  hover #0052A3   Logo Vigia, destaque do hub, avatar no hub, botão de marca
 
-CATEGORIA v2.1 (dot/tarja/tag — nunca em botão/status):
-  SUPRIMENTOS      #4E9B8A   ████  Verde-menta
-  ASSISTENCIAL     #5B84B1   ████  Azul clínico
-  OPERACAO         #C99A4A   ████  Dourado
-  FINANCEIRO       #7C93A3   ████  Azul-acinzentado
+CATEGORIA        forte     base      forte = logo do módulo, item ativo, avatar no módulo
+  SUPRIMENTOS    #407F71   #4E9B8A   base  = dot (só na logo papel), fundo 12% e borda 35% da tag
+  ASSISTENCIAL   #496C92   #5B84B1
+  OPERACAO       #946E2C   #C99A4A
+  FINANCEIRO     #607889   #7C93A3
 
-FONTE DISPLAY   Fraunces (serifada) — só títulos H1/H2 de destaque
-FONTE CORPO     Public Sans — todo o resto (substitui Inter)
-FONTE MONO      JetBrains Mono — códigos, IDs, valores (mantida)
-RAIO            8px padrão · 12px cards · 16px teto (hero/modal) · pill badges
-ÍCONES          lucide-react · stroke 1.5px · monocromático (cor só em badge/dot)
+AÇÃO / STATUS    TEAL #0E5C4C · TERRACOTA #C1622D (1 por tela) · OCRE #8A6A16 · TIJOLO #9C3B2E
+BASE             TINTA #1B1F1C (texto) · PAPEL #F6F3EC (fundo) · BRANCO (cards)
+
+FONTES           Fraunces (títulos) · Public Sans (resto) · JetBrains Mono (dados)
+RAIO             8 botão · 12 card/item/logo · 16 teto (menu, hero, modal) · pill
+ÍCONES           lucide-react · traço 1.5 (1.75 na logo) · monocromático
+CONTRASTE        texto ≥ 4,5:1 · ícone ≥ 3:1
 ```
 
 ---
 
-*Vigia Saúde 360 Design System v2.1.0 — Rede Pública de Saúde*
+*Vigia Saúde 360 Design System v2.4.0 — Rede Pública de Saúde*

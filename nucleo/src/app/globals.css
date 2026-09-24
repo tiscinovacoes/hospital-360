@@ -41,36 +41,36 @@
   --color-critical-hover: #7E2F24;
   --color-critical-subtle: rgba(156, 59, 46, 0.08);
 
-  /* ── Categorias de Módulo v2.1 (dots, tags secundárias, item de menu) ──
-     Ver IDENTIDADE_VISUAL (1).md § 2.1 — tons suavizados + azul clínico,
-     substituem os tons v2.0 saturados (que coincidiam com as cores de ação).
-     Cores de AÇÃO (--color-action, --color-primary) e de STATUS
-     (--color-warning, --color-critical) NÃO mudam — só a identidade de
-     categoria. */
+  /* ── Categorias de módulo — IDENTIDADE_VISUAL (1).md § 2.3 ──
+     base   = dot e origem de fundo/borda da tag (nunca fundo de texto)
+     forte  = logo do módulo, item ativo do menu, avatar no módulo (branco ≥ 4,5:1)
+     Espelhados em CATEGORIA_COR / CATEGORIA_COR_FORTE (ModuloLayoutShell.tsx). */
   --color-cat-suprimentos: #4E9B8A;
+  --color-cat-suprimentos-forte: #407F71;
   --color-cat-suprimentos-subtle: rgba(78, 155, 138, 0.12);
   --color-cat-suprimentos-border: rgba(78, 155, 138, 0.35);
 
   --color-cat-assistencial: #5B84B1;
+  --color-cat-assistencial-forte: #496C92;
   --color-cat-assistencial-subtle: rgba(91, 132, 177, 0.12);
   --color-cat-assistencial-border: rgba(91, 132, 177, 0.35);
 
   --color-cat-operacao: #C99A4A;
+  --color-cat-operacao-forte: #946E2C;
   --color-cat-operacao-subtle: rgba(201, 154, 74, 0.14);
   --color-cat-operacao-border: rgba(201, 154, 74, 0.35);
 
   --color-cat-financeiro: #7C93A3;
+  --color-cat-financeiro-forte: #607889;
   --color-cat-financeiro-subtle: rgba(124, 147, 163, 0.12);
   --color-cat-financeiro-border: rgba(124, 147, 163, 0.35);
 
-  /* ── Marca v2.3: azul clínico como cor das superfícies de identidade ──
-     Substitui a tinta (#1B1F1C) como FUNDO: logos, item ativo do menu,
-     painel de destaque, avatar e botões escuros. Texto continua em tinta.
-     Ver IDENTIDADE_VISUAL (1).md § 2.2. Contraste com texto branco:
-     #5B84B1 = 3,9:1 (só gráfico — reprova AA para texto), #496C92 = 5,5:1. */
-  --color-marca: #5B84B1;        /* Logos (quadrado da logo Vigia e dos módulos): só ícone */
-  --color-marca-forte: #496C92;  /* Superfícies com texto: item ativo, hero, avatar, botões */
-  --color-marca-hover: #3C5A7A;  /* Hover de superfícies marca-forte */
+  /* ── Marca — azul Vigia (IDENTIDADE_VISUAL (1).md § 2.2) ──
+     Logo Vigia, painel de destaque do hub, avatar no hub, botões de marca.
+     Branco sobre #0066CC = 5,57:1; sobre #0052A3 = 7,68:1. */
+  --color-marca: #0066CC;        /* Azul padrão Vigia: logo Vigia Saúde 360 (branco 5,57:1) */
+  --color-marca-forte: #0066CC;  /* Superfícies com texto: hero do hub, avatar no hub, botões */
+  --color-marca-hover: #0052A3;  /* Hover de superfícies marca (branco 7,68:1) */
 
   /* ── Tipografia ── */
   --font-display: 'Fraunces', Georgia, serif;
