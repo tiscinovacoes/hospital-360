@@ -719,3 +719,31 @@ Manter o padrão da v2.2, mas trocar o preto pelo azul da identidade visual, ape
 
 ### Próximo passo:
 - Validar na prévia do `dev`; subir para produção quando o usuário autorizar.
+
+---
+
+## [2026-09-24] - v2.5.10 (Guia de Identidade Visual Padronizado — v2.4.0 como Referência Única)
+
+### O que mudou:
+- `IDENTIDADE_VISUAL (1).md` reescrito: descreve só as regras vigentes; versões antigas foram para uma tabela de histórico no fim. Removidas as regras contraditórias (dot em toda logo, tinta como fundo de identidade, azul `#5B84B1` como marca, tokens `--vs2-*` que não existem no código).
+- Novas seções: fontes da verdade (código, Figma, guia), onde cada cor pode aparecer (§ 2.5), contraste medido (§ 2.6), moldura do módulo (§ 4), tokens reais do código com o nome da variável no Figma (§ 8) e checklist de novo módulo (§ 9).
+- Sinalizado no guia: terracota com texto branco dá 4,16:1 — só serve para rótulo grande (≥ 18,66px bold); rótulos menores devem usar `#A8531F` (5,35:1). Cor não foi alterada.
+- `nucleo/src/app/globals.css`: tokens `--color-cat-*-forte` adicionados (espelham `CATEGORIA_COR_FORTE`) e comentários atualizados. Sem mudança visual.
+- Figma: seção 06 · Regras e seção 01 · Fundamentos atualizadas para a v2.4 (textos, valores da marca e amostras `categoria-forte/*`).
+
+### Arquivos tocados:
+- `IDENTIDADE_VISUAL (1).md`, `nucleo/src/app/globals.css`, `Vigia-Custos-LOG-Execucao.md`
+
+---
+
+## [2026-09-24] - v2.5.11 (Implantação em Produção: dev → master)
+
+### Versão / Etapa da Alteração:
+- Implantação autorizada pelo usuário ("após isso suba para produção") das entregas v2.5.9 e v2.5.10.
+
+### O que vai para produção:
+- Azul Vigia `#0066CC` na marca e cor da categoria na logo do módulo, item ativo e avatar (v2.5.9)
+- Guia de identidade padronizado e tokens `--color-cat-*-forte` (v2.5.10)
+
+### Observação:
+- Nenhuma alteração de banco (DDL).
