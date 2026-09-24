@@ -12,6 +12,16 @@ data-criacao: 2026-08-12
 > [!info] Como usar este log
 > Registro cronológico (mais recente no topo) de toda ação relevante no projeto Vigia Custos, dos dois caminhos de trabalho: **[[Vigia-Custos-Caminho-Claude]]** e **[[Vigia-Custos-LOG-Execucao]]**. Cada entrada identifica quem executou, o que foi feito, arquivos tocados e o próximo passo. Serve pra qualquer um dos dois (ou o Luca) saber exatamente onde o projeto parou sem precisar perguntar.
 
+## [2026-09-24 — Claude] v2.5.13 — Implantação em produção: dev → master
+- **Status:** CONCLUÍDO
+- **Autorização:** pedido do Luca ("as atualizações que o Antigravity fez estão em dev, quero que suba para produção").
+- **O que vai para produção:**
+  - `82f9388` — merge do estoque CAF + 9 UBS de Itaquiraí (Antigravity)
+  - `65cef5f` — Estoque CAF devolvido ao padrão de módulo v2.4 (v2.5.12)
+- **Checagens antes do merge:** CI com sucesso no `65cef5f`; prévia da Vercel pronta; `master` sem conteúdo exclusivo (só commits de merge).
+- **Banco:** nenhuma DDL nesta implantação. As migrations `20260924000001`/`000002` (schema `satelites`, do Antigravity) vão como arquivo; o deploy da Vercel não as aplica.
+- **Observação:** o estoque roda com dados em memória (`estoqueStore.ts`) — em produção eles voltam ao estado inicial a cada novo deploy ou reinício da função.
+
 ## [2026-09-24 — Claude] v2.5.12 — Estoque CAF do Antigravity integrado ao padrão de módulo v2.4
 - **Status:** CONCLUÍDO (no `dev`, aguardando validação para produção)
 - **Contexto:** o Antigravity entregou o estoque CAF + 9 UBS no branch `antigravity/estoque-caf`, feito sobre a v2.3 (a cópia local estava desatualizada). A tela veio com tema escuro próprio, barra de perfil RBAC fixa no topo e cores fora do guia.
