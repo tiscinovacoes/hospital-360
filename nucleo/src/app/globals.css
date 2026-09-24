@@ -68,9 +68,9 @@
      painel de destaque, avatar e botões escuros. Texto continua em tinta.
      Ver IDENTIDADE_VISUAL (1).md § 2.2. Contraste com texto branco:
      #5B84B1 = 3,9:1 (só gráfico — reprova AA para texto), #496C92 = 5,5:1. */
-  --color-marca: #5B84B1;        /* Logos (quadrado da logo Vigia e dos módulos): só ícone */
-  --color-marca-forte: #496C92;  /* Superfícies com texto: item ativo, hero, avatar, botões */
-  --color-marca-hover: #3C5A7A;  /* Hover de superfícies marca-forte */
+  --color-marca: #0066CC;        /* Azul padrão Vigia: logo Vigia Saúde 360 (branco 5,57:1) */
+  --color-marca-forte: #0066CC;  /* Superfícies com texto: hero do hub, avatar no hub, botões */
+  --color-marca-hover: #0052A3;  /* Hover de superfícies marca (branco 7,68:1) */
 
   /* ── Tipografia ── */
   --font-display: 'Fraunces', Georgia, serif;

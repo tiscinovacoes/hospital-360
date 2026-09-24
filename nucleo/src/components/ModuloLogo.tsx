@@ -18,7 +18,7 @@ import {
   UserCog,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { CATEGORIA_COR, MODULO_THEMES, ModuloCategoria, ModuloId } from './ModuloLayoutShell';
+import { CATEGORIA_COR, CATEGORIA_COR_FORTE, MODULO_THEMES, ModuloCategoria, ModuloId } from './ModuloLayoutShell';
 
 /** Todo módulo com logo própria: os do tema + a administração de perfis. */
 export type ModuloLogoId = ModuloId | 'admin-perfis';
@@ -62,21 +62,21 @@ interface ModuloLogoProps {
   moduloId: ModuloLogoId;
   tamanho?: keyof typeof TAMANHOS;
   /** `papel` inverte as cores para fundos em azul marca (ex.: hero do hub). */
-  tom?: 'marca' | 'papel';
+  tom?: 'categoria' | 'papel';
   className?: string;
 }
 
 /**
- * Logo de módulo — mesma família da logo "Vigia Saúde 360": quadrado no azul
- * da marca (#5B84B1) com o símbolo em papel. A categoria entra só pelo dot de
- * 9px no canto, como pede o guia (§ 2.1 e § 5): nada de bloco na cor do módulo.
- * O quadrado só leva ícone, então o azul claro basta (contraste gráfico ≥ 3:1).
+ * Logo de módulo — mesma família da logo "Vigia Saúde 360": quadrado com o
+ * símbolo em papel, no tom forte da categoria do módulo (IDENTIDADE_VISUAL § 4).
+ * O quadrado já carrega a categoria, então o dot de 9px só aparece no tom
+ * `papel`, onde o fundo é neutro. Símbolo em papel sobre o tom forte ≥ 4,1:1.
  *
  * É decorativa (aria-hidden): o nome do módulo sempre aparece ao lado.
  */
-export function ModuloLogo({ moduloId, tamanho = 'md', tom = 'marca', className }: ModuloLogoProps) {
+export function ModuloLogo({ moduloId, tamanho = 'md', tom = 'categoria', className }: ModuloLogoProps) {
   const Icone = MODULO_LOGO_ICONE[moduloId];
-  const cor = CATEGORIA_COR[categoriaDoModulo(moduloId)];
+  const categoria = categoriaDoModulo(moduloId);
   const t = TAMANHOS[tamanho];
 
   return (
@@ -84,19 +84,19 @@ export function ModuloLogo({ moduloId, tamanho = 'md', tom = 'marca', className 
       aria-hidden="true"
       className={cn(
         'relative inline-flex items-center justify-center shrink-0 shadow-sm',
-        tom === 'marca' ? 'bg-marca text-[#F6F3EC]' : 'bg-[#F6F3EC] text-[#1B1F1C]',
+        tom === 'categoria' ? 'text-[#F6F3EC]' : 'bg-[#F6F3EC] text-[#1B1F1C]',
         t.caixa,
         className
       )}
+      style={tom === 'categoria' ? { backgroundColor: CATEGORIA_COR_FORTE[categoria] } : undefined}
     >
       <Icone className={t.icone} strokeWidth={1.75} />
-      <span
-        className={cn(
-          'absolute -top-[3px] -right-[3px] w-[9px] h-[9px] rounded-full ring-2',
-          tom === 'marca' ? 'ring-white' : 'ring-marca-forte'
-        )}
-        style={{ backgroundColor: cor }}
-      />
+      {tom === 'papel' && (
+        <span
+          className="absolute -top-[3px] -right-[3px] w-[9px] h-[9px] rounded-full ring-2 ring-marca-forte"
+          style={{ backgroundColor: CATEGORIA_COR[categoria] }}
+        />
+      )}
     </span>
   );
 }

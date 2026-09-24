@@ -686,3 +686,36 @@ Manter o padrão da v2.2, mas trocar o preto pelo azul da identidade visual, ape
 ### Observação:
 - Nenhuma alteração de banco (DDL) nesta implantação — só o app `nucleo/` e documentação.
 - A prévia e a produção usam o mesmo projeto Supabase.
+
+---
+
+## [2026-09-24] - v2.5.9 (Azul Vigia #0066CC e Cor da Categoria nos Pontos de Identidade do Módulo)
+
+### Versão / Etapa da Alteração:
+- v2.5.9 — Design System v2.4.0. Proposta validada no Figma pelo usuário ("ok") antes de ir para o código.
+
+### O que mudou:
+- **Azul padrão Vigia `#0066CC`** (branco 5,57:1) nos tokens `marca` e `marca-forte`; hover `#0052A3`. Afeta o quadrado da logo "Vigia Saúde 360", o painel de destaque do hub, o avatar no hub e os botões de marca.
+- **Cor da categoria em 4 pontos do módulo**, no tom forte (`CATEGORIA_COR_FORTE`, branco ≥ 4,5:1): logo do módulo no cabeçalho, logo no cartão do menu lateral, item ativo do menu e avatar.
+  - Suprimentos `#407F71` · Assistencial `#496C92` · Operação `#946E2C` · Financeiro `#607889`
+- Logo de módulo sem o dot de categoria quando o quadrado já está na cor da categoria (o dot fica só no tom papel, no hero do hub).
+- Iniciais do avatar em branco (o creme não passava de 4,5:1 no dourado).
+
+### Arquivos tocados:
+- `nucleo/src/app/globals.css` (tokens de marca)
+- `nucleo/src/components/ModuloLayoutShell.tsx` (`CATEGORIA_COR_FORTE`)
+- `nucleo/src/components/ModuloLogo.tsx` (tom `categoria`, dot só no tom `papel`)
+- `nucleo/src/components/ModuloMenuLateral.tsx` (item ativo na cor da categoria)
+- `nucleo/src/components/VigiaSidebarLayout.tsx` (avatar por categoria, hover da logo Vigia)
+- `IDENTIDADE_VISUAL (1).md` (v2.4.0)
+- Figma "Vigia Saúde 360 — Padrão de Módulos": variáveis `categoria-forte/*`, `marca*` = `#0066CC`, componente Logo de Módulo e template atualizados, seção "07 · Cor por categoria (aprovado)"
+
+### Verificação:
+- `tsc --noEmit` sem erros; lint sem erros (só avisos antigos)
+- Hub, Estoque Central, Laboratório, Escala Médica e Financeiro Split a 1440px: cores conferidas no DOM e sem rolagem horizontal
+
+### Observação:
+- Nenhuma alteração de banco (DDL).
+
+### Próximo passo:
+- Validar na prévia do `dev`; subir para produção quando o usuário autorizar.

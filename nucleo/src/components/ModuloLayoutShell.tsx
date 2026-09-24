@@ -39,6 +39,18 @@ export const CATEGORIA_COR: Record<ModuloCategoria, string> = {
   FINANCEIRO: '#7C93A3',
 };
 
+/**
+ * Tom forte de cada categoria — escurecido até o texto branco passar de 4,5:1
+ * (WCAG AA). Usado onde a categoria vira superfície: logo do módulo, item
+ * ativo do menu lateral e avatar no cabeçalho do módulo.
+ */
+export const CATEGORIA_COR_FORTE: Record<ModuloCategoria, string> = {
+  SUPRIMENTOS: '#407F71', // branco 4,67:1
+  ASSISTENCIAL: '#496C92', // branco 5,46:1
+  OPERACAO: '#946E2C', // branco 4,64:1
+  FINANCEIRO: '#607889', // branco 4,62:1
+};
+
 export interface ModuloThemeConfig {
   id: ModuloId;
   nome: string;

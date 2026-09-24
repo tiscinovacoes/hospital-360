@@ -1,6 +1,6 @@
 # Vigia Saúde 360 — Identidade Visual
 > Sistema Governamental de Custeio, Compras Públicas e Gestão Hospitalar
-> Design System v2.3.0 — azul da marca substitui a tinta nas superfícies de identidade (logo, item ativo, hero, avatar)
+> Design System v2.4.0 — azul Vigia `#0066CC` na marca; dentro do módulo, logo, item ativo e avatar ganham o tom forte da categoria
 
 ---
 
@@ -13,6 +13,8 @@ A v1.0.0 (`#1A56DB`, Inter, cards multicoloridos por módulo) foi avaliada e des
 **v2.2.0** — padroniza a moldura de todo módulo, a partir da barra lateral da Escala Médica (a preferida), ajustada às regras deste guia. Três componentes novos em § 4: **Logo de Módulo** (uma marca por módulo, na família da logo Vigia), **Cabeçalho** (centralizado no hub, com a logo do módulo nos módulos) e **Menu lateral de módulo** (painel arredondado único para os 12 módulos). Nenhuma cor muda. Modelo no Figma para os próximos módulos: [Vigia Saúde 360 — Padrão de Módulos](https://www.figma.com/design/oNgeLR3Td97EmqdHqdkTuU).
 
 **v2.3.0** — a tinta `#1B1F1C` deixa de ser o fundo das superfícies de **identidade de marca** (logo, item ativo do menu, painel de destaque, avatar, botões escuros de ação) e dá lugar ao **azul clínico da categoria Assistencial** (`#5B84B1`, já usado em § 2.1), agora também como cor da marca. Dois tons: `marca` (#5B84B1, só para ícone — contraste gráfico) e `marca-forte` (#496C92, para qualquer superfície com texto branco, 5,5:1 AA). A tinta continua sendo a cor de **texto** em toda a interface — só o papel de fundo de identidade mudou. Nada além dessas superfícies muda: cor de categoria, cor de ação (teal/terracota) e cor de status seguem exatamente como na v2.1.
+
+**v2.4.0** — duas mudanças aprovadas. (1) O azul padrão Vigia passa a ser **`#0066CC`** (branco 5,57:1 AA) no quadrado da logo "Vigia Saúde 360", no painel de destaque do hub, no avatar do hub e nos botões de marca; hover `#0052A3`. (2) Dentro do módulo, **quatro pontos** passam a usar a cor da categoria, num tom **forte** escurecido até o texto branco passar de 4,5:1: logo do módulo no cabeçalho, logo no cartão do menu lateral, item ativo do menu e avatar. Como o quadrado da logo já carrega a categoria, o dot de 9px sai dele (fica só no tom papel). Modelo aprovado no Figma, seção "07 · Cor por categoria (aprovado)".
 
 Princípios da mudança:
 - **Menos cor, mais hierarquia.** Um único acento de ação (teal) e um único acento de destaque (terracota), em vez de uma cor própria por módulo espalhada em ícones, fundos e bordas.
@@ -99,15 +101,23 @@ Inalterado: área livre equivalente à altura do ícone (`x`) em todos os lados.
 | **Papel 2** | `#EFEAE0` | Sidebar, painéis secundários, rail lateral |
 | **Branco** | `#FFFFFF` | Cards, inputs, superfícies elevadas sobre o papel |
 
-### Marca — Superfícies de Identidade (v2.3)
+### Marca — Azul Vigia (v2.4)
 
 | Tom | Hex | Uso |
 |---|---|---|
-| **Marca ★** | `#5B84B1` | Quadrado da logo Vigia e das Logos de Módulo (só ícone — contraste gráfico 3,9:1, não serve para texto) |
-| **Marca-forte** | `#496C92` | Qualquer superfície de identidade com texto branco: item ativo do menu, painel de destaque (hero), avatar, botões escuros de ação — 5,5:1 (AA) |
-| **Marca-hover** | `#3C5A7A` | Hover de superfícies marca-forte |
+| **Marca ★** | `#0066CC` | Quadrado da logo "Vigia Saúde 360", painel de destaque (hero) do hub, avatar no hub, botões de marca — branco 5,57:1 (AA). `marca` e `marca-forte` têm o mesmo valor desde a v2.4 |
+| **Marca-hover** | `#0052A3` | Hover de superfícies marca (branco 7,68:1) |
 
-Mesma matiz do azul clínico de § 2.1 (categoria Assistencial) — o azul passa a ser também a cor da marca, não só de uma categoria. Nas Logos de Módulo da categoria Assistencial, o dot de 9px fica da mesma cor do quadrado; o anel branco de 2px mantém o dot visível.
+### Categoria forte — superfícies do módulo (v2.4)
+
+Dentro de um módulo, logo do módulo, item ativo do menu lateral e avatar usam o tom forte da categoria (token `categoria-forte/*`; código `CATEGORIA_COR_FORTE` em `ModuloLayoutShell.tsx`). A cor base de § 2.1 continua nos detalhes suaves (tag, tarja, dot).
+
+| Categoria | Base (§ 2.1) | Forte | Branco sobre o forte |
+|---|---|---|---|
+| Suprimentos | `#4E9B8A` | `#407F71` | 4,67:1 |
+| Assistencial | `#5B84B1` | `#496C92` | 5,46:1 |
+| Operação | `#C99A4A` | `#946E2C` | 4,64:1 |
+| Financeiro / Governança | `#7C93A3` | `#607889` | 4,62:1 |
 
 ### Teal Institucional — Primary / Ação
 
@@ -301,9 +311,9 @@ Fundo `marca-forte` `#496C92` (v2.3; era tinta), texto papel **sólido**, raio `
 
 ---
 
-### Logo de Módulo (v2.2)
+### Logo de Módulo (v2.4)
 
-Cada módulo tem uma marca própria, da **mesma família da logo Vigia Saúde 360**: quadrado no **azul da marca `#5B84B1`** com o símbolo lucide em papel (traço `1.75`) e o **dot de categoria de 9px no canto** (anel branco de 2px). A cor de categoria continua restrita ao dot, como em § 2.1 — o quadrado nunca é pintado com a cor do módulo, nem com a cor de ação (teal).
+Cada módulo tem uma marca própria, da **mesma família da logo Vigia Saúde 360**: quadrado no **tom forte da categoria** (tabela acima) com o símbolo lucide em papel (traço `1.75`, ≥ 4,1:1). O quadrado já carrega a categoria, então não leva dot. Nunca pintar o quadrado com a cor de ação (teal).
 
 | Tamanho | Lado / raio | Uso |
 |---|---|---|
@@ -311,14 +321,14 @@ Cada módulo tem uma marca própria, da **mesma família da logo Vigia Saúde 36
 | `md` | 36px / 12px | Cartão de identidade do menu lateral, cards do hub |
 | `lg` | 40px / 12px | Destaques |
 
-Sobre fundo `marca-forte` (hero do hub) usa o tom **papel**: quadrado papel, símbolo tinta. Código: `nucleo/src/components/ModuloLogo.tsx` — `MODULO_LOGO_ICONE` é a fonte única módulo → símbolo; cabeçalho, menu lateral e hub leem dali.
+Sobre fundo `marca` (hero do hub) usa o tom **papel**: quadrado papel, símbolo tinta e dot de categoria de 9px no canto (anel `#0066CC`). Código: `nucleo/src/components/ModuloLogo.tsx` — `MODULO_LOGO_ICONE` é a fonte única módulo → símbolo; cabeçalho, menu lateral e hub leem dali.
 
 ---
 
 ### Cabeçalho (v2.2)
 
 - **Hub:** o conteúdo do cabeçalho acompanha a coluna central da página (`max-w-7xl`, respiro `16/24/32px`), então a marca começa no mesmo x do conteúdo.
-- **Módulo:** `marca Vigia Saúde 360 | Logo de Módulo sm + título + tag regulatória`, alinhado à borda do menu lateral (16px). A tag usa fundo 12% e borda 35% da categoria com **texto em tinta 75%** (a cor de categoria como texto não passa no contraste AA). O quadrado da marca "Vigia Saúde 360" e o avatar do usuário usam `marca-forte`.
+- **Módulo:** `marca Vigia Saúde 360 | Logo de Módulo sm + título + tag regulatória`, alinhado à borda do menu lateral (16px). A tag usa fundo 12% e borda 35% da categoria com **texto em tinta 75%** (a cor de categoria como texto não passa no contraste AA). O quadrado da marca "Vigia Saúde 360" usa `marca` `#0066CC`; o avatar usa o tom forte da categoria dentro do módulo e `marca` no hub, com iniciais em branco.
 - **Ações da página:** ícone + rótulo a partir de 1024px; abaixo, só o ícone, com `aria-label`. A faixa de ações encolhe e rola; o bloco de identidade tem largura mínima, então o título nunca vai a zero.
 - **Celular:** a Logo de Módulo ocupa o lugar da marca; "Ver Módulos" some, porque o rodapé do menu lateral já leva ao hub.
 
@@ -332,7 +342,7 @@ Painel único para todos os módulos (`nucleo/src/components/ModuloMenuLateral.t
 - **Desktop:** 256px, fixo abaixo do cabeçalho (`top: 80px`, altura `100dvh − 96px`), sempre visível.
 - **Celular:** gaveta flutuante de 288px, **fechada ao abrir a página**, véu tinta 25%, sombra alta, botão fechar; escolher um item fecha a gaveta.
 - **Topo:** cartão de identidade em papel com a Logo de Módulo `md`, o nome em Fraunces e a tag regulatória.
-- **Item:** raio `12px`, 40px (desktop) / 44px (celular); **ativo em `marca-forte` com texto branco** (5,5:1 AA — não na cor do módulo, como fazia a Escala); rótulo quebra em até 2 linhas em vez de cortar.
+- **Item:** raio `12px`, 40px (desktop) / 44px (celular); **ativo no tom forte da categoria com texto branco** (≥ 4,6:1 AA, v2.4); rótulo quebra em até 2 linhas em vez de cortar.
 - **Rodapé:** cartão de status opcional (prop `rodape`) + "Voltar ao Hub de Módulos".
 
 **Novo módulo — checklist:** (1) registrar o id em `ModuloId`/`MODULO_THEMES`; (2) escolher o símbolo em `MODULO_LOGO_ICONE`; (3) usar `<ModuloMenuLateral moduloId … />`; (4) contêiner `flex flex-1 relative overflow-x-clip` e `main` `flex-1 min-w-0 p-4 lg:p-6`; (5) estado do menu começa `false` e o botão de menu leva `aria-expanded`. O mesmo passo a passo, com os componentes prontos, está no [Figma](https://www.figma.com/design/oNgeLR3Td97EmqdHqdkTuU).
@@ -416,7 +426,7 @@ Na v1, cada módulo tinha um ícone grande dentro de um bloco colorido (`w-12 h-
 - Estado ativo: ícone em `#FFFFFF` sobre fundo `#1B1F1C` (não mais a cor do módulo).
 - Categoria é sinalizada pelo **dot de 9px** ao lado do label/overline, não pela cor do ícone.
 - Ícones seguem monocromáticos (tinta) em 95% dos casos; cor só aparece em badges/pills e no dot de categoria.
-- **Exceção v2.3 — Logo de Módulo:** o símbolo do módulo vai dentro de um quadrado em **azul da marca** (nunca na cor do módulo), como a logo Vigia. Vale só para a logo; ícones de navegação continuam sem bloco de fundo.
+- **Exceção v2.4 — Logo de Módulo:** o símbolo do módulo vai dentro de um quadrado no **tom forte da categoria**, como a logo Vigia vai no azul `#0066CC`. Vale só para a logo; ícones de navegação continuam sem bloco de fundo.
 
 ### Tamanhos Contextuais (inalterado da v1)
 
@@ -448,10 +458,16 @@ Novo prefixo `--vs2-*` para não colidir com o `--vs-*` da v1 durante a migraç�
   --vs2-paper:    #F6F3EC;
   --vs2-paper-2:  #EFEAE0;
 
-  /* ── Marca (v2.3) — superfícies de identidade: logo, item ativo, hero, avatar ── */
-  --vs2-marca:       #5B84B1;  /* só ícone (logo) */
-  --vs2-marca-forte: #496C92;  /* superfícies com texto branco */
-  --vs2-marca-hover: #3C5A7A;
+  /* ── Marca (v2.4) — azul Vigia: logo Vigia, hero do hub, avatar no hub, botões ── */
+  --vs2-marca:       #0066CC;  /* branco 5,57:1 */
+  --vs2-marca-forte: #0066CC;
+  --vs2-marca-hover: #0052A3;
+
+  /* ── Categoria forte (v2.4) — logo do módulo, item ativo, avatar no módulo ── */
+  --vs2-cat-forte-suprimentos:  #407F71;
+  --vs2-cat-forte-assistencial: #496C92;
+  --vs2-cat-forte-operacao:     #946E2C;
+  --vs2-cat-forte-financeiro:   #607889;
 
   /* ── Teal — ação/confiança ── */
   --vs2-teal:      #0E5C4C;
