@@ -16,6 +16,14 @@ const VARIANT_MAP: Record<IconVariant, { bg: string; text: string; border: strin
 };
 
 /**
+ * Ícones do lucide são `forwardRef` (objeto, não função): os dois formatos
+ * contam como componente, senão o ícone some e sobra a caixa vazia.
+ */
+function ehComponente(valor: unknown): valor is React.ComponentType<{ className?: string }> {
+  return typeof valor === 'function' || (typeof valor === 'object' && valor !== null && '$$typeof' in valor);
+}
+
+/**
  * Padrão Unificado de Ícones para o Hospital 360:
  * Container quadrado com cantos arredondados, borda no limite #E0E0E0,
  * ícone centralizado com traço stroke-[1.8] e semântica de cores hospitalar.
@@ -58,10 +66,10 @@ export function IconBadge({
     <div
       className={`${sizeClasses} ${bgClass} ${colorClass} border ${borderClass} flex items-center justify-center shrink-0 shadow-2xs ${className}`}
     >
-      {typeof Icon === 'function' ? (
-        <Icon className={iconSizeClass} />
-      ) : React.isValidElement(Icon) ? (
+      {React.isValidElement(Icon) ? (
         Icon
+      ) : ehComponente(Icon) ? (
+        React.createElement(Icon, { className: iconSizeClass })
       ) : null}
     </div>
   );

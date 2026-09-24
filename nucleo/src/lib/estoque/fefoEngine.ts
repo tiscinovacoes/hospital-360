@@ -53,7 +53,7 @@ export class FefoEngine {
       return {
         categoria: 'VENCIDO',
         diasRestantes: dias,
-        badgeColor: 'bg-rose-500/20 text-rose-400 border-rose-500/40',
+        badgeColor: 'bg-[#9C3B2E]/[0.08] text-[#9C3B2E] border-[#9C3B2E]/30',
         label: `VENCIDO (${Math.abs(dias)} dias atrás)`
       };
     }
@@ -61,7 +61,7 @@ export class FefoEngine {
       return {
         categoria: 'CRITICO_30D',
         diasRestantes: dias,
-        badgeColor: 'bg-red-500/20 text-red-400 border-red-500/40',
+        badgeColor: 'bg-[#9C3B2E]/[0.08] text-[#9C3B2E] border-[#9C3B2E]/30',
         label: `Crítico: ${dias} dias`
       };
     }
@@ -69,7 +69,7 @@ export class FefoEngine {
       return {
         categoria: 'ALERTA_60D',
         diasRestantes: dias,
-        badgeColor: 'bg-amber-500/20 text-amber-400 border-amber-500/40',
+        badgeColor: 'bg-[#8A6A16]/10 text-[#8A6A16] border-[#8A6A16]/30',
         label: `Alerta: ${dias} dias`
       };
     }
@@ -77,7 +77,7 @@ export class FefoEngine {
       return {
         categoria: 'ATENCAO_90D',
         diasRestantes: dias,
-        badgeColor: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/40',
+        badgeColor: 'bg-[#8A6A16]/[0.06] text-[#8A6A16] border-[#8A6A16]/20',
         label: `Atenção: ${dias} dias`
       };
     }
@@ -85,7 +85,7 @@ export class FefoEngine {
     return {
       categoria: 'REGULAR',
       diasRestantes: dias,
-      badgeColor: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40',
+      badgeColor: 'bg-[#0E5C4C]/[0.08] text-[#0E5C4C] border-[#0E5C4C]/25',
       label: `${dias} dias`
     };
   }

@@ -4,7 +4,8 @@ import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { ModuloRbacBar } from '@/components/ModuloRbacBar';
 import { KpiCard } from '@/components/KpiCard';
 import { PageHeader } from '@/components/PageHeader';
-import { ModuloMenuLateral } from '@/components/ModuloMenuLateral';
+import { ModuloMenuLateral, MenuLateralItem } from '@/components/ModuloMenuLateral';
+import { CATEGORIA_COR } from '@/components/ModuloLayoutShell';
 import { ModuloRole, MODULO_ROLES_CATALOG } from '@/types/rbac';
 import {
   Boxes,
@@ -30,7 +31,9 @@ import {
   Database,
   DollarSign,
   User,
-  FileCode
+  FileCode,
+  Menu,
+  ChevronRight
 } from 'lucide-react';
 
 import {
@@ -49,7 +52,8 @@ type SecaoModuloEstoque =
   | 'nfe'
   | 'dispensacao'
   | 'recall'
-  | 'relatorios';
+  | 'relatorios'
+  | 'perfis_rbac';
 
 export default function VigiaEstoqueCentralPage() {
   const roles = MODULO_ROLES_CATALOG['estoque-central'];
@@ -512,182 +516,272 @@ export default function VigiaEstoqueCentralPage() {
     window.open('/api/estoque/relatorios?tipo=bnafar&formato=csv', '_blank');
   };
 
+  const qtdSolicitacoesAbertas = solicitacoes.filter(s => s.status === 'ENVIADA' || s.status === 'LIBERADA').length;
+
+  const menuItens: MenuLateralItem[] = [
+    { id: 'visao_geral', label: 'Visão Geral & Catálogo', icon: Boxes },
+    { id: 'solicitacoes', label: 'Solicitações UBS → CAF', icon: Truck, badge: qtdSolicitacoesAbertas ? String(qtdSolicitacoesAbertas) : null },
+    { id: 'fefo', label: 'Gestão FEFO & Validade', icon: Clock },
+    { id: 'nfe', label: 'Entrada NF-e (XML 4.0)', icon: FileCheck2 },
+    { id: 'dispensacao', label: 'Dispensação ao Paciente', icon: User },
+    { id: 'recall', label: 'Recall & Bloqueio', icon: ShieldAlert },
+    { id: 'relatorios', label: 'Curva ABC & BNAFAR', icon: FileSpreadsheet },
+    { id: 'perfis_rbac', label: 'Trilha de Auditoria & RBAC', icon: History },
+  ];
+
   return (
-    <div className="min-h-screen bg-[#070B14] text-slate-100 flex flex-col font-sans">
+    <>
       <PageHeader
-        activeTitle="Almoxarifado & Farmácia Central (CAF) — Itaquiraí/MS"
-        activeSubtitle="Gestão pública 100% operacional integrada às 9 Unidades Básicas de Saúde (UBS) e ao Custo do Paciente"
+        actions={
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setSidebarAberta(!sidebarAberta)}
+              className="lg:hidden p-2 min-h-[44px] min-w-[44px] rounded-xl text-[#1B1F1C]/70 hover:bg-[#1B1F1C]/[0.06] transition-all cursor-pointer flex items-center justify-center"
+              title={sidebarAberta ? 'Recolher menu' : 'Expandir menu'}
+              aria-label={sidebarAberta ? 'Recolher menu' : 'Expandir menu'}
+              aria-expanded={sidebarAberta}
+            >
+              {sidebarAberta ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            </button>
+
+            <button
+              type="button"
+              aria-label="Importar NF-e (XML)"
+              title="Importar NF-e (XML)"
+              onClick={() => setSecaoAtiva('nfe')}
+              className="flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl text-xs font-bold bg-[#0E5C4C] text-white hover:bg-[#0A4A3D] transition-all shadow-xs cursor-pointer"
+            >
+              <Upload className="w-3.5 h-3.5" />
+              <span className="hidden lg:inline">Importar NF-e (XML)</span>
+            </button>
+
+            <button
+              type="button"
+              aria-label="Nova Solicitação à CAF"
+              title="Nova Solicitação à CAF"
+              onClick={() => setModalNovaSolicitacao(true)}
+              className="hidden sm:flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl text-xs font-bold bg-marca hover:bg-marca-hover text-white transition-all shadow-xs cursor-pointer"
+            >
+              <Truck className="w-3.5 h-3.5" />
+              <span className="hidden lg:inline">Nova Solicitação</span>
+            </button>
+
+            <button
+              type="button"
+              aria-label="Exportar BNAFAR/Hórus (CSV)"
+              title="Exportar BNAFAR/Hórus (CSV)"
+              onClick={handleDownloadBnafar}
+              className="hidden md:flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl text-xs font-bold bg-white border border-[#1B1F1C]/12 text-[#1B1F1C] hover:bg-[#1B1F1C]/[0.06] transition-all cursor-pointer"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span className="hidden lg:inline">Exportar BNAFAR</span>
+            </button>
+          </div>
+        }
       />
 
-      <ModuloRbacBar
-        moduloId="estoque-central"
-        activeRole={activeRole}
-        onRoleChange={setActiveRole}
-      />
-
-      {/* Notificação Flutuante */}
+      {/* Notificação flutuante */}
       {notificacao && (
         <div
           role="alert"
           aria-live="assertive"
-          className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-xl border shadow-2xl flex items-center gap-3 animate-fade-in ${
+          className={`fixed top-20 right-4 left-4 sm:left-auto sm:max-w-md z-50 px-4 py-3 rounded-xl border bg-white shadow-[0_8px_24px_rgba(27,31,28,0.10),0_2px_8px_rgba(27,31,28,0.05)] flex items-center gap-3 ${
             notificacao.tipo === 'sucesso'
-              ? 'bg-emerald-950/90 border-emerald-500/50 text-emerald-200'
+              ? 'border-[#0E5C4C]/30 text-[#0E5C4C]'
               : notificacao.tipo === 'alerta'
-              ? 'bg-amber-950/90 border-amber-500/50 text-amber-200'
-              : 'bg-rose-950/90 border-rose-500/50 text-rose-200'
+              ? 'border-[#8A6A16]/30 text-[#8A6A16]'
+              : 'border-[#9C3B2E]/30 text-[#9C3B2E]'
           }`}
         >
-          {notificacao.tipo === 'sucesso' && <CheckCircle2 className="w-5 h-5 text-emerald-400" />}
-          {notificacao.tipo === 'alerta' && <AlertTriangle className="w-5 h-5 text-amber-400" />}
-          {notificacao.tipo === 'erro' && <AlertOctagon className="w-5 h-5 text-rose-400" />}
-          <span className="text-sm font-medium">{notificacao.texto}</span>
-          <button onClick={() => setNotificacao(null)} className="ml-2 hover:opacity-75">
+          {notificacao.tipo === 'sucesso' && <CheckCircle2 className="w-5 h-5 shrink-0" />}
+          {notificacao.tipo === 'alerta' && <AlertTriangle className="w-5 h-5 shrink-0" />}
+          {notificacao.tipo === 'erro' && <AlertOctagon className="w-5 h-5 shrink-0" />}
+          <span className="text-xs font-bold flex-1">{notificacao.texto}</span>
+          <button
+            type="button"
+            onClick={() => setNotificacao(null)}
+            aria-label="Fechar notificação"
+            className="w-11 h-11 -my-2 -mr-2 inline-flex items-center justify-center rounded-lg hover:bg-[#1B1F1C]/[0.06] shrink-0"
+          >
             <X className="w-4 h-4" />
           </button>
         </div>
       )}
 
-      {/* Barra de Seleção de Unidade Municipal Ativa */}
-      <div className="bg-[#0C1222] border-b border-slate-800/80 px-4 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-blue-600/20 text-blue-400 flex items-center justify-center border border-blue-500/30">
-            <Building2 className="w-4 h-4" />
+      <div className="flex flex-1 relative overflow-x-clip">
+        <ModuloMenuLateral
+          moduloId="estoque-central"
+          titulo="Estoque Central & CD"
+          itens={menuItens}
+          ativoId={secaoAtiva}
+          onSelect={(id) => setSecaoAtiva(id as SecaoModuloEstoque)}
+          aberto={sidebarAberta}
+          onFechar={() => setSidebarAberta(false)}
+        />
+
+        <main className="flex-1 min-w-0 p-4 lg:p-6 space-y-6">
+          {/* Breadcrumb */}
+          <div className="flex items-center gap-2 text-xs text-[#1B1F1C]/65 font-medium pb-2 border-b border-[#1B1F1C]/[0.08]">
+            <span>Vigia Saúde</span>
+            <ChevronRight className="w-3 h-3 text-[#1B1F1C]/40" />
+            <span>Almoxarifado &amp; CAF Itaquiraí</span>
+            <ChevronRight className="w-3 h-3 text-[#1B1F1C]/40" />
+            <span className="font-bold text-[#1B1F1C] truncate">
+              {menuItens.find((m) => m.id === secaoAtiva)?.label}
+            </span>
           </div>
-          <div>
-            <div className="text-xs text-slate-400 font-medium">Unidade Operacional Ativa (Piloto Itaquiraí-MS)</div>
-            <div className="text-sm font-bold text-slate-200 flex items-center gap-2">
-              {localAtivo?.nome}
-              {localAtivo?.cnes && (
-                <span className="text-[11px] px-2 py-0.5 rounded-full bg-slate-800 text-blue-300 border border-slate-700">
-                  CNES: {localAtivo.cnes}
-                </span>
-              )}
-              <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
-                localAtivo?.tipo === 'CAF' ? 'bg-purple-900/60 text-purple-300 border border-purple-700/50' : 'bg-emerald-900/60 text-emerald-300 border border-emerald-700/50'
-              }`}>
-                {localAtivo?.tipo === 'CAF' ? 'FARMÁCIA CENTRAL' : 'FARMÁCIA UBS'}
-              </span>
+
+          {/* Unidade operacional ativa (CAF + 9 farmácias de UBS) */}
+          <div className="bg-white border border-[#1B1F1C]/12 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-[0_1px_2px_rgba(27,31,28,0.05)]">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 rounded-xl bg-[#1B1F1C]/[0.05] text-[#1B1F1C]/70 flex items-center justify-center border border-[#1B1F1C]/[0.08] shrink-0">
+                <Building2 className="w-5 h-5" />
+              </div>
+              <div className="min-w-0">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-[#1B1F1C]/65">
+                  Unidade operacional ativa · Piloto Itaquiraí-MS
+                </div>
+                <div className="flex flex-wrap items-center gap-2 mt-0.5">
+                  <span className="font-display text-base font-semibold text-[#1B1F1C]">{localAtivo?.nome || 'Carregando unidades…'}</span>
+                  {localAtivo?.cnes && (
+                    <span className="font-mono text-[11px] px-2 py-0.5 rounded-full bg-[#1B1F1C]/[0.05] text-[#1B1F1C]/80 border border-[#1B1F1C]/12">
+                      CNES {localAtivo.cnes}
+                    </span>
+                  )}
+                  {localAtivo && (
+                    <span
+                      className="text-[10px] px-2 py-0.5 rounded-full font-semibold border text-[#1B1F1C]/75"
+                      style={
+                        localAtivo.tipo === 'CAF'
+                          ? { backgroundColor: `${CATEGORIA_COR.SUPRIMENTOS}1F`, borderColor: `${CATEGORIA_COR.SUPRIMENTOS}59` }
+                          : { backgroundColor: 'rgba(27,31,28,0.05)', borderColor: 'rgba(27,31,28,0.12)' }
+                      }
+                    >
+                      {localAtivo.tipo === 'CAF' ? 'Farmácia Central' : 'Farmácia UBS'}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 w-full md:w-auto min-w-0">
+              <label htmlFor="unidade-select" className="text-xs font-semibold text-[#1B1F1C]/70 hidden xl:inline">
+                Alternar estabelecimento
+              </label>
+              <select
+                id="unidade-select"
+                value={localAtivoId}
+                onChange={(e) => setLocalAtivoId(e.target.value)}
+                className="min-w-0 w-full md:w-80 min-h-[44px] bg-white border border-[#1B1F1C]/20 text-[#1B1F1C] text-xs font-semibold rounded-xl px-3 focus:outline-none focus:ring-2 focus:ring-[#0E5C4C]/20 focus:border-[#0E5C4C]"
+              >
+                {locais.map(loc => (
+                  <option key={loc.id} value={loc.id}>
+                    {loc.tipo === 'CAF' ? '[CAF] ' : '[UBS] '}{loc.nome}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                onClick={carregarDados}
+                disabled={carregando}
+                aria-label="Atualizar dados do estoque"
+                title="Atualizar dados do estoque"
+                className="w-11 h-11 inline-flex items-center justify-center rounded-xl bg-white hover:bg-[#1B1F1C]/[0.06] text-[#1B1F1C]/70 border border-[#1B1F1C]/12 transition shrink-0"
+              >
+                <RefreshCw className={`w-4 h-4 ${carregando ? 'animate-spin' : ''}`} />
+              </button>
             </div>
           </div>
-        </div>
 
-        {/* Seletor Dropdown de Unidades */}
-        <div className="flex items-center gap-2">
-          <label htmlFor="unidade-select" className="text-xs text-slate-400 hidden sm:inline">Alternar Estabelecimento:</label>
-          <select
-            id="unidade-select"
-            value={localAtivoId}
-            onChange={(e) => setLocalAtivoId(e.target.value)}
-            className="bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          >
-            {locais.map(loc => (
-              <option key={loc.id} value={loc.id}>
-                {loc.tipo === 'CAF' ? '🏢 [CAF] ' : '🏥 [UBS] '} {loc.nome}
-              </option>
-            ))}
-          </select>
+          {/* Perfis & matriz RBAC — só na seção "Trilha de Auditoria & RBAC" (IDENTIDADE_VISUAL § 4) */}
+          {secaoAtiva === 'perfis_rbac' && (
+            <div className="space-y-4">
+              <ModuloRbacBar
+                moduloId="estoque-central"
+                activeRole={activeRole}
+                onRoleChange={setActiveRole}
+              />
+              <div className="bg-white border border-[#1B1F1C]/12 rounded-2xl p-5 text-xs text-[#1B1F1C]/80 leading-relaxed">
+                <h2 className="font-display text-lg font-semibold text-[#1B1F1C] flex items-center gap-2">
+                  <History className="w-5 h-5 text-[#1B1F1C]/55" />
+                  Trilha de auditoria por medicamento
+                </h2>
+                <p className="mt-2">
+                  Toda entrada de NF-e, separação FEFO, recebimento na UBS, dispensação e recall fica registrada com usuário,
+                  data e justificativa. Abra <strong>Perfil &amp; Rastreio</strong> no catálogo para ver a linha do tempo completa
+                  de cada medicamento, da nota fiscal ao paciente.
+                </p>
+                <p className="mt-2 text-[#1B1F1C]/70">
+                  Perfil ativo nas ações desta tela: <strong className="text-[#1B1F1C]">{activeRole.name}</strong>.
+                </p>
+              </div>
+            </div>
+          )}
 
-          <button
-            onClick={carregarDados}
-            disabled={carregando}
-            aria-label="Atualizar dados do estoque"
-            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition"
-            title="Atualizar dados em tempo real"
-          >
-            <RefreshCw className={`w-4 h-4 ${carregando ? 'animate-spin text-blue-400' : ''}`} />
-          </button>
-        </div>
-      </div>
-
-      {/* Conteúdo Principal com Layout de Menu Lateral */}
-      <div className="flex-1 flex flex-col lg:flex-row max-w-7xl w-full mx-auto p-4 sm:p-6 gap-6">
-        {/* Menu Lateral do Módulo de Estoque */}
-        <aside className="w-full lg:w-64 shrink-0">
-          <ModuloMenuLateral
-            moduloId="estoque-central"
-            titulo="Estoque Central"
-            itens={[
-              { id: 'visao_geral', label: 'Visão Geral & Catálogo', icon: Boxes },
-              { id: 'solicitacoes', label: 'Solicitações UBS → CAF', icon: Truck, badge: solicitacoes.filter(s => s.status === 'ENVIADA' || s.status === 'LIBERADA').length ? String(solicitacoes.filter(s => s.status === 'ENVIADA' || s.status === 'LIBERADA').length) : null },
-              { id: 'fefo', label: 'Gestão FEFO & Validade', icon: Clock },
-              { id: 'nfe', label: 'Entrada NF-e (XML 4.0)', icon: FileCheck2 },
-              { id: 'dispensacao', label: 'Dispensação ao Paciente', icon: User },
-              { id: 'recall', label: 'Recall & Bloqueio', icon: ShieldAlert },
-              { id: 'relatorios', label: 'Curva ABC & BNAFAR', icon: FileSpreadsheet }
-            ]}
-            ativoId={secaoAtiva}
-            onSelect={(id) => setSecaoAtiva(id as SecaoModuloEstoque)}
-            aberto={sidebarAberta}
-            onFechar={() => setSidebarAberta(false)}
-          />
-        </aside>
-
-        {/* Área Central de Conteúdo */}
-        <main className="flex-1 flex flex-col gap-6 min-w-0">
           {/* Seção 1: VISÃO GERAL */}
           {secaoAtiva === 'visao_geral' && (
             <div className="flex flex-col gap-6">
-              {/* KPIs de Alto Impacto */}
+              {/* KPIs */}
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
                 <KpiCard
                   title="Valor do Estoque"
                   value={`R$ ${metricas.valor_total_estoque_consolidado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
-                  subtitle={`Consolidado na rede de ${metricas.total_locais_ativos} estabelecimentos`}
-                  icon={DollarSign}
-                  trend={{ text: 'Auditoria Real', isPositive: true }}
+                  subtitle={`Consolidado em ${metricas.total_locais_ativos} estabelecimentos`}
+                  icon={<DollarSign className="w-5 h-5 text-[#0E5C4C]" />}
+                  trend={{ text: 'Auditoria real', isPositive: true }}
                 />
                 <KpiCard
                   title="Medicamentos Padronizados"
                   value={String(metricas.total_produtos_padronizados)}
                   subtitle="Itens com CATMAT vinculado"
-                  icon={Package}
+                  icon={<Package className="w-5 h-5 text-[#0E5C4C]" />}
                 />
                 <KpiCard
-                  title="Validade e Quarentena"
-                  value={`${metricas.lotes_em_quarentena_ou_bloqueio} bloqueados`}
-                  subtitle={`${metricas.lotes_vencidos} lotes com validade expirada`}
-                  icon={ShieldAlert}
-                  trend={{ text: 'Controle Sanitário', isAlert: true }}
+                  title="Lotes Bloqueados"
+                  value={String(metricas.lotes_em_quarentena_ou_bloqueio)}
+                  subtitle={`Quarentena ou recall · ${metricas.lotes_vencidos} vencidos`}
+                  icon={<ShieldAlert className="w-5 h-5 text-[#0E5C4C]" />}
+                  trend={{ text: 'Controle sanitário', isAlert: metricas.lotes_em_quarentena_ou_bloqueio > 0 }}
                 />
                 <KpiCard
                   title="Ponto de Ressuprimento"
                   value={String(metricas.alertas_ponto_ressuprimento)}
                   subtitle="Medicamentos com estoque crítico"
-                  icon={AlertTriangle}
-                  trend={{ text: 'Ressuprimento', isAlert: true }}
+                  icon={<AlertTriangle className="w-5 h-5 text-[#0E5C4C]" />}
+                  trend={{ text: 'Ressuprimento', isAlert: metricas.alertas_ponto_ressuprimento > 0 }}
                 />
               </div>
 
               {/* Tabela de Produtos Padronizados (Catálogo CATMAT) */}
-              <div className="bg-[#0C1222] border border-slate-800/80 rounded-2xl p-5 flex flex-col gap-4">
+              <div className="bg-white border border-[#1B1F1C]/12 rounded-2xl p-5 shadow-[0_1px_2px_rgba(27,31,28,0.05)] flex flex-col gap-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <h2 className="text-base font-bold text-slate-100 flex items-center gap-2">
-                      <Database className="w-5 h-5 text-blue-400" />
+                    <h2 className="font-display text-lg font-semibold text-[#1B1F1C] flex items-center gap-2">
+                      <Database className="w-5 h-5 text-[#1B1F1C]/55" />
                       Catálogo Municipal de Medicamentos (Itaquiraí-MS)
                     </h2>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-[#1B1F1C]/70">
                       Vínculo compulsório ao CATMAT (Compras.gov.br) com rastreabilidade da menor unidade dispensável.
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-3">
-                    <div className="relative">
-                      <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                  <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                    <div className="relative flex-1 sm:flex-none">
+                      <Search className="w-4 h-4 text-[#1B1F1C]/70 absolute left-3 top-2.5" />
                       <input
                         type="text"
                         placeholder="Buscar por nome ou CATMAT..."
                         value={busca}
                         onChange={(e) => setBusca(e.target.value)}
-                        className="bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-xl pl-9 pr-4 py-2 w-64 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        className="bg-white border border-[#1B1F1C]/20 text-[#1B1F1C] text-xs rounded-xl pl-9 pr-4 min-h-[40px] w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-[#0E5C4C]/20 focus:border-[#0E5C4C]"
                       />
                     </div>
 
                     {localAtivo?.tipo === 'FARMACIA_UBS' && (
                       <button
                         onClick={() => setModalNovaSolicitacao(true)}
-                        className="flex items-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold shadow-lg shadow-blue-600/20 transition"
+                        className="flex items-center gap-2 px-3 py-2 bg-[#0E5C4C] hover:bg-[#0A4A3D] text-white rounded-xl text-xs font-semibold transition"
                       >
                         <Plus className="w-4 h-4" />
                         Solicitar à CAF
@@ -698,7 +792,7 @@ export default function VigiaEstoqueCentralPage() {
 
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs">
-                    <thead className="bg-slate-900/60 text-slate-400 border-b border-slate-800 font-semibold uppercase tracking-wider text-[11px]">
+                    <thead className="text-[#1B1F1C]/65 border-b border-[#1B1F1C]/[0.08] font-bold uppercase tracking-wider text-[10.5px]">
                       <tr>
                         <th className="py-3 px-4">Medicamento / Princípio Ativo</th>
                         <th className="py-3 px-3">Código CATMAT</th>
@@ -708,7 +802,7 @@ export default function VigiaEstoqueCentralPage() {
                         <th className="py-3 px-3 text-center">Ações</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-800/60 text-slate-300">
+                    <tbody className="divide-y divide-[#1B1F1C]/[0.08] text-[#1B1F1C]/80">
                       {produtos
                         .filter(p => !busca || p.nome.toLowerCase().includes(busca.toLowerCase()) || p.codigo_catmat.toLowerCase().includes(busca.toLowerCase()))
                         .map(produto => {
@@ -717,52 +811,52 @@ export default function VigiaEstoqueCentralPage() {
                           const statusCritico = saldoNaUnidade <= produto.estoque_minimo_padrao;
 
                           return (
-                            <tr key={produto.id} className="hover:bg-slate-800/30 transition">
+                            <tr key={produto.id} className="hover:bg-[#F6F3EC]/70 transition">
                               <td className="py-3 px-4">
-                                <div className="font-bold text-slate-100">{produto.nome}</div>
-                                <div className="text-[11px] text-slate-400">{produto.principio_ativo} — {produto.concentracao}</div>
+                                <div className="font-bold text-[#1B1F1C]">{produto.nome}</div>
+                                <div className="text-[11px] text-[#1B1F1C]/70">{produto.principio_ativo} — {produto.concentracao}</div>
                               </td>
                               <td className="py-3 px-3">
-                                <span className="font-mono text-blue-400 font-semibold bg-blue-950/40 px-2 py-0.5 rounded border border-blue-800/40">
+                                <span className="font-mono text-[#1B1F1C] font-semibold bg-[#1B1F1C]/[0.05] px-2 py-0.5 rounded border border-[#1B1F1C]/12">
                                   {produto.codigo_catmat}
                                 </span>
                               </td>
                               <td className="py-3 px-3">
-                                <span className="px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-medium">
+                                <span className="px-2 py-0.5 rounded bg-[#1B1F1C]/[0.06] text-[#1B1F1C]/80 font-semibold whitespace-nowrap">
                                   {produto.unidade_base}
                                 </span>
                               </td>
                               <td className="py-3 px-3 text-right">
-                                <span className={`font-bold ${statusCritico ? 'text-amber-400' : 'text-emerald-400'}`}>
+                                <span className={`font-bold ${statusCritico ? 'text-[#8A6A16]' : 'text-[#0E5C4C]'}`}>
                                   {saldoNaUnidade.toLocaleString('pt-BR')} {produto.unidade_base}
                                 </span>
                                 {statusCritico && (
-                                  <div className="text-[10px] text-amber-500 font-medium">Abaixo do mín ({produto.estoque_minimo_padrao})</div>
+                                  <div className="text-[10px] text-[#8A6A16] font-semibold">Abaixo do mín ({produto.estoque_minimo_padrao})</div>
                                 )}
                               </td>
                               <td className="py-3 px-3">
                                 <div className="flex flex-wrap gap-1">
                                   {produto.controlado && (
-                                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-950/70 text-purple-300 border border-purple-800/50 font-semibold">
+                                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#8A6A16]/10 text-[#8A6A16] border border-[#8A6A16]/25 font-semibold">
                                       Port. 344
                                     </span>
                                   )}
                                   {produto.termolabil && (
-                                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-cyan-950/70 text-cyan-300 border border-cyan-800/50 flex items-center gap-1 font-semibold">
+                                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#1B1F1C]/[0.06] text-[#1B1F1C]/80 border border-[#1B1F1C]/12 flex items-center gap-1 font-semibold">
                                       <Snowflake className="w-2.5 h-2.5" /> 2°C a 8°C
                                     </span>
                                   )}
                                   {!produto.controlado && !produto.termolabil && (
-                                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">Regular</span>
+                                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#1B1F1C]/[0.06] text-[#1B1F1C]/70">Regular</span>
                                   )}
                                 </div>
                               </td>
                               <td className="py-3 px-3 text-center">
                                 <button
                                   onClick={() => handleAbrirPerfil(produto.id)}
-                                  className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-medium text-[11px] inline-flex items-center gap-1.5 transition"
+                                  className="px-3 py-1.5 min-h-[36px] rounded-lg bg-white hover:bg-[#1B1F1C]/[0.06] text-[#1B1F1C] border border-[#1B1F1C]/12 font-bold text-[11px] inline-flex items-center gap-1.5 whitespace-nowrap transition"
                                 >
-                                  <Eye className="w-3.5 h-3.5 text-blue-400" />
+                                  <Eye className="w-3.5 h-3.5 text-[#0E5C4C]" />
                                   Perfil & Rastreio
                                 </button>
                               </td>
@@ -779,55 +873,55 @@ export default function VigiaEstoqueCentralPage() {
           {/* Seção 2: SOLICITAÇÕES UBS -> CAF */}
           {secaoAtiva === 'solicitacoes' && (
             <div className="flex flex-col gap-6">
-              <div className="bg-[#0C1222] border border-slate-800/80 rounded-2xl p-5 flex flex-col gap-4">
+              <div className="bg-white border border-[#1B1F1C]/12 rounded-2xl p-5 shadow-[0_1px_2px_rgba(27,31,28,0.05)] flex flex-col gap-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <h2 className="text-base font-bold text-slate-100 flex items-center gap-2">
-                      <Truck className="w-5 h-5 text-blue-400" />
+                    <h2 className="font-display text-lg font-semibold text-[#1B1F1C] flex items-center gap-2">
+                      <Truck className="w-5 h-5 text-[#1B1F1C]/55" />
                       Fluxo de Solicitações e Reposição (UBS → CAF Central)
                     </h2>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-[#1B1F1C]/70">
                       As 9 UBS solicitam reposição em unidades base. A CAF Central efetua a separação obrigatória por FEFO.
                     </p>
                   </div>
 
                   <button
                     onClick={() => setModalNovaSolicitacao(true)}
-                    className="flex items-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold shadow-lg shadow-blue-600/20 transition"
+                    className="flex items-center gap-2 px-3 py-2 bg-[#0E5C4C] hover:bg-[#0A4A3D] text-white rounded-xl text-xs font-semibold transition"
                   >
                     <Plus className="w-4 h-4" />
                     Nova Solicitação
                   </button>
                 </div>
 
-                <div className="divide-y divide-slate-800/60">
+                <div className="divide-y divide-[#1B1F1C]/[0.08]">
                   {solicitacoes.length === 0 ? (
-                    <div className="py-8 text-center text-slate-500 text-xs">Nenhuma solicitação em andamento no momento.</div>
+                    <div className="py-8 text-center text-[#1B1F1C]/65 text-xs">Nenhuma solicitação em andamento no momento.</div>
                   ) : (
                     solicitacoes.map(sol => (
                       <div key={sol.id} className="py-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                         <div className="flex flex-col gap-1">
                           <div className="flex items-center gap-2">
-                            <span className="font-mono text-xs font-bold text-blue-400 bg-blue-950/60 px-2 py-0.5 rounded border border-blue-800/40">
+                            <span className="font-mono text-xs font-bold text-[#1B1F1C] bg-[#1B1F1C]/[0.05] px-2 py-0.5 rounded border border-[#1B1F1C]/12">
                               {sol.numero_solicitacao}
                             </span>
                             <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider border ${
-                              sol.status === 'ENVIADA' ? 'bg-amber-950/60 text-amber-300 border-amber-800/50' :
-                              sol.status === 'LIBERADA' ? 'bg-blue-950/60 text-blue-300 border-blue-800/50' :
-                              sol.status === 'RECEBIDA' ? 'bg-emerald-950/60 text-emerald-300 border-emerald-800/50' :
-                              'bg-purple-950/60 text-purple-300 border-purple-800/50'
+                              sol.status === 'ENVIADA' ? 'bg-[#8A6A16]/10 text-[#8A6A16] border-[#8A6A16]/25' :
+                              sol.status === 'LIBERADA' ? 'bg-[#1B1F1C]/[0.06] text-[#1B1F1C]/80 border-[#1B1F1C]/15' :
+                              sol.status === 'RECEBIDA' ? 'bg-[#0E5C4C]/[0.08] text-[#0E5C4C] border-[#0E5C4C]/25' :
+                              'bg-[#1B1F1C]/[0.06] text-[#1B1F1C]/70 border-[#1B1F1C]/15'
                             }`}>
                               {sol.status}
                             </span>
                           </div>
-                          <div className="text-xs text-slate-300">
+                          <div className="text-xs text-[#1B1F1C]/80">
                             <strong>{sol.local_solicitante_nome}</strong> solicita para <strong>{sol.local_origem_nome}</strong>
                           </div>
-                          <div className="text-[11px] text-slate-500">
+                          <div className="text-[11px] text-[#1B1F1C]/65">
                             Criado em: {new Date(sol.criado_em).toLocaleString('pt-BR')} por {sol.solicitado_por}
                           </div>
                           {sol.itens.map(it => (
-                            <div key={it.id} className="text-[11px] text-slate-400 mt-1">
+                            <div key={it.id} className="text-[11px] text-[#1B1F1C]/70 mt-1">
                               • {it.quantidade_solicitada}x {it.produto_nome} ({it.unidade_base})
                               {it.quantidade_separada > 0 && ` — Separados: ${it.quantidade_separada}`}
                             </div>
@@ -839,7 +933,7 @@ export default function VigiaEstoqueCentralPage() {
                           {sol.status === 'ENVIADA' && (
                             <button
                               onClick={() => handleAbrirSeparacao(sol)}
-                              className="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-semibold shadow-md transition flex items-center gap-1.5"
+                              className="px-3 py-1.5 bg-marca hover:bg-marca-hover text-white rounded-xl text-xs font-semibold transition flex items-center gap-1.5"
                             >
                               <Boxes className="w-3.5 h-3.5" />
                               Separar por FEFO (CAF)
@@ -848,12 +942,12 @@ export default function VigiaEstoqueCentralPage() {
 
                           {sol.status === 'LIBERADA' && (
                             <div className="flex items-center gap-2">
-                              <span className="text-[11px] text-blue-400 bg-blue-950/50 px-2 py-1 rounded border border-blue-800/40 flex items-center gap-1">
+                              <span className="text-[11px] font-semibold text-[#1B1F1C]/80 bg-[#1B1F1C]/[0.06] px-2 py-1 rounded-full border border-[#1B1F1C]/12 flex items-center gap-1">
                                 <Truck className="w-3 h-3 animate-pulse" /> Em Trânsito
                               </span>
                               <button
                                 onClick={() => handleConfirmarRecebimento(sol.id)}
-                                className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold transition"
+                                className="px-3 py-1.5 bg-[#0E5C4C] hover:bg-[#0A4A3D] text-white rounded-xl text-xs font-semibold transition"
                               >
                                 Confirmar Recebimento na UBS
                               </button>
@@ -861,7 +955,7 @@ export default function VigiaEstoqueCentralPage() {
                           )}
 
                           {sol.status === 'RECEBIDA' && (
-                            <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1">
+                            <span className="text-xs text-[#0E5C4C] font-bold flex items-center gap-1">
                               <CheckCircle2 className="w-4 h-4" /> Saldo Creditado
                             </span>
                           )}
@@ -877,14 +971,14 @@ export default function VigiaEstoqueCentralPage() {
           {/* Seção 3: GESTÃO FEFO */}
           {secaoAtiva === 'fefo' && (
             <div className="flex flex-col gap-6">
-              <div className="bg-[#0C1222] border border-slate-800/80 rounded-2xl p-5 flex flex-col gap-4">
+              <div className="bg-white border border-[#1B1F1C]/12 rounded-2xl p-5 shadow-[0_1px_2px_rgba(27,31,28,0.05)] flex flex-col gap-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <h2 className="text-base font-bold text-slate-100 flex items-center gap-2">
-                      <Clock className="w-5 h-5 text-amber-400" />
+                    <h2 className="font-display text-lg font-semibold text-[#1B1F1C] flex items-center gap-2">
+                      <Clock className="w-5 h-5 text-[#1B1F1C]/55" />
                       Motor de Validade FEFO (First Expired, First Out)
                     </h2>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-[#1B1F1C]/70">
                       Lotes ordenados estritamente por validade ascendente. Destaque regulatório para itens ≤ 30, ≤ 60 e ≤ 90 dias.
                     </p>
                   </div>
@@ -892,7 +986,7 @@ export default function VigiaEstoqueCentralPage() {
 
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs">
-                    <thead className="bg-slate-900/60 text-slate-400 border-b border-slate-800 font-semibold uppercase tracking-wider text-[11px]">
+                    <thead className="text-[#1B1F1C]/65 border-b border-[#1B1F1C]/[0.08] font-bold uppercase tracking-wider text-[10.5px]">
                       <tr>
                         <th className="py-3 px-4">Medicamento / Lote</th>
                         <th className="py-3 px-3">Fabricante</th>
@@ -902,17 +996,17 @@ export default function VigiaEstoqueCentralPage() {
                         <th className="py-3 px-3">Status Sanitário</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-800/60 text-slate-300">
+                    <tbody className="divide-y divide-[#1B1F1C]/[0.08] text-[#1B1F1C]/80">
                       {lotes.map(lote => {
                         const classeVal = FefoEngine.classificarValidade(lote.data_validade);
                         return (
-                          <tr key={lote.id} className="hover:bg-slate-800/30 transition">
+                          <tr key={lote.id} className="hover:bg-[#F6F3EC]/70 transition">
                             <td className="py-3 px-4">
-                              <div className="font-bold text-slate-100">{lote.produto_nome}</div>
-                              <div className="font-mono text-[11px] text-blue-400">Lote: {lote.numero_lote}</div>
+                              <div className="font-bold text-[#1B1F1C]">{lote.produto_nome}</div>
+                              <div className="font-mono text-[11px] text-[#1B1F1C]/70">Lote: {lote.numero_lote}</div>
                             </td>
-                            <td className="py-3 px-3 text-slate-400">{lote.fabricante}</td>
-                            <td className="py-3 px-3 font-mono font-medium text-slate-200">
+                            <td className="py-3 px-3 text-[#1B1F1C]/70">{lote.fabricante}</td>
+                            <td className="py-3 px-3 font-mono font-medium text-[#1B1F1C]">
                               {lote.data_validade}
                             </td>
                             <td className="py-3 px-3">
@@ -920,14 +1014,14 @@ export default function VigiaEstoqueCentralPage() {
                                 {classeVal.label}
                               </span>
                             </td>
-                            <td className="py-3 px-3 text-right font-bold text-slate-100">
+                            <td className="py-3 px-3 text-right font-bold text-[#1B1F1C]">
                               {(lote.saldo_total || 0).toLocaleString('pt-BR')}
                             </td>
                             <td className="py-3 px-3">
                               <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
-                                lote.status === 'LIBERADO' ? 'bg-emerald-950/60 text-emerald-300 border border-emerald-800/50' :
-                                lote.status === 'QUARENTENA' ? 'bg-amber-950/60 text-amber-300 border border-amber-800/50' :
-                                'bg-rose-950/60 text-rose-300 border border-rose-800/50'
+                                lote.status === 'LIBERADO' ? 'bg-[#0E5C4C]/[0.08] text-[#0E5C4C] border border-[#0E5C4C]/25' :
+                                lote.status === 'QUARENTENA' ? 'bg-[#8A6A16]/10 text-[#8A6A16] border border-[#8A6A16]/25' :
+                                'bg-[#9C3B2E]/[0.08] text-[#9C3B2E] border border-[#9C3B2E]/25'
                               }`}>
                                 {lote.status}
                               </span>
@@ -945,14 +1039,14 @@ export default function VigiaEstoqueCentralPage() {
           {/* Seção 4: ENTRADA NF-E REAL */}
           {secaoAtiva === 'nfe' && (
             <div className="flex flex-col gap-6">
-              <div className="bg-[#0C1222] border border-slate-800/80 rounded-2xl p-5 flex flex-col gap-4">
+              <div className="bg-white border border-[#1B1F1C]/12 rounded-2xl p-5 shadow-[0_1px_2px_rgba(27,31,28,0.05)] flex flex-col gap-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <h2 className="text-base font-bold text-slate-100 flex items-center gap-2">
-                      <FileCheck2 className="w-5 h-5 text-emerald-400" />
+                    <h2 className="font-display text-lg font-semibold text-[#1B1F1C] flex items-center gap-2">
+                      <FileCheck2 className="w-5 h-5 text-[#1B1F1C]/55" />
                       Importação de NF-e 4.0 Real & Conferência Cega
                     </h2>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-[#1B1F1C]/70">
                       Processamento de XML oficial com leitura obrigatória do grupo de rastreabilidade &lt;rastro&gt; (nLote, dVal, dFab).
                     </p>
                   </div>
@@ -966,7 +1060,7 @@ export default function VigiaEstoqueCentralPage() {
                   />
                   <button
                     onClick={() => fileInputRef.current?.click()}
-                    className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold shadow-lg shadow-emerald-600/20 transition"
+                    className="flex items-center gap-2 px-4 py-2 bg-[#0E5C4C] hover:bg-[#0A4A3D] text-white rounded-xl text-xs font-semibold transition"
                   >
                     <Upload className="w-4 h-4" />
                     Upload Arquivo XML (NF-e 4.0)
@@ -974,8 +1068,8 @@ export default function VigiaEstoqueCentralPage() {
                 </div>
 
                 {nfeProcessada ? (
-                  <div className="border border-slate-700 bg-slate-900/60 rounded-xl p-4 flex flex-col gap-4">
-                    <div className="flex flex-wrap justify-between items-center bg-slate-800/50 p-3 rounded-lg text-xs">
+                  <div className="border border-[#1B1F1C]/12 bg-[#F6F3EC]/60 rounded-xl p-4 flex flex-col gap-4">
+                    <div className="flex flex-wrap justify-between items-center bg-white border border-[#1B1F1C]/[0.08] p-3 rounded-lg text-xs text-[#1B1F1C]/80">
                       <div>
                         <strong>Emitente:</strong> {nfeProcessada.nfe.emitenteNome} (CNPJ: {nfeProcessada.nfe.emitenteCnpj})
                       </div>
@@ -984,22 +1078,22 @@ export default function VigiaEstoqueCentralPage() {
                       </div>
                     </div>
 
-                    <h3 className="text-sm font-bold text-amber-300 flex items-center gap-2">
+                    <h3 className="text-sm font-bold text-[#8A6A16] flex items-center gap-2">
                       <Eye className="w-4 h-4" />
                       Conferência Cega do Almoxarifado (Digite a contagem física real)
                     </h3>
 
                     <div className="space-y-3">
                       {nfeProcessada.itens.map(it => (
-                        <div key={it.nItem} className="bg-slate-950 p-3 rounded-lg border border-slate-800 text-xs flex flex-wrap items-center justify-between gap-3">
+                        <div key={it.nItem} className="bg-white p-3 rounded-lg border border-[#1B1F1C]/12 text-xs flex flex-wrap items-center justify-between gap-3">
                           <div>
-                            <div className="font-bold text-slate-200">{it.xProd}</div>
-                            <div className="text-[11px] text-slate-400">Código Fornecedor: {it.cProd} — Unidade Comercial: {it.uCom}</div>
+                            <div className="font-bold text-[#1B1F1C]">{it.xProd}</div>
+                            <div className="text-[11px] text-[#1B1F1C]/70">Código Fornecedor: {it.cProd} — Unidade Comercial: {it.uCom}</div>
                           </div>
 
                           <div className="flex items-center gap-3">
                             <div>
-                              <label className="text-[10px] text-slate-400 block">Lote Contado</label>
+                              <label className="text-[10px] text-[#1B1F1C]/70 block">Lote Contado</label>
                               <input
                                 type="text"
                                 value={contagemCega[it.nItem]?.lote || ''}
@@ -1008,11 +1102,11 @@ export default function VigiaEstoqueCentralPage() {
                                   [it.nItem]: { ...prev[it.nItem], lote: e.target.value }
                                 }))}
                                 placeholder="Digite o Lote"
-                                className="bg-slate-900 border border-slate-700 text-slate-200 px-2 py-1 rounded text-xs w-32"
+                                className="bg-white border border-[#1B1F1C]/20 text-[#1B1F1C] px-2 py-1 rounded text-xs w-32"
                               />
                             </div>
                             <div>
-                              <label className="text-[10px] text-slate-400 block">Validade</label>
+                              <label className="text-[10px] text-[#1B1F1C]/70 block">Validade</label>
                               <input
                                 type="date"
                                 value={contagemCega[it.nItem]?.validade || ''}
@@ -1020,11 +1114,11 @@ export default function VigiaEstoqueCentralPage() {
                                   ...prev,
                                   [it.nItem]: { ...prev[it.nItem], validade: e.target.value }
                                 }))}
-                                className="bg-slate-900 border border-slate-700 text-slate-200 px-2 py-1 rounded text-xs"
+                                className="bg-white border border-[#1B1F1C]/20 text-[#1B1F1C] px-2 py-1 rounded text-xs"
                               />
                             </div>
                             <div>
-                              <label className="text-[10px] text-slate-400 block">Quantidade</label>
+                              <label className="text-[10px] text-[#1B1F1C]/70 block">Quantidade</label>
                               <input
                                 type="number"
                                 value={contagemCega[it.nItem]?.qtd || 0}
@@ -1032,7 +1126,7 @@ export default function VigiaEstoqueCentralPage() {
                                   ...prev,
                                   [it.nItem]: { ...prev[it.nItem], qtd: Number(e.target.value) }
                                 }))}
-                                className="bg-slate-900 border border-slate-700 text-slate-200 px-2 py-1 rounded text-xs w-20"
+                                className="bg-white border border-[#1B1F1C]/20 text-[#1B1F1C] px-2 py-1 rounded text-xs w-20"
                               />
                             </div>
                           </div>
@@ -1043,23 +1137,23 @@ export default function VigiaEstoqueCentralPage() {
                     <div className="flex justify-end gap-3 mt-2">
                       <button
                         onClick={() => setNfeProcessada(null)}
-                        className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs"
+                        className="px-4 py-2 min-h-[40px] bg-white hover:bg-[#1B1F1C]/[0.06] text-[#1B1F1C] border border-[#1B1F1C]/12 rounded-xl text-xs font-bold"
                       >
                         Cancelar
                       </button>
                       <button
                         onClick={handleConfirmarEntradaNfe}
-                        className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-emerald-600/20"
+                        className="px-4 py-2 bg-[#0E5C4C] hover:bg-[#0A4A3D] text-white rounded-xl text-xs font-bold"
                       >
                         Aprovar Conferência & Efetivar Entrada CAF
                       </button>
                     </div>
                   </div>
                 ) : (
-                  <div className="py-12 border-2 border-dashed border-slate-800 rounded-2xl flex flex-col items-center justify-center text-center p-6">
-                    <FileCode className="w-12 h-12 text-slate-600 mb-3" />
-                    <div className="text-sm font-semibold text-slate-300">Nenhuma NF-e em conferência</div>
-                    <div className="text-xs text-slate-500 max-w-sm mt-1">
+                  <div className="py-12 border-2 border-dashed border-[#1B1F1C]/15 rounded-2xl flex flex-col items-center justify-center text-center p-6">
+                    <FileCode className="w-12 h-12 text-[#1B1F1C]/35 mb-3" />
+                    <div className="text-sm font-semibold text-[#1B1F1C]/80">Nenhuma NF-e em conferência</div>
+                    <div className="text-xs text-[#1B1F1C]/65 max-w-sm mt-1">
                       Faça o upload do XML 4.0 da nota emitida pelo fornecedor para carregar os lotes e iniciar a conferência física cega.
                     </div>
                   </div>
@@ -1071,40 +1165,40 @@ export default function VigiaEstoqueCentralPage() {
           {/* Seção 5: DISPENSAÇÃO AO PACIENTE */}
           {secaoAtiva === 'dispensacao' && (
             <div className="flex flex-col gap-6">
-              <div className="bg-[#0C1222] border border-slate-800/80 rounded-2xl p-5 flex flex-col gap-4">
+              <div className="bg-white border border-[#1B1F1C]/12 rounded-2xl p-5 shadow-[0_1px_2px_rgba(27,31,28,0.05)] flex flex-col gap-4">
                 <div>
-                  <h2 className="text-base font-bold text-slate-100 flex items-center gap-2">
-                    <User className="w-5 h-5 text-blue-400" />
+                  <h2 className="font-display text-lg font-semibold text-[#1B1F1C] flex items-center gap-2">
+                    <User className="w-5 h-5 text-[#1B1F1C]/55" />
                     Dispensação de Medicamento ao Paciente (Farmácia UBS)
                   </h2>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-[#1B1F1C]/70">
                     Dispensação direta em unidade base (comprimidos). Cada dispensação alimenta o custeio da jornada do paciente no núcleo.
                   </p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                   <div>
-                    <label className="text-slate-400 block mb-1">CPF do Paciente (Obrigatório)</label>
+                    <label className="text-[#1B1F1C]/70 block mb-1">CPF do Paciente (Obrigatório)</label>
                     <input
                       type="text"
                       placeholder="000.000.000-00"
                       value={dispensacaoCpf}
                       onChange={(e) => setDispensacaoCpf(e.target.value)}
-                      className="w-full bg-slate-900 border border-slate-700 text-slate-200 px-3 py-2 rounded-xl focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="w-full bg-white border border-[#1B1F1C]/20 text-[#1B1F1C] px-3 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0E5C4C]/20 focus:border-[#0E5C4C]"
                     />
                   </div>
                   <div>
-                    <label className="text-slate-400 block mb-1">Nome do Paciente</label>
+                    <label className="text-[#1B1F1C]/70 block mb-1">Nome do Paciente</label>
                     <input
                       type="text"
                       placeholder="Nome completo do cidadão"
                       value={dispensacaoNome}
                       onChange={(e) => setDispensacaoNome(e.target.value)}
-                      className="w-full bg-slate-900 border border-slate-700 text-slate-200 px-3 py-2 rounded-xl focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="w-full bg-white border border-[#1B1F1C]/20 text-[#1B1F1C] px-3 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0E5C4C]/20 focus:border-[#0E5C4C]"
                     />
                   </div>
                   <div>
-                    <label className="text-slate-400 block mb-1">Medicamento Padronizado</label>
+                    <label className="text-[#1B1F1C]/70 block mb-1">Medicamento Padronizado</label>
                     <select
                       value={dispensacaoProdId}
                       onChange={(e) => {
@@ -1114,7 +1208,7 @@ export default function VigiaEstoqueCentralPage() {
                         const sug = FefoEngine.sugerirLoteFefo(lotesDisponiveis, 0);
                         if (sug?.loteSugerido) setDispensacaoLoteId(sug.loteSugerido.id);
                       }}
-                      className="w-full bg-slate-900 border border-slate-700 text-slate-200 px-3 py-2 rounded-xl focus:outline-none"
+                      className="w-full bg-white border border-[#1B1F1C]/20 text-[#1B1F1C] px-3 py-2 rounded-xl focus:outline-none"
                     >
                       <option value="">Selecione o medicamento...</option>
                       {produtos.map(p => (
@@ -1123,32 +1217,32 @@ export default function VigiaEstoqueCentralPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="text-slate-400 block mb-1">Quantidade (Unidade Base / Comprimidos)</label>
+                    <label className="text-[#1B1F1C]/70 block mb-1">Quantidade (Unidade Base / Comprimidos)</label>
                     <input
                       type="number"
                       value={dispensacaoQtd}
                       onChange={(e) => setDispensacaoQtd(Number(e.target.value))}
-                      className="w-full bg-slate-900 border border-slate-700 text-slate-200 px-3 py-2 rounded-xl"
+                      className="w-full bg-white border border-[#1B1F1C]/20 text-[#1B1F1C] px-3 py-2 rounded-xl"
                     />
                   </div>
                   <div>
-                    <label className="text-slate-400 block mb-1">Nº Receita / Notificação (Portaria 344)</label>
+                    <label className="text-[#1B1F1C]/70 block mb-1">Nº Receita / Notificação (Portaria 344)</label>
                     <input
                       type="text"
                       placeholder="Ex: NOT-2026-9921"
                       value={dispensacaoReceita}
                       onChange={(e) => setDispensacaoReceita(e.target.value)}
-                      className="w-full bg-slate-900 border border-slate-700 text-slate-200 px-3 py-2 rounded-xl"
+                      className="w-full bg-white border border-[#1B1F1C]/20 text-[#1B1F1C] px-3 py-2 rounded-xl"
                     />
                   </div>
                   <div>
-                    <label className="text-slate-400 block mb-1">Justificativa (Se houver desvio de FEFO)</label>
+                    <label className="text-[#1B1F1C]/70 block mb-1">Justificativa (Se houver desvio de FEFO)</label>
                     <input
                       type="text"
                       placeholder="Obrigatório caso não utilize o lote sugerido pelo FEFO"
                       value={dispensacaoJustificativa}
                       onChange={(e) => setDispensacaoJustificativa(e.target.value)}
-                      className="w-full bg-slate-900 border border-slate-700 text-slate-200 px-3 py-2 rounded-xl"
+                      className="w-full bg-white border border-[#1B1F1C]/20 text-[#1B1F1C] px-3 py-2 rounded-xl"
                     />
                   </div>
                 </div>
@@ -1156,7 +1250,7 @@ export default function VigiaEstoqueCentralPage() {
                 <div className="flex justify-end mt-2">
                   <button
                     onClick={handleDispensarPaciente}
-                    className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-blue-600/20 transition flex items-center gap-2"
+                    className="px-5 py-2.5 bg-[#0E5C4C] hover:bg-[#0A4A3D] text-white rounded-xl text-xs font-bold transition flex items-center gap-2"
                   >
                     <CheckCircle2 className="w-4 h-4" />
                     Confirmar Dispensação & Integrar Custo
@@ -1169,24 +1263,24 @@ export default function VigiaEstoqueCentralPage() {
           {/* Seção 6: RECALL & BLOQUEIO */}
           {secaoAtiva === 'recall' && (
             <div className="flex flex-col gap-6">
-              <div className="bg-[#0C1222] border border-slate-800/80 rounded-2xl p-5 flex flex-col gap-4">
+              <div className="bg-white border border-[#1B1F1C]/12 rounded-2xl p-5 shadow-[0_1px_2px_rgba(27,31,28,0.05)] flex flex-col gap-4">
                 <div>
-                  <h2 className="text-base font-bold text-slate-100 flex items-center gap-2">
-                    <ShieldAlert className="w-5 h-5 text-rose-400" />
+                  <h2 className="font-display text-lg font-semibold text-[#1B1F1C] flex items-center gap-2">
+                    <ShieldAlert className="w-5 h-5 text-[#1B1F1C]/55" />
                     Módulo de Recall Sanitário & Bloqueio Imediato
                   </h2>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-[#1B1F1C]/70">
                     Bloqueia instantaneamente um lote em todas as farmácias municipais de Itaquiraí e exibe a lista de pacientes que receberam o lote.
                   </p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                   <div>
-                    <label className="text-slate-400 block mb-1">Lote a ser Bloqueado</label>
+                    <label className="text-[#1B1F1C]/70 block mb-1">Lote a ser Bloqueado</label>
                     <select
                       value={modalRecallLoteId || ''}
                       onChange={(e) => setModalRecallLoteId(e.target.value)}
-                      className="w-full bg-slate-900 border border-slate-700 text-slate-200 px-3 py-2 rounded-xl"
+                      className="w-full bg-white border border-[#1B1F1C]/20 text-[#1B1F1C] px-3 py-2 rounded-xl"
                     >
                       <option value="">Selecione o lote...</option>
                       {lotes.map(l => (
@@ -1197,13 +1291,13 @@ export default function VigiaEstoqueCentralPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="text-slate-400 block mb-1">Motivo Técnico / Alerta ANVISA</label>
+                    <label className="text-[#1B1F1C]/70 block mb-1">Motivo Técnico / Alerta ANVISA</label>
                     <input
                       type="text"
                       placeholder="Ex: Resolução RE nº 1.420/2026 - Desvio de qualidade"
                       value={motivoRecall}
                       onChange={(e) => setMotivoRecall(e.target.value)}
-                      className="w-full bg-slate-900 border border-slate-700 text-slate-200 px-3 py-2 rounded-xl"
+                      className="w-full bg-white border border-[#1B1F1C]/20 text-[#1B1F1C] px-3 py-2 rounded-xl"
                     />
                   </div>
                 </div>
@@ -1211,7 +1305,7 @@ export default function VigiaEstoqueCentralPage() {
                 <div className="flex justify-end mt-2">
                   <button
                     onClick={handleEfetuarRecall}
-                    className="px-5 py-2.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-rose-600/20 transition flex items-center gap-2"
+                    className="px-5 py-2.5 bg-[#9C3B2E] hover:bg-[#7E2F24] text-white rounded-xl text-xs font-bold transition flex items-center gap-2"
                   >
                     <AlertOctagon className="w-4 h-4" />
                     Emitir Bloqueio de Recall em 100% dos Locais
@@ -1224,21 +1318,21 @@ export default function VigiaEstoqueCentralPage() {
           {/* Seção 7: RELATÓRIOS & BNAFAR */}
           {secaoAtiva === 'relatorios' && (
             <div className="flex flex-col gap-6">
-              <div className="bg-[#0C1222] border border-slate-800/80 rounded-2xl p-5 flex flex-col gap-4">
+              <div className="bg-white border border-[#1B1F1C]/12 rounded-2xl p-5 shadow-[0_1px_2px_rgba(27,31,28,0.05)] flex flex-col gap-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <h2 className="text-base font-bold text-slate-100 flex items-center gap-2">
-                      <FileSpreadsheet className="w-5 h-5 text-emerald-400" />
+                    <h2 className="font-display text-lg font-semibold text-[#1B1F1C] flex items-center gap-2">
+                      <FileSpreadsheet className="w-5 h-5 text-[#1B1F1C]/55" />
                       Relatórios Gerenciais & Exportação Federal BNAFAR/Hórus
                     </h2>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-[#1B1F1C]/70">
                       Geração de dados em conformidade com o Ministério da Saúde para prestação de contas do SUS.
                     </p>
                   </div>
 
                   <button
                     onClick={handleDownloadBnafar}
-                    className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold shadow-lg shadow-emerald-600/20 transition"
+                    className="flex items-center gap-2 px-4 py-2 bg-[#0E5C4C] hover:bg-[#0A4A3D] text-white rounded-xl text-xs font-semibold transition"
                   >
                     <Download className="w-4 h-4" />
                     Exportar BNAFAR/Hórus (CSV)
@@ -1246,20 +1340,20 @@ export default function VigiaEstoqueCentralPage() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs mt-2">
-                  <div className="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
-                    <div className="text-slate-400 font-medium">Curva A (Alto Valor)</div>
-                    <div className="text-xl font-bold text-blue-400 mt-1">75% do Valor Total</div>
-                    <div className="text-[11px] text-slate-500 mt-1">Insulinas, Meropenem e Imunoglobulinas</div>
+                  <div className="bg-[#F6F3EC]/60 p-4 rounded-xl border border-[#1B1F1C]/[0.08]">
+                    <div className="text-[#1B1F1C]/70 font-medium">Curva A (Alto Valor)</div>
+                    <div className="font-display text-xl font-semibold text-[#1B1F1C] mt-1">75% do Valor Total</div>
+                    <div className="text-[11px] text-[#1B1F1C]/65 mt-1">Insulinas, Meropenem e Imunoglobulinas</div>
                   </div>
-                  <div className="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
-                    <div className="text-slate-400 font-medium">Curva B (Médio Impacto)</div>
-                    <div className="text-xl font-bold text-purple-400 mt-1">15% do Valor Total</div>
-                    <div className="text-[11px] text-slate-500 mt-1">Antibióticos orais e anti-hipertensivos</div>
+                  <div className="bg-[#F6F3EC]/60 p-4 rounded-xl border border-[#1B1F1C]/[0.08]">
+                    <div className="text-[#1B1F1C]/70 font-medium">Curva B (Médio Impacto)</div>
+                    <div className="font-display text-xl font-semibold text-[#1B1F1C] mt-1">15% do Valor Total</div>
+                    <div className="text-[11px] text-[#1B1F1C]/65 mt-1">Antibióticos orais e anti-hipertensivos</div>
                   </div>
-                  <div className="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
-                    <div className="text-slate-400 font-medium">Curva C (Giro Rápido)</div>
-                    <div className="text-xl font-bold text-emerald-400 mt-1">10% do Valor Total</div>
-                    <div className="text-[11px] text-slate-500 mt-1">Dipirona, Paracetamol, Soro fisiológico</div>
+                  <div className="bg-[#F6F3EC]/60 p-4 rounded-xl border border-[#1B1F1C]/[0.08]">
+                    <div className="text-[#1B1F1C]/70 font-medium">Curva C (Giro Rápido)</div>
+                    <div className="font-display text-xl font-semibold text-[#1B1F1C] mt-1">10% do Valor Total</div>
+                    <div className="text-[11px] text-[#1B1F1C]/65 mt-1">Dipirona, Paracetamol, Soro fisiológico</div>
                   </div>
                 </div>
               </div>
@@ -1270,29 +1364,29 @@ export default function VigiaEstoqueCentralPage() {
 
       {/* MODAL: ALERTA DE OVERRIDE FEFO COM JUSTIFICATIVA OBRIGATÓRIA */}
       {alertaOverrideVisivel && (
-        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
-          <div className="bg-[#0C1222] border-2 border-amber-500/60 rounded-2xl max-w-lg w-full p-6 shadow-2xl flex flex-col gap-4">
-            <div className="flex items-center gap-3 text-amber-400">
+        <div className="fixed inset-0 z-50 bg-[#1B1F1C]/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white border-2 border-[#8A6A16]/40 rounded-2xl max-w-lg w-full p-6 shadow-[0_8px_24px_rgba(27,31,28,0.10),0_2px_8px_rgba(27,31,28,0.05)] flex flex-col gap-4">
+            <div className="flex items-center gap-3 text-[#8A6A16]">
               <AlertTriangle className="w-8 h-8 shrink-0" />
               <div>
-                <h3 className="text-base font-bold text-slate-100">Alerta de Desvio de FEFO</h3>
-                <p className="text-xs text-amber-300">Existe lote com validade mais próxima disponível no almoxarifado.</p>
+                <h3 className="text-base font-bold text-[#1B1F1C]">Alerta de Desvio de FEFO</h3>
+                <p className="text-xs text-[#8A6A16]">Existe lote com validade mais próxima disponível no almoxarifado.</p>
               </div>
             </div>
 
-            <div className="bg-slate-900/80 p-3 rounded-xl border border-slate-800 text-xs space-y-2">
+            <div className="bg-[#F6F3EC]/60 p-3 rounded-xl border border-[#1B1F1C]/[0.08] text-xs space-y-2">
               <div className="flex justify-between">
-                <span className="text-slate-400">Lote Sugerido pelo FEFO:</span>
-                <span className="font-bold text-emerald-400">{alertaOverrideVisivel.loteSugerido.numero_lote} (Vence: {alertaOverrideVisivel.loteSugerido.data_validade})</span>
+                <span className="text-[#1B1F1C]/70">Lote Sugerido pelo FEFO:</span>
+                <span className="font-bold text-[#0E5C4C]">{alertaOverrideVisivel.loteSugerido.numero_lote} (Vence: {alertaOverrideVisivel.loteSugerido.data_validade})</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Lote Selecionado pelo Operador:</span>
-                <span className="font-bold text-amber-400">{alertaOverrideVisivel.loteEscolhido.numero_lote} (Vence: {alertaOverrideVisivel.loteEscolhido.data_validade})</span>
+                <span className="text-[#1B1F1C]/70">Lote Selecionado pelo Operador:</span>
+                <span className="font-bold text-[#8A6A16]">{alertaOverrideVisivel.loteEscolhido.numero_lote} (Vence: {alertaOverrideVisivel.loteEscolhido.data_validade})</span>
               </div>
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-slate-300 block mb-1">
+              <label className="text-xs font-semibold text-[#1B1F1C]/80 block mb-1">
                 Justificativa Técnica Obrigatória (Mínimo 10 caracteres):
               </label>
               <textarea
@@ -1300,9 +1394,9 @@ export default function VigiaEstoqueCentralPage() {
                 value={justificativaOverrideFefo}
                 onChange={(e) => setJustificativaOverrideFefo(e.target.value)}
                 placeholder="Ex: Lote reservado por autorização clínica específica para protocolo especial..."
-                className="w-full bg-slate-950 border border-slate-700 text-slate-200 text-xs p-3 rounded-xl focus:outline-none focus:ring-1 focus:ring-amber-500"
+                className="w-full bg-white border border-[#1B1F1C]/20 text-[#1B1F1C] text-xs p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8A6A16]/20 focus:border-[#8A6A16]"
               />
-              <div className="text-[11px] text-slate-500 mt-1">
+              <div className="text-[11px] text-[#1B1F1C]/65 mt-1">
                 Caracteres digitados: {justificativaOverrideFefo.trim().length} / 10 mínimos
               </div>
             </div>
@@ -1310,14 +1404,14 @@ export default function VigiaEstoqueCentralPage() {
             <div className="flex justify-end gap-3 mt-2">
               <button
                 onClick={() => setAlertaOverrideVisivel(null)}
-                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs"
+                className="px-4 py-2 min-h-[40px] bg-white hover:bg-[#1B1F1C]/[0.06] text-[#1B1F1C] border border-[#1B1F1C]/12 rounded-xl text-xs font-bold"
               >
                 Voltar e Trocar Lote
               </button>
               <button
                 disabled={justificativaOverrideFefo.trim().length < 10}
                 onClick={handleConfirmarSeparacao}
-                className="px-4 py-2 bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white rounded-xl text-xs font-bold transition shadow-lg shadow-amber-600/20"
+                className="px-4 py-2 bg-[#8A6A16] hover:bg-[#6E5511] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-xs font-bold transition"
               >
                 Confirmar Override Auditado
               </button>
@@ -1328,17 +1422,17 @@ export default function VigiaEstoqueCentralPage() {
 
       {/* MODAL: SEPARAÇÃO DE SOLICITAÇÃO NA CAF */}
       {modalSeparacao && (
-        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
-          <div className="bg-[#0C1222] border border-slate-700 rounded-2xl max-w-2xl w-full p-6 shadow-2xl flex flex-col gap-4 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-[#1B1F1C]/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white border border-[#1B1F1C]/12 rounded-2xl max-w-2xl w-full p-6 shadow-[0_8px_24px_rgba(27,31,28,0.10),0_2px_8px_rgba(27,31,28,0.05)] flex flex-col gap-4 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center">
               <div>
-                <h3 className="text-base font-bold text-slate-100 flex items-center gap-2">
-                  <Boxes className="w-5 h-5 text-purple-400" />
+                <h3 className="font-display text-lg font-semibold text-[#1B1F1C] flex items-center gap-2">
+                  <Boxes className="w-5 h-5 text-[#1B1F1C]/55" />
                   Separação de Medicamentos — {modalSeparacao.numero_solicitacao}
                 </h3>
-                <p className="text-xs text-slate-400">Destino: {modalSeparacao.local_solicitante_nome}</p>
+                <p className="text-xs text-[#1B1F1C]/70">Destino: {modalSeparacao.local_solicitante_nome}</p>
               </div>
-              <button onClick={() => setModalSeparacao(null)} className="text-slate-400 hover:text-slate-200">
+              <button onClick={() => setModalSeparacao(null)} className="w-11 h-11 -mr-2 -mt-2 inline-flex items-center justify-center rounded-lg text-[#1B1F1C]/60 hover:text-[#1B1F1C] hover:bg-[#1B1F1C]/[0.06]" aria-label="Fechar">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -1351,19 +1445,19 @@ export default function VigiaEstoqueCentralPage() {
                 const ehDesvio = sugestao?.loteSugerido && escolhidoId && sugestao.loteSugerido.id !== escolhidoId;
 
                 return (
-                  <div key={item.id} className="bg-slate-900/80 p-4 rounded-xl border border-slate-800 text-xs flex flex-col gap-2">
+                  <div key={item.id} className="bg-[#F6F3EC]/60 p-4 rounded-xl border border-[#1B1F1C]/[0.08] text-xs flex flex-col gap-2">
                     <div className="flex justify-between items-center">
-                      <span className="font-bold text-slate-200 text-sm">{item.produto_nome}</span>
-                      <span className="text-blue-400 font-bold">{item.quantidade_solicitada} {item.unidade_base}</span>
+                      <span className="font-bold text-[#1B1F1C] text-sm">{item.produto_nome}</span>
+                      <span className="text-[#1B1F1C] font-bold">{item.quantidade_solicitada} {item.unidade_base}</span>
                     </div>
 
                     <div>
-                      <label className="text-slate-400 block mb-1">Selecione o Lote (Sugerido por FEFO):</label>
+                      <label className="text-[#1B1F1C]/70 block mb-1">Selecione o Lote (Sugerido por FEFO):</label>
                       <select
                         value={escolhidoId || ''}
                         onChange={(e) => setLoteEscolhidoSeparacao(prev => ({ ...prev, [item.id]: e.target.value }))}
-                        className={`w-full bg-slate-950 border px-3 py-2 rounded-xl text-xs ${
-                          ehDesvio ? 'border-amber-500 text-amber-300' : 'border-slate-700 text-slate-200'
+                        className={`w-full bg-white border px-3 py-2 min-h-[40px] rounded-xl text-xs ${
+                          ehDesvio ? 'border-[#8A6A16] text-[#8A6A16]' : 'border-[#1B1F1C]/20 text-[#1B1F1C]'
                         }`}
                       >
                         {lotesDisponiveis.map(l => (
@@ -1376,8 +1470,8 @@ export default function VigiaEstoqueCentralPage() {
                     </div>
 
                     {ehDesvio && (
-                      <div className="p-2.5 rounded-lg bg-amber-950/40 border border-amber-800/50 text-[11px] text-amber-300 flex items-center gap-2">
-                        <AlertTriangle className="w-4 h-4 shrink-0 text-amber-400" />
+                      <div className="p-2.5 rounded-lg bg-[#8A6A16]/[0.08] border border-[#8A6A16]/25 text-[11px] text-[#8A6A16] font-semibold flex items-center gap-2">
+                        <AlertTriangle className="w-4 h-4 shrink-0 text-[#8A6A16]" />
                         Desvio de FEFO: Você selecionou um lote com validade mais distante. Uma justificativa será exigida.
                       </div>
                     )}
@@ -1389,13 +1483,13 @@ export default function VigiaEstoqueCentralPage() {
             <div className="flex justify-end gap-3 mt-4">
               <button
                 onClick={() => setModalSeparacao(null)}
-                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs"
+                className="px-4 py-2 min-h-[40px] bg-white hover:bg-[#1B1F1C]/[0.06] text-[#1B1F1C] border border-[#1B1F1C]/12 rounded-xl text-xs font-bold"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleConfirmarSeparacao}
-                className="px-5 py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-purple-600/20"
+                className="px-5 py-2.5 bg-marca hover:bg-marca-hover text-white rounded-xl text-xs font-bold"
               >
                 Concluir Separação & Despachar Remessa
               </button>
@@ -1406,35 +1500,35 @@ export default function VigiaEstoqueCentralPage() {
 
       {/* MODAL: NOVA SOLICITAÇÃO UBS -> CAF */}
       {modalNovaSolicitacao && (
-        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
-          <div className="bg-[#0C1222] border border-slate-700 rounded-2xl max-w-md w-full p-6 shadow-2xl flex flex-col gap-4">
+        <div className="fixed inset-0 z-50 bg-[#1B1F1C]/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white border border-[#1B1F1C]/12 rounded-2xl max-w-md w-full p-6 shadow-[0_8px_24px_rgba(27,31,28,0.10),0_2px_8px_rgba(27,31,28,0.05)] flex flex-col gap-4">
             <div className="flex justify-between items-center">
-              <h3 className="text-base font-bold text-slate-100 flex items-center gap-2">
-                <Truck className="w-5 h-5 text-blue-400" />
+              <h3 className="font-display text-lg font-semibold text-[#1B1F1C] flex items-center gap-2">
+                <Truck className="w-5 h-5 text-[#1B1F1C]/55" />
                 Nova Solicitação de Medicamentos
               </h3>
-              <button onClick={() => setModalNovaSolicitacao(false)} className="text-slate-400 hover:text-slate-200">
+              <button onClick={() => setModalNovaSolicitacao(false)} className="w-11 h-11 -mr-2 -mt-2 inline-flex items-center justify-center rounded-lg text-[#1B1F1C]/60 hover:text-[#1B1F1C] hover:bg-[#1B1F1C]/[0.06]" aria-label="Fechar">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <div className="space-y-3 text-xs">
               <div>
-                <label className="text-slate-400 block mb-1">Unidade Solicitante</label>
+                <label className="text-[#1B1F1C]/70 block mb-1">Unidade Solicitante</label>
                 <input
                   type="text"
                   disabled
                   value={localAtivo?.nome || ''}
-                  className="w-full bg-slate-900 border border-slate-700 text-slate-300 px-3 py-2 rounded-xl"
+                  className="w-full bg-[#F6F3EC] border border-[#1B1F1C]/12 text-[#1B1F1C]/70 px-3 py-2 rounded-xl"
                 />
               </div>
 
               <div>
-                <label className="text-slate-400 block mb-1">Medicamento</label>
+                <label className="text-[#1B1F1C]/70 block mb-1">Medicamento</label>
                 <select
                   value={novaSolProdutoId}
                   onChange={(e) => setNovaSolProdutoId(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-700 text-slate-200 px-3 py-2 rounded-xl"
+                  className="w-full bg-white border border-[#1B1F1C]/20 text-[#1B1F1C] px-3 py-2 rounded-xl"
                 >
                   <option value="">Selecione o medicamento...</option>
                   {produtos.map(p => (
@@ -1444,23 +1538,23 @@ export default function VigiaEstoqueCentralPage() {
               </div>
 
               <div>
-                <label className="text-slate-400 block mb-1">Quantidade Solicitada (Unidade Base)</label>
+                <label className="text-[#1B1F1C]/70 block mb-1">Quantidade Solicitada (Unidade Base)</label>
                 <input
                   type="number"
                   value={novaSolQtd}
                   onChange={(e) => setNovaSolQtd(Number(e.target.value))}
-                  className="w-full bg-slate-900 border border-slate-700 text-slate-200 px-3 py-2 rounded-xl"
+                  className="w-full bg-white border border-[#1B1F1C]/20 text-[#1B1F1C] px-3 py-2 rounded-xl"
                 />
               </div>
 
               <div>
-                <label className="text-slate-400 block mb-1">Observações da UBS</label>
+                <label className="text-[#1B1F1C]/70 block mb-1">Observações da UBS</label>
                 <textarea
                   rows={2}
                   value={novaSolObs}
                   onChange={(e) => setNovaSolObs(e.target.value)}
                   placeholder="Ex: Reforço para campanha de vacinação / Hipertensos cadastrados"
-                  className="w-full bg-slate-900 border border-slate-700 text-slate-200 px-3 py-2 rounded-xl"
+                  className="w-full bg-white border border-[#1B1F1C]/20 text-[#1B1F1C] px-3 py-2 rounded-xl"
                 />
               </div>
             </div>
@@ -1468,13 +1562,13 @@ export default function VigiaEstoqueCentralPage() {
             <div className="flex justify-end gap-3 mt-2">
               <button
                 onClick={() => setModalNovaSolicitacao(false)}
-                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs"
+                className="px-4 py-2 min-h-[40px] bg-white hover:bg-[#1B1F1C]/[0.06] text-[#1B1F1C] border border-[#1B1F1C]/12 rounded-xl text-xs font-bold"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleCriarSolicitacao}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold"
+                className="px-4 py-2 bg-[#0E5C4C] hover:bg-[#0A4A3D] text-white rounded-xl text-xs font-bold"
               >
                 Enviar à CAF Central
               </button>
@@ -1485,46 +1579,46 @@ export default function VigiaEstoqueCentralPage() {
 
       {/* GAVETA LATERAL: PERFIL COMPLETO DO MEDICAMENTO & RASTREABILIDADE */}
       {perfilMedicamentoId && dadosPerfil && (
-        <div className="fixed inset-0 z-50 bg-black/70 flex justify-end">
-          <div className="bg-[#0C1222] border-l border-slate-700 w-full max-w-xl h-full p-6 overflow-y-auto flex flex-col gap-6 shadow-2xl animate-slide-left">
-            <div className="flex justify-between items-start border-b border-slate-800 pb-4">
+        <div className="fixed inset-0 z-50 bg-[#1B1F1C]/40 backdrop-blur-xs flex justify-end">
+          <div className="bg-white border-l border-[#1B1F1C]/12 w-full max-w-xl h-full p-6 overflow-y-auto flex flex-col gap-6 shadow-[0_8px_24px_rgba(27,31,28,0.10),0_2px_8px_rgba(27,31,28,0.05)] animate-slide-left">
+            <div className="flex justify-between items-start border-b border-[#1B1F1C]/[0.08] pb-4">
               <div>
-                <span className="text-[11px] font-mono text-blue-400 bg-blue-950/60 px-2 py-0.5 rounded border border-blue-800/40">
+                <span className="text-[11px] font-mono text-[#1B1F1C] bg-[#1B1F1C]/[0.05] px-2 py-0.5 rounded border border-[#1B1F1C]/12">
                   {dadosPerfil.produto.codigo_catmat}
                 </span>
-                <h3 className="text-lg font-bold text-slate-100 mt-1">{dadosPerfil.produto.nome}</h3>
-                <p className="text-xs text-slate-400">{dadosPerfil.produto.principio_ativo} — {dadosPerfil.produto.concentracao}</p>
+                <h3 className="font-display text-lg font-semibold text-[#1B1F1C] mt-1">{dadosPerfil.produto.nome}</h3>
+                <p className="text-xs text-[#1B1F1C]/70">{dadosPerfil.produto.principio_ativo} — {dadosPerfil.produto.concentracao}</p>
               </div>
-              <button onClick={() => setPerfilMedicamentoId(null)} className="text-slate-400 hover:text-slate-200">
+              <button onClick={() => setPerfilMedicamentoId(null)} className="w-11 h-11 -mr-2 -mt-2 inline-flex items-center justify-center rounded-lg text-[#1B1F1C]/60 hover:text-[#1B1F1C] hover:bg-[#1B1F1C]/[0.06]" aria-label="Fechar">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Ficha CATMAT */}
             {dadosPerfil.catmat && (
-              <div className="bg-slate-900/60 p-4 rounded-xl border border-slate-800 text-xs flex flex-col gap-1.5">
-                <div className="font-bold text-slate-300 flex items-center gap-1.5">
-                  <Database className="w-4 h-4 text-blue-400" />
+              <div className="bg-[#F6F3EC]/60 p-4 rounded-xl border border-[#1B1F1C]/[0.08] text-xs flex flex-col gap-1.5">
+                <div className="font-bold text-[#1B1F1C]/80 flex items-center gap-1.5">
+                  <Database className="w-4 h-4 text-[#1B1F1C]/55" />
                   Dados Oficiais CATMAT (Compras.gov.br)
                 </div>
-                <div className="text-slate-400">{dadosPerfil.catmat.descricao}</div>
-                <div className="text-[11px] text-slate-500">PDM: {dadosPerfil.catmat.nome_pdm} | Classe: {dadosPerfil.catmat.classe_pdm}</div>
+                <div className="text-[#1B1F1C]/70">{dadosPerfil.catmat.descricao}</div>
+                <div className="text-[11px] text-[#1B1F1C]/65">PDM: {dadosPerfil.catmat.nome_pdm} | Classe: {dadosPerfil.catmat.classe_pdm}</div>
               </div>
             )}
 
             {/* Saldo Consolidado por Estabelecimento (CAF + 9 UBS de Itaquiraí) */}
             <div className="flex flex-col gap-2">
-              <h4 className="text-xs font-bold text-slate-200 uppercase tracking-wider">
+              <h4 className="text-xs font-bold text-[#1B1F1C] uppercase tracking-wider">
                 Distribuição de Saldos nos 10 Estabelecimentos de Saúde
               </h4>
-              <div className="bg-slate-900/80 rounded-xl border border-slate-800 divide-y divide-slate-800/60 text-xs">
+              <div className="bg-white rounded-xl border border-[#1B1F1C]/12 divide-y divide-[#1B1F1C]/[0.08] text-xs">
                 {dadosPerfil.saldosPorLocal.map(loc => (
                   <div key={loc.localId} className="p-3 flex justify-between items-center">
                     <div>
-                      <div className="font-medium text-slate-200">{loc.localNome}</div>
-                      <div className="text-[10px] text-slate-500">CNES: {loc.cnes}</div>
+                      <div className="font-medium text-[#1B1F1C]">{loc.localNome}</div>
+                      <div className="text-[10px] text-[#1B1F1C]/65">CNES: {loc.cnes}</div>
                     </div>
-                    <span className="font-bold text-slate-100">
+                    <span className="font-bold text-[#1B1F1C]">
                       {loc.saldo.toLocaleString('pt-BR')} {dadosPerfil.produto.unidade_base}
                     </span>
                   </div>
@@ -1534,28 +1628,28 @@ export default function VigiaEstoqueCentralPage() {
 
             {/* Linha do Tempo de Rastreabilidade (NF -> UBS -> Paciente) */}
             <div className="flex flex-col gap-2">
-              <h4 className="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2">
-                <History className="w-4 h-4 text-purple-400" />
+              <h4 className="text-xs font-bold text-[#1B1F1C] uppercase tracking-wider flex items-center gap-2">
+                <History className="w-4 h-4 text-[#1B1F1C]/55" />
                 Trilha de Auditoria & Rastreabilidade de Movimentações
               </h4>
               <div className="space-y-2">
                 {dadosPerfil.historicoMovimentacoes.length === 0 ? (
-                  <div className="text-xs text-slate-500 py-3 text-center">Nenhuma movimentação registrada.</div>
+                  <div className="text-xs text-[#1B1F1C]/65 py-3 text-center">Nenhuma movimentação registrada.</div>
                 ) : (
                   dadosPerfil.historicoMovimentacoes.map(mov => (
-                    <div key={mov.id} className="p-3 bg-slate-900/60 border border-slate-800 rounded-xl text-xs flex flex-col gap-1">
+                    <div key={mov.id} className="p-3 bg-[#F6F3EC]/60 border border-[#1B1F1C]/[0.08] rounded-xl text-xs flex flex-col gap-1">
                       <div className="flex justify-between items-center">
-                        <span className="font-bold text-blue-300">{mov.tipo}</span>
-                        <span className="text-[10px] text-slate-500">{new Date(mov.dataHora).toLocaleString('pt-BR')}</span>
+                        <span className="font-bold text-[#1B1F1C]">{mov.tipo}</span>
+                        <span className="text-[10px] text-[#1B1F1C]/65">{new Date(mov.dataHora).toLocaleString('pt-BR')}</span>
                       </div>
-                      <div className="text-slate-300">
+                      <div className="text-[#1B1F1C]/80">
                         Qtd: <strong>{mov.quantidade}</strong> | Lote: <strong>{mov.numeroLote}</strong>
                       </div>
-                      <div className="text-[11px] text-slate-400">
+                      <div className="text-[11px] text-[#1B1F1C]/70">
                         {mov.origem && `Origem: ${mov.origem}`} {mov.destino && `→ Destino: ${mov.destino}`}
                       </div>
                       {mov.justificativa && (
-                        <div className="text-[10px] text-amber-400 bg-amber-950/30 p-1.5 rounded mt-1">
+                        <div className="text-[10px] text-[#8A6A16] bg-[#8A6A16]/[0.08] p-1.5 rounded mt-1">
                           {mov.justificativa}
                         </div>
                       )}
@@ -1567,6 +1661,6 @@ export default function VigiaEstoqueCentralPage() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
