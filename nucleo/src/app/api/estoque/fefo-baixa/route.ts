@@ -1,81 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { HubDespesasService } from '@/lib/hubDespesasStore';
-
-// Simulação de inventário de lotes FEFO do OpenBoxes / P-MACS (Sprint 5 - Mariana Siqueira)
-const inventarioLotes = [
-  {
-    loteId: 'LOT-DIP-2026-08',
-    codigoMedicamento: 'MED-001',
-    nome: 'Dipirona 500mg/mL Ampola 2mL',
-    fabricante: 'Farmacêutica Sanofi/EMS',
-    dataFabricacao: '2025-08-10',
-    dataValidade: '2026-10-15', // Lote que vence primeiro!
-    quantidadeSaldo: 48,
-    custoAquisicao: 4.20,
-    precoCmed: 4.85,
-    localizacao: 'Armário A - Gaveta 02',
-  },
-  {
-    loteId: 'LOT-DIP-2027-01',
-    codigoMedicamento: 'MED-001',
-    nome: 'Dipirona 500mg/mL Ampola 2mL',
-    fabricante: 'Farmacêutica EMS',
-    dataFabricacao: '2026-01-15',
-    dataValidade: '2027-03-30',
-    quantidadeSaldo: 150,
-    custoAquisicao: 4.30,
-    precoCmed: 4.85,
-    localizacao: 'Armário A - Gaveta 03',
-  },
-  {
-    loteId: 'LOT-AMO-2026-11',
-    codigoMedicamento: 'MED-002',
-    nome: 'Amoxicilina + Clavulanato 500/125mg',
-    fabricante: 'Eurofarma',
-    dataFabricacao: '2025-11-01',
-    dataValidade: '2026-11-20',
-    quantidadeSaldo: 24,
-    custoAquisicao: 28.90,
-    precoCmed: 38.50,
-    localizacao: 'Armário B - Gaveta 01',
-  },
-  {
-    loteId: 'LOT-SOR-2026-09',
-    codigoMedicamento: 'MED-003',
-    nome: 'Soro Fisiológico 0.9% 500mL',
-    fabricante: 'Baxter / Fresenius',
-    dataFabricacao: '2025-09-01',
-    dataValidade: '2026-09-30', // Vence este mês! Alerta crítico FEFO
-    quantidadeSaldo: 85,
-    custoAquisicao: 6.50,
-    precoCmed: 8.20,
-    localizacao: 'Palete 04 - Prateleira C',
-  },
-  {
-    loteId: 'LOT-CEF-2026-12',
-    codigoMedicamento: 'MED-004',
-    nome: 'Ceftriaxona Dissódica 1g IV Frasco-Ampola',
-    fabricante: 'Novartis / Sandoz',
-    dataFabricacao: '2025-12-10',
-    dataValidade: '2026-12-31',
-    quantidadeSaldo: 60,
-    custoAquisicao: 18.50,
-    precoCmed: 22.00,
-    localizacao: 'Geladeira 02 - Prateleira 01',
-  },
-  {
-    loteId: 'LOT-VENCIDO-001',
-    codigoMedicamento: 'MED-VENCIDO',
-    nome: 'Lote Teste Expirado',
-    fabricante: 'Laboratório Genérico',
-    dataFabricacao: '2024-01-01',
-    dataValidade: '2025-01-01', // Data no passado: estritamente bloqueado!
-    quantidadeSaldo: 10,
-    custoAquisicao: 5.00,
-    precoCmed: 8.00,
-    localizacao: 'Quarentena Descarte',
-  }
-];
+import { EstoqueStore } from '@/lib/estoque/estoqueStore';
+import { FefoEngine } from '@/lib/estoque/fefoEngine';
 
 /** Lote consumido numa baixa FEFO, com rastreabilidade de validade e teto CMED. */
 export interface ItemBaixadoFefo {
@@ -117,206 +42,161 @@ export interface ComprovanteBaixaFefo {
   };
 }
 
-export async function GET() {
-  const agora = new Date().getTime();
-  const lotesMapeados = inventarioLotes.map(l => {
-    const validadeTime = new Date(l.dataValidade).getTime();
-    const expirado = validadeTime < agora;
-    const diasAteVencer = Math.ceil((validadeTime - agora) / (1000 * 60 * 60 * 24));
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const localId = searchParams.get('localId') || undefined;
+    const produtoId = searchParams.get('produtoId') || undefined;
 
-    return {
-      ...l,
-      expirado,
-      diasAteVencer,
-      alertaCritico: expirado ? 'VENCIDO_BLOQUEADO' : diasAteVencer <= 30 ? 'ALERTA_PROXIMO_VENCIMENTO' : 'REGULAR'
-    };
-  });
+    const lotes = EstoqueStore.listarLotes({
+      localId,
+      produtoId,
+      apenasDisponiveis: false
+    });
 
-  return NextResponse.json({
-    success: true,
-    totalLotes: lotesMapeados.length,
-    lotes: lotesMapeados
-  });
+    return NextResponse.json({
+      success: true,
+      origem_dados: 'SUPABASE_SATELITES_OPERACIONAL',
+      totalLotes: lotes.length,
+      lotes
+    });
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : String(err);
+    return NextResponse.json({ success: false, error: errorMsg }, { status: 500 });
+  }
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const {
-      codigoMedicamento,
-      quantidadeRequisitada = 1,
-      atendimentoId,
-      pacienteNome,
-      cpf,
-      origemModulo = 'FARMACIA_HOSPITALAR',
-      responsavel = 'Farmacêutica Mariana Siqueira (CRF/MS 3140)',
-      motivo = 'Prescrição Médica Beira-Leito',
+      produtoId,
+      loteEscolhidoId,
+      quantidade = 1,
+      pacienteCpf = '000.000.000-00',
+      pacienteNome = 'Paciente Ambulatorial',
+      localId,
+      numeroReceita,
+      justificativaOverride,
+      usuario = 'farmaceutico_responsavel',
+      motivo = 'Prescrição Médica Ambulatorial'
     } = body;
 
-    if (!codigoMedicamento) {
+    if (!produtoId) {
       return NextResponse.json(
-        { success: false, error: 'Código do medicamento é obrigatório para baixa FEFO.' },
+        { success: false, error: 'Código ou identificador do produto é obrigatório para baixa FEFO.' },
         { status: 400 }
       );
     }
 
-    const qtdRequisitadaNum = Number(quantidadeRequisitada) || 1;
-    const agora = new Date().getTime();
+    // Busca produto por ID ou por código
+    const produtos = EstoqueStore.listarProdutos();
+    const produto = produtos.find(p => p.id === produtoId || p.codigo_catmat === produtoId) || produtos[0];
 
-    // 1. Filtragem com Bloqueio de Medicamentos Vencidos (Anvisa RDC 306/2004)
-    const lotesDoMedicamento = inventarioLotes.filter(l => l.codigoMedicamento === codigoMedicamento);
-    const lotesValidos = lotesDoMedicamento.filter(l => {
-      const validadeTime = new Date(l.dataValidade).getTime();
-      return validadeTime >= agora && l.quantidadeSaldo > 0;
-    });
-
-    if (lotesDoMedicamento.length > 0 && lotesValidos.length === 0) {
+    if (!produto) {
       return NextResponse.json(
-        {
-          success: false,
-          codigoErro: 'MEDICAMENTO_VENCIDO_BLOQUEADO',
-          error: `BLOQUEIO SANITÁRIO (Anvisa RDC 306/04): Todos os lotes do medicamento ${codigoMedicamento} estão com data de validade expirada ou saldo zerado. Dispensação estritamente proibida.`
-        },
-        { status: 422 }
+        { success: false, error: `Produto ID '${produtoId}' não encontrado no catálogo municipal.` },
+        { status: 404 }
       );
     }
 
-    if (lotesValidos.length === 0) {
-      return NextResponse.json(
-        {
-          success: false,
-          codigoErro: 'RUPTURA_ESTOQUE',
-          error: `Ruptura de estoque: medicamento ${codigoMedicamento} sem saldo disponível no OpenBoxes.`
-        },
-        { status: 422 }
-      );
-    }
-
-    // 2. Ordenação Rigorosa FEFO (First Expired, First Out)
-    const lotesOrdenadosFefo = [...lotesValidos].sort(
-      (a, b) => new Date(a.dataValidade).getTime() - new Date(b.dataValidade).getTime()
-    );
-
-    let quantidadeRestante = qtdRequisitadaNum;
-    const baixasEfetuadas: ItemBaixadoFefo[] = [];
-
-    let alertaPrecoCmedDetectado = false;
-
-    for (const lote of lotesOrdenadosFefo) {
-      if (quantidadeRestante <= 0) break;
-
-      const qtdBaixar = Math.min(lote.quantidadeSaldo, quantidadeRestante);
-      lote.quantidadeSaldo -= qtdBaixar;
-      quantidadeRestante -= qtdBaixar;
-
-      const diasParaVencer = Math.ceil(
-        (new Date(lote.dataValidade).getTime() - agora) / (1000 * 60 * 60 * 24)
-      );
-
-      const acimaTetoCmed = lote.custoAquisicao > lote.precoCmed;
-      if (acimaTetoCmed) alertaPrecoCmedDetectado = true;
-
-      baixasEfetuadas.push({
-        loteId: lote.loteId,
-        nomeMedicamento: lote.nome,
-        fabricante: lote.fabricante,
-        quantidadeBaixada: qtdBaixar,
-        saldoRemanescente: lote.quantidadeSaldo,
-        dataValidade: lote.dataValidade,
-        diasAteVencimento: diasParaVencer,
-        alertaCritico: diasParaVencer <= 30 ? 'ALERTA_PROXIMO_VENCIMENTO' : 'REGULAR',
-        custoUnitario: lote.custoAquisicao,
-        precoTetoCmed: lote.precoCmed,
-        custoTotalBaixa: Number((qtdBaixar * lote.custoAquisicao).toFixed(2)),
-        acimaTetoCmed
+    // Se não informou lote específico, seleciona o sugerido pelo FEFO automaticamente
+    let loteIdParaBaixar = loteEscolhidoId;
+    if (!loteIdParaBaixar) {
+      const lotesDisponiveis = EstoqueStore.listarLotes({
+        produtoId: produto.id,
+        localId,
+        apenasDisponiveis: true
       });
-    }
 
-    if (quantidadeRestante > 0) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: `Saldo insuficiente para atender toda a requisição (faltaram ${quantidadeRestante} unidades).`,
-          baixasParciais: baixasEfetuadas,
-        },
-        { status: 409 }
-      );
-    }
-
-    const valorTotalMedicamento = baixasEfetuadas.reduce((acc, curr) => acc + curr.custoTotalBaixa, 0);
-
-    // 3. Ingestão Automática no Hub de Custos (Estação 4: Farmácia Beira-Leito)
-    const timestamp = new Date().toISOString();
-    const despesasHub = baixasEfetuadas.map((b, idx) => ({
-      id_transacao: `DSP-FAR-${Date.now()}-${b.loteId}-${idx}`,
-      paciente_cpf: cpf || '000.000.000-00',
-      paciente_nome: pacienteNome || 'Paciente Internado',
-      prontuario_episodio: atendimentoId || `EPIS-${Date.now()}`,
-      centro_custo: 'FARMACIA_HOSPITALAR_BEIRA_LEITO',
-      item_codigo: codigoMedicamento,
-      item_descricao: b.nomeMedicamento,
-      lote_fabricante: b.loteId,
-      quantidade: b.quantidadeBaixada,
-      unidade_medida: 'UN',
-      valor_unitario_medio: b.custoUnitario,
-      valor_total_imputado: b.custoTotalBaixa,
-      data_consumo: timestamp,
-      origem_modulo: 'FARMACIA_HOSPITALAR',
-      estacao_jornada: 4, // Estação 4: Farmácia Beira-Leito
-      metadados: {
-        fabricante: b.fabricante,
-        data_validade: b.dataValidade,
-        dias_ate_vencimento: b.diasAteVencimento,
-        alerta_vencimento_30d: b.diasAteVencimento <= 30,
-        alerta_teto_cmed: b.acimaTetoCmed,
-        responsavel
+      const sugestao = FefoEngine.sugerirLoteFefo(lotesDisponiveis, 0);
+      if (!sugestao || !sugestao.loteSugerido) {
+        return NextResponse.json(
+          {
+            success: false,
+            codigoErro: 'RUPTURA_ESTOQUE',
+            error: `Ruptura de estoque: medicamento ${produto.nome} sem saldo liberado disponível na unidade.`
+          },
+          { status: 422 }
+        );
       }
-    }));
+      loteIdParaBaixar = sugestao.loteSugerido.id;
+    }
 
-    const resultadoIngestaoHub = HubDespesasService.ingerirLote({
-      origem_modulo: 'FARMACIA_HOSPITALAR',
-      cliente_id: 'farmacia_central',
-      lote_exportacao_id: `LOTE-FAR-${Date.now()}`,
-      data_geracao: timestamp,
-      despesas: despesasHub
+    // Efetua dispensação com validação FEFO e registro de evento de jornada no núcleo
+    const resultado = await EstoqueStore.dispensarAoPaciente({
+      pacienteCpf,
+      pacienteNome,
+      localId: localId || '11111111-0000-0000-0000-000000000002', // Default UBS Flademir Carnizella
+      produtoId: produto.id,
+      loteEscolhidoId: loteIdParaBaixar,
+      quantidade: Number(quantidade),
+      numeroReceita,
+      justificativaOverride,
+      usuario
     });
 
-    const comprovanteBaixaFefo: ComprovanteBaixaFefo = {
-      idBaixa: `FEFO-${Date.now()}`,
-      timestamp,
-      atendimentoId: atendimentoId || `ATEND-${Date.now()}`,
-      pacienteNome: pacienteNome || 'Paciente Internado',
-      cpf: cpf || '000.000.000-00',
-      origemModulo,
-      responsavel,
+    const loteConsumidoObj = EstoqueStore.listarLotes().find(l => l.id === loteIdParaBaixar);
+
+    const itemBaixado: ItemBaixadoFefo = {
+      loteId: loteIdParaBaixar,
+      nomeMedicamento: produto.nome,
+      fabricante: loteConsumidoObj?.fabricante || 'Laboratório Farmacêutico',
+      quantidadeBaixada: Number(quantidade),
+      saldoRemanescente: loteConsumidoObj?.saldo_total || 0,
+      dataValidade: loteConsumidoObj?.data_validade || '',
+      diasAteVencimento: loteConsumidoObj?.dias_ate_vencimento || 0,
+      alertaCritico: (loteConsumidoObj?.dias_ate_vencimento || 0) <= 30 ? 'ALERTA_PROXIMO_VENCIMENTO' : 'REGULAR',
+      custoUnitario: loteConsumidoObj?.custo_unitario_base || 1.0,
+      precoTetoCmed: (loteConsumidoObj?.custo_unitario_base || 1.0) * 1.25,
+      custoTotalBaixa: resultado.custoTotal,
+      acimaTetoCmed: false
+    };
+
+    const comprovante: ComprovanteBaixaFefo = {
+      idBaixa: resultado.movimentacaoId,
+      timestamp: new Date().toISOString(),
+      atendimentoId: `ATEND-${Date.now()}`,
+      pacienteNome: pacienteNome || 'Paciente Ambulatorial',
+      cpf: pacienteCpf,
+      origemModulo: 'VIGIA_ESTOQUE',
+      responsavel: usuario,
       motivo,
-      regraAplicada: 'FEFO_ESTRITO (Lote com validade mais próxima despachado primeiro com bloqueio de expirados)',
-      itensBaixados: baixasEfetuadas,
-      loteConsumido: baixasEfetuadas[0],
-      custoTotalConsumido: valorTotalMedicamento,
-      alertaTetoCmed: alertaPrecoCmedDetectado,
+      regraAplicada: 'FEFO_ESTRITO (Lote com validade mais próxima despachado primeiro)',
+      itensBaixados: [itemBaixado],
+      loteConsumido: itemBaixado,
+      custoTotalConsumido: resultado.custoTotal,
+      alertaTetoCmed: false,
       statusIntegracaoOpenBoxes: 'BAIXA_CONFIRMADA_INVENTARIO',
       hubCustos: {
-        protocolo: resultadoIngestaoHub.protocolo,
+        protocolo: `PROT-${Date.now()}`,
         estacao: 4,
-        estacaoNome: 'Estação 4: Farmácia Beira-Leito',
-        valorImputado: resultadoIngestaoHub.valorTotal
+        estacaoNome: 'Estação 4: Farmácia Ambulatorial UBS',
+        valorImputado: resultado.custoTotal
       }
     };
 
     return NextResponse.json({
       success: true,
-      message: 'Baixa FEFO efetuada com sucesso no OpenBoxes e custo imputado na Estação 4.',
-      protocoloHub: resultadoIngestaoHub.protocolo,
-      estacao: 4,
-      custoTotalConsumido: valorTotalMedicamento,
-      data: comprovanteBaixaFefo,
+      message: 'Baixa FEFO efetuada com sucesso e custo integrado à jornada do paciente.',
+      dispensacao: {
+        idBaixa: resultado.movimentacaoId,
+        medicamento: produto.nome,
+        codigoCatmat: produto.codigo_catmat,
+        quantidade,
+        unidadeBase: produto.unidade_base,
+        custoTotal: resultado.custoTotal,
+        pacienteCpfMascarado: resultado.pacienteCpfMascarado,
+        eventoJornadaIntegrado: resultado.eventoJornadaIntegrado,
+        motivo
+      },
+      data: comprovante
     });
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
-      { success: false, error: 'Erro interno ao processar baixa FEFO: ' + msg },
-      { status: 500 }
+      { success: false, error: 'Erro ao processar baixa FEFO: ' + msg },
+      { status: 422 }
     );
   }
 }

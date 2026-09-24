@@ -61,7 +61,7 @@ export function ModuloMenuLateral({
   const categoria = categoriaDoModulo(moduloId);
   const cor = CATEGORIA_COR[categoria];
   const corForte = CATEGORIA_COR_FORTE[categoria];
-  const tag = moduloId === 'admin-perfis' ? TAG_FORA_DO_TEMA[moduloId] : MODULO_THEMES[moduloId].tagRegulatoria;
+  const tag = moduloId in MODULO_THEMES ? MODULO_THEMES[moduloId as keyof typeof MODULO_THEMES].tagRegulatoria : TAG_FORA_DO_TEMA[moduloId];
 
   return (
     <>

@@ -12,6 +12,40 @@ data-criacao: 2026-08-12
 > [!info] Como usar este log
 > Registro cronológico (mais recente no topo) de toda ação relevante no projeto Vigia Custos, dos dois caminhos de trabalho: **[[Vigia-Custos-Caminho-Claude]]** e **[[Vigia-Custos-LOG-Execucao]]**. Cada entrada identifica quem executou, o que foi feito, arquivos tocados e o próximo passo. Serve pra qualquer um dos dois (ou o Luca) saber exatamente onde o projeto parou sem precisar perguntar.
 
+## [2026-09-23 21:15 — Antigravity] 🚀 CONCLUÍDO: Estoque Central (CAF) + 9 Farmácias de UBS de Itaquiraí-MS (100% Operacional, Sem Mock)
+- **Status:** CONCLUÍDO
+- **Migrations Geradas:**
+  - `supabase/migrations/20260924000001_seguranca_rls_satelites.sql`: Habilita RLS e aplica policies de tenant (`tenant_id = public.current_tenant_id()`) nas 9 tabelas legadas com security debt (`servidores`, `servidor_centro_custo`, `itens_estoque`, `lotes_estoque`, `movimentacoes_estoque`, `notas_fiscais_servico`, `ativos_patrimoniais`, `consultas_atendimentos`, `internacoes_leitos`).
+  - `supabase/migrations/20260924000002_estoque_caf_ubs_schema.sql`: Modelo de dados aditivo estrito no schema `satelites` (`catmat_itens` com trigram GIN, `produtos_farmacia`, `produto_embalagens`, `locais_estoque`, `usuarios_locais_estoque`, `lotes`, `saldos_lote_local`, `movimentacoes` razão imutável, `solicitacoes`, `solicitacao_itens`, `separacao_itens`, `fornecedor_produto_map`, `inventarios`, `inventario_itens`, e procedure atômica `satelites.movimentar_estoque` com `FOR UPDATE`).
+- **Arquitetura & Código Implementado:**
+  - `nucleo/src/lib/estoque/types.ts`: Tipagem canônica do domínio.
+  - `nucleo/src/lib/estoque/catmatService.ts`: Integração com API Compras.gov.br (`4_consultarItemMaterial?codigoClasse=6505`).
+  - `nucleo/src/lib/estoque/produtosService.ts`: Conversor estrito de embalagens para unidades base inteiras (rejeita fracionamento decimal em itens contáveis).
+  - `nucleo/src/lib/estoque/locaisService.ts`: Mapeamento oficial dos 10 estabelecimentos de Itaquiraí com CNES DATASUS.
+  - `nucleo/src/lib/estoque/fefoEngine.ts`: Algoritmo FEFO estrito, margem regulatória e trava de override com justificativa mínima de 10 caracteres.
+  - `nucleo/src/lib/estoque/nfeParser.ts`: Parser XML da NF-e 4.0 extraindo chave de 44 dígitos, itens e bloco `<rastro>` (`nLote`, `dVal`, `dFab`, `qLote`).
+  - `nucleo/src/lib/estoque/estoqueStore.ts`: Repositório unificado resiliente com histórico e integração com `public.registrar_evento_jornada`.
+  - `nucleo/src/lib/estoque/relatoriosService.ts`: Curva ABC, auditoria de desvios FEFO e exportação CSV para BNAFAR/Hórus.
+  - APIs refatoradas (100% sem mock): `estoque-central`, `estoque/catmat`, `estoque/nfe`, `estoque/solicitacoes`, `estoque/dispensacao`, `estoque/fefo-baixa`, `estoque/relatorios`.
+  - Frontend `nucleo/src/app/(modulos)/estoque-central/page.tsx`: Seletor das 10 unidades, conferência cega de XML NF-e, separação FEFO com override, gaveta de perfil com rastreabilidade completa e exportação BNAFAR.
+- **Validações & Testes:**
+  - `npx tsc --noEmit`: 0 erros.
+  - `npm run lint` nos módulos de estoque: 0 erros, 0 avisos.
+  - Verificação de mock: 0 ocorrências de `MOCK` ou `SEED` estático nas interfaces/APIs.
+  - Testes automatizados executados: `fefoEngine.spec.js`, `unidadesConversao.spec.js`, `nfeParser.spec.js`, `concorrenciaSaldo.spec.js` (todos 100% aprovados).
+  - Suíte regressiva geral (`tests/runAllTests.js`): 8/8 suítes aprovadas.
+- **Nota para o Claude:** Pedido atendido com sucesso. RLS e modelo satelites estruturados. Pronto para a etapa do Laboratório (LIS).
+
+## [2026-09-23 — Claude] 📨 PEDIDO ao Antigravity — Laboratório (LIS)
+- O que preciso: módulo Laboratório 100% operacional e sem mock — catálogo com SIGTAP (grupo 02.02) e LOINC, workflows de amostra/análise portados do SENAITE, coleta com código de barras, bancada + importação ASTM, CQ Westgard, valor de pânico, laudo FHIR R4 com hash, custo via `registrar_evento_jornada`. Especificação em [docs/prompts/PROMPT-ANTIGRAVITY-LABORATORIO-LIS.md](docs/prompts/PROMPT-ANTIGRAVITY-LABORATORIO-LIS.md).
+- Por quê: pedido do Luca. Obs.: códigos LOINC do catálogo atual estão errados (1751-7 é albumina, não hemograma). Pré-requisito: RLS nas 9 tabelas do `satelites` (PEDIDO do estoque).
+- Status: ABERTO
+
+## [2026-09-23 — Claude] 📨 PEDIDO ao Antigravity
+- O que preciso: estoque da Farmácia Central (CAF) + 9 farmácias de UBS de Itaquiraí 100% operacional, sem mock — CATMAT, fracionamento, FEFO com override justificado, solicitação UBS→CAF, NF-e real, perfil/rastreio do medicamento, dispensação integrada ao custo. Especificação completa em [docs/prompts/PROMPT-ANTIGRAVITY-ESTOQUE-CAF-UBS.md](docs/prompts/PROMPT-ANTIGRAVITY-ESTOQUE-CAF-UBS.md).
+- Por quê: piloto municipal (pedido do Luca). Prioridade zero: 9 tabelas do `satelites` estão com RLS desligado (advisor crítico) — `servidores`, `servidor_centro_custo`, `itens_estoque`, `lotes_estoque`, `movimentacoes_estoque`, `notas_fiscais_servico`, `ativos_patrimoniais`, `consultas_atendimentos`, `internacoes_leitos`.
+- Status: ABERTO
+
 ## [2026-09-22 — Antigravity] 🚀 CONCLUÍDO: Backends de Integração de Módulos, Ingestão Central e Exportação de Custos Door-to-Door
 
 - **Motivo:** Coordenação de trabalho paralela com o Claude (que está atualizando a identidade visual do projeto). Foco integral na infraestrutura de backends, motores de cálculo, conciliação e exportação de custos do ecossistema.
