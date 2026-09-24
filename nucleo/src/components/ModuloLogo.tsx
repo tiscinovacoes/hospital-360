@@ -16,12 +16,48 @@ import {
   Stethoscope,
   UserCheck,
   UserCog,
+  ConciergeBell,
+  HeartPulse,
+  ClipboardCheck,
+  Sparkles,
+  Users,
+  Network,
+  Activity,
+  Calculator,
+  BarChart3,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CATEGORIA_COR, MODULO_THEMES, ModuloCategoria, ModuloId } from './ModuloLayoutShell';
 
 /** Todo módulo com logo própria: os do tema + a administração de perfis. */
-export type ModuloLogoId = ModuloId | 'admin-perfis';
+export type ModuloLogoId = ModuloId | 'admin-perfis' | TelaForaDoTemaId;
+
+/** Estações door-to-door e telas do núcleo que vivem fora de (modulos)/. */
+export type TelaForaDoTemaId =
+  | 'recepcao'
+  | 'medico'
+  | 'internacao'
+  | 'tarefas'
+  | 'facilities'
+  | 'pacientes'
+  | 'centros-custo'
+  | 'atividades'
+  | 'rateio'
+  | 'relatorios';
+
+const CATEGORIA_FORA_DO_TEMA: Record<'admin-perfis' | TelaForaDoTemaId, ModuloCategoria> = {
+  'admin-perfis': 'FINANCEIRO',
+  recepcao: 'ASSISTENCIAL',
+  medico: 'ASSISTENCIAL',
+  internacao: 'ASSISTENCIAL',
+  tarefas: 'OPERACAO',
+  facilities: 'OPERACAO',
+  pacientes: 'FINANCEIRO',
+  'centros-custo': 'FINANCEIRO',
+  atividades: 'FINANCEIRO',
+  rateio: 'FINANCEIRO',
+  relatorios: 'FINANCEIRO',
+};
 
 type Icone = React.ComponentType<{ className?: string; strokeWidth?: number }>;
 
@@ -45,11 +81,23 @@ export const MODULO_LOGO_ICONE: Record<ModuloLogoId, Icone> = {
   'arquitetura-seguranca': ShieldCheck,
   'regulacao-vagas': Ambulance,
   'admin-perfis': UserCog,
+  recepcao: ConciergeBell,
+  medico: HeartPulse,
+  internacao: BedDouble,
+  tarefas: ClipboardCheck,
+  facilities: Sparkles,
+  pacientes: Users,
+  'centros-custo': Network,
+  atividades: Activity,
+  rateio: Calculator,
+  relatorios: BarChart3,
 };
 
-/** Categoria do módulo — `admin-perfis` não está no tema e é Governança. */
+/** Categoria do módulo — telas fora do tema têm categoria fixa aqui. */
 export function categoriaDoModulo(id: ModuloLogoId): ModuloCategoria {
-  return id === 'admin-perfis' ? 'FINANCEIRO' : MODULO_THEMES[id].categoria;
+  return id in CATEGORIA_FORA_DO_TEMA
+    ? CATEGORIA_FORA_DO_TEMA[id as keyof typeof CATEGORIA_FORA_DO_TEMA]
+    : MODULO_THEMES[id as ModuloId].categoria;
 }
 
 const TAMANHOS = {

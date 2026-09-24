@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { PageHeader } from '@/components/PageHeader';
 import { MODULO_THEMES, ModuloId } from '@/components/ModuloLayoutShell';
-import { ModuloLogo } from '@/components/ModuloLogo';
+import { ModuloLogo, ModuloLogoId } from '@/components/ModuloLogo';
 import {
   LayoutDashboard,
   ShoppingCart,
@@ -20,12 +20,21 @@ import {
   ShieldCheck,
   ArrowRight,
   Search,
-  CheckCircle2
+  CheckCircle2,
+  ConciergeBell,
+  HeartPulse,
+  ClipboardCheck,
+  Sparkles,
+  Users,
+  Network,
+  Activity,
+  Calculator,
+  BarChart3
 } from 'lucide-react';
 
 interface ModuloCard {
   id: string;
-  moduloId: ModuloId;
+  moduloId: ModuloLogoId;
   titulo: string;
   subtitulo: string;
   descricao: string;
@@ -182,6 +191,126 @@ const MODULOS_CATALOGO: ModuloCard[] = [
     categoria: 'FINANCEIRO',
     tag: 'SEGURANÇA & RLS',
     metricas: 'Segurança Militar'
+  },
+  {
+    id: 'recepcao',
+    moduloId: 'recepcao',
+    titulo: 'Recepção & Totem de Autoatendimento',
+    subtitulo: 'Estação 1 • Porta de Entrada do Paciente',
+    descricao: 'Check-in, identificação pelo CNS/CPF e abertura do episódio de atendimento que acompanha o custo door-to-door.',
+    href: '/recepcao',
+    icone: ConciergeBell,
+    categoria: 'ASSISTENCIAL',
+    tag: 'ESTAÇÃO 1',
+    metricas: 'Abertura de Episódio'
+  },
+  {
+    id: 'medico',
+    moduloId: 'medico',
+    titulo: 'Consultório Médico',
+    subtitulo: 'Estação 3 • Atendimento e Prescrição',
+    descricao: 'Anamnese, histórico clínico, prescrição e solicitação de exames com lançamento automático no custo do paciente.',
+    href: '/medico',
+    icone: HeartPulse,
+    categoria: 'ASSISTENCIAL',
+    tag: 'ESTAÇÃO 3',
+    metricas: 'Prescrição Integrada'
+  },
+  {
+    id: 'internacao',
+    moduloId: 'internacao',
+    titulo: 'Posto de Enfermagem & Internação',
+    subtitulo: 'Estação 4 • Censo e Cuidado Beira-Leito',
+    descricao: 'Painel do posto de enfermagem com censo de leitos, evolução e checagem de administração de medicamentos.',
+    href: '/internacao',
+    icone: BedDouble,
+    categoria: 'ASSISTENCIAL',
+    tag: 'ESTAÇÃO 4',
+    metricas: 'Diárias Apropriadas'
+  },
+  {
+    id: 'facilities',
+    moduloId: 'facilities',
+    titulo: 'Facilities, Hotelaria & Governança',
+    subtitulo: 'Estação 5 • Alta e Liberação de Leito',
+    descricao: 'Higienização, rouparia e liberação de leito após a alta, fechando o ciclo de custos indiretos do episódio.',
+    href: '/facilities',
+    icone: Sparkles,
+    categoria: 'OPERACAO',
+    tag: 'ESTAÇÃO 5',
+    metricas: 'Giro de Leito'
+  },
+  {
+    id: 'tarefas',
+    moduloId: 'tarefas',
+    titulo: 'Central de Tarefas & Baixa Beira-Leito',
+    subtitulo: 'Fila Operacional das Equipes',
+    descricao: 'Tarefas por equipe com baixa beira-leito de materiais e medicamentos, alimentando o consumo real por episódio.',
+    href: '/tarefas',
+    icone: ClipboardCheck,
+    categoria: 'OPERACAO',
+    tag: 'OPERACIONAL',
+    metricas: 'Baixa em Tempo Real'
+  },
+  {
+    id: 'pacientes',
+    moduloId: 'pacientes',
+    titulo: 'Pacientes & Episódios',
+    subtitulo: 'Núcleo de Custeio',
+    descricao: 'Cadastro de pacientes e episódios assistenciais que recebem os eventos de custo de todas as estações.',
+    href: '/pacientes',
+    icone: Users,
+    categoria: 'FINANCEIRO',
+    tag: 'NÚCLEO',
+    metricas: 'Episódios Ativos'
+  },
+  {
+    id: 'centros-custo',
+    moduloId: 'centros-custo',
+    titulo: 'Centros de Custo',
+    subtitulo: 'Núcleo de Custeio • Estrutura',
+    descricao: 'Árvore de centros de custo produtivos, auxiliares e administrativos usada na absorção e no ABC.',
+    href: '/centros-custo',
+    icone: Network,
+    categoria: 'FINANCEIRO',
+    tag: 'NÚCLEO',
+    metricas: 'Absorção + ABC'
+  },
+  {
+    id: 'atividades',
+    moduloId: 'atividades',
+    titulo: 'Atividades (ABC)',
+    subtitulo: 'Núcleo de Custeio • Direcionadores',
+    descricao: 'Catálogo de atividades e direcionadores de custo para o custeio baseado em atividades.',
+    href: '/atividades',
+    icone: Activity,
+    categoria: 'FINANCEIRO',
+    tag: 'NÚCLEO',
+    metricas: 'Direcionadores ABC'
+  },
+  {
+    id: 'rateio',
+    moduloId: 'rateio',
+    titulo: 'Motor de Absorção',
+    subtitulo: 'Núcleo de Custeio • Rateio',
+    descricao: 'Rateio escalonado dos centros auxiliares para os produtivos e apuração do custo por paciente.',
+    href: '/rateio',
+    icone: Calculator,
+    categoria: 'FINANCEIRO',
+    tag: 'NÚCLEO',
+    metricas: 'Rateio Escalonado'
+  },
+  {
+    id: 'relatorios',
+    moduloId: 'relatorios',
+    titulo: 'Relatórios & Apuração',
+    subtitulo: 'Núcleo de Custeio • Resultados',
+    descricao: 'Apuração do custo por paciente e por episódio, com comparação às tabelas SIGTAP e TUSS.',
+    href: '/relatorios',
+    icone: BarChart3,
+    categoria: 'FINANCEIRO',
+    tag: 'NÚCLEO',
+    metricas: 'SIGTAP × TUSS'
   }
 ];
 
@@ -319,7 +448,7 @@ export default function HubModulosPage() {
       {/* GRID DE MÓDULOS — MONOCROMÁTICO; A CATEGORIA É UM PONTO DE 9PX, NÃO UM BLOCO COLORIDO */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {modulosFiltrados.map((modulo) => {
-          const theme = MODULO_THEMES[modulo.moduloId] || MODULO_THEMES['compras-publicas'];
+          const theme = MODULO_THEMES[modulo.moduloId as ModuloId] || MODULO_THEMES['compras-publicas'];
 
           return (
             <Link
