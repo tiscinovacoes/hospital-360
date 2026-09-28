@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: 360_prometheus_sre
+    restart: always
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_sre_data:/prometheus
+    networks:
+      - sre_network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: 360_grafana_sre
+    restart: always
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin_hospital360_sre_secret
+    volumes:
+      - grafana_sre_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - sre_network
+
+  loki:
+    image: grafana/loki:latest
+    container_name: 360_loki_sre
+    restart: always
+    ports:
+      - "3100:3100"
+    networks:
+      - sre_network
+
+networks:
+  sre_network:
+    driver: bridge
+
+volumes:
+  prometheus_sre_data:
+  grafana_sre_data:
