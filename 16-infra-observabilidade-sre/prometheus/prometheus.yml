@@ -1,0 +1,19 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'hospital360_nucleo_backend'
+    metrics_path: '/api/health'
+    static_configs:
+      - targets: ['localhost:3000']
+
+  - job_name: 'hospital360_senaite_lims'
+    metrics_path: '/senaite/@@api/v1/health'
+    static_configs:
+      - targets: ['localhost:8082']
+
+  - job_name: 'hospital360_openboxes_estoque'
+    metrics_path: '/openboxes/health'
+    static_configs:
+      - targets: ['localhost:8084']
