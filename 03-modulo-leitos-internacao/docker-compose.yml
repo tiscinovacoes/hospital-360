@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  postgres_leitos:
+    image: postgres:15-alpine
+    container_name: 360_postgres_leitos
+    restart: always
+    environment:
+      POSTGRES_DB: leitos_nir_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_leitos_secret
+    ports:
+      - "5435:5432"
+    volumes:
+      - postgres_leitos_data:/var/lib/postgresql/data
+    networks:
+      - squad5_network
+
+networks:
+  squad5_network:
+    driver: bridge
+
+volumes:
+  postgres_leitos_data:

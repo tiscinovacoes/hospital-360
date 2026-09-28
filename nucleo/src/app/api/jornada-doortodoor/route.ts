@@ -1,118 +1,115 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-export interface EstacaoJornada {
-  ordem: number;
-  estacao: string;
-  moduloResponsavel: string;
-  horarioEntrada: string;
-  horarioSaida: string;
-  duracaoMinutos: number;
-  custoGerado: number;
-  descricao: string;
-  detalhesIntegracao: string;
-  status: 'CONCLUIDO' | 'EM_ANDAMENTO' | 'AGUARDANDO';
-}
-
-export interface JornadaDoorToDoor {
-  cpf: string;
-  nomePaciente: string;
-  convenio: string;
-  clinicaResponsavel: string; // Ex: Clínica CardioVida - Dr. Ricardo Mendes
-  dataAtendimento: string;
-  estacoes: EstacaoJornada[];
-  custoTotalAcumulado: number;
-  faturamentoEsperado: number;
-  margemFinal: number;
-  repasseSusSigtap: number;
-  deficitSus: number;
-}
+import { HubDespesasService } from '@/lib/hubDespesasStore';
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const cpf = searchParams.get('cpf') || '123.456.789-00';
+  try {
+    const { searchParams } = new URL(request.url);
+    const cpf = searchParams.get('cpf') || '123.456.789-00';
 
-  const mockJornada: JornadaDoorToDoor = {
-    cpf,
-    nomePaciente: 'Carlos Eduardo Silveira',
-    convenio: 'Unimed Pleno (TUSS)',
-    clinicaResponsavel: 'Clínica CardioVida (Sala 204 — Dr. Ricardo Mendes)',
-    dataAtendimento: '2026-09-21',
-    estacoes: [
-      {
-        ordem: 1,
-        estacao: '1. Porta de Entrada (Check-in & Triagem)',
-        moduloResponsavel: 'Recepção 360 / Protocolo Manchester',
-        horarioEntrada: '08:00',
-        horarioSaida: '08:15',
-        duracaoMinutos: 15,
-        custoGerado: 38.50,
-        descricao: 'Emissão de pulseira térmica QR Code e triagem de sinais vitais.',
-        detalhesIntegracao: 'Abertura de episódio clínico via RPC registrar_evento_jornada.',
-        status: 'CONCLUIDO',
-      },
-      {
-        ordem: 2,
-        estacao: '2. Consulta Clínica Especializada',
-        moduloResponsavel: 'OpenEMR (G:\\Projetos\\gerenciamento clinica)',
-        horarioEntrada: '08:20',
-        horarioSaida: '08:50',
-        duracaoMinutos: 30,
-        custoGerado: 60.00, // 0.5h x R$ 120/h (Médico Cardiologista)
-        descricao: 'Evolução clínica, eletrocardiograma e prescrição médica.',
-        detalhesIntegracao: 'OpenEMR dispara webhook consulta_finalizada via n8n.',
-        status: 'CONCLUIDO',
-      },
-      {
-        ordem: 3,
-        estacao: '3. Farmácia Hospitalar & Insumos',
-        moduloResponsavel: 'OpenBoxes (G:\\Projetos\\Estoque - FEFO)',
-        horarioEntrada: '08:52',
-        horarioSaida: '08:55',
-        duracaoMinutos: 3,
-        custoGerado: 125.50,
-        descricao: 'Baixa de Ceftriaxona 1g IV (Lote L-9941) e Kit Insumos Descartáveis.',
-        detalhesIntegracao: 'n8n baixa automaticamente do estoque FEFO deduzindo lote e validade.',
-        status: 'CONCLUIDO',
-      },
-      {
-        ordem: 4,
-        estacao: '4. Laboratório Central LIMS',
-        moduloResponsavel: 'SENAITE.core (G:\\Projetos\\getenciamento de laboratorio)',
-        horarioEntrada: '09:00',
-        horarioSaida: '09:40',
-        duracaoMinutos: 40,
-        custoGerado: 145.00,
-        descricao: 'Coleta de sangue venoso, hemograma automatizado e troponina ultrassensível.',
-        detalhesIntegracao: 'SENAITE gera laudo assinado e devolve DiagnosticReport FHIR R4.',
-        status: 'CONCLUIDO',
-      },
-      {
-        ordem: 5,
-        estacao: '5. Porta de Saída (Faturamento & Split)',
-        moduloResponsavel: 'Hyperswitch (G:\\Projetos\\Fluxo de pagamento) & Contábil',
-        horarioEntrada: '09:45',
-        horarioSaida: '10:00',
-        duracaoMinutos: 15,
-        custoGerado: 42.00, // Rateio de hotelaria/limpeza e facilities
-        descricao: 'Cobrança da consulta e exames com split: 80% clínica, 20% taxa condomínio.',
-        detalhesIntegracao: 'Hyperswitch liquida recebimento e integra nota no sistema contábil.',
-        status: 'CONCLUIDO',
-      },
-    ],
-    custoTotalAcumulado: 411.00,
-    faturamentoEsperado: 750.00,
-    margemFinal: 339.00,
-    repasseSusSigtap: 135.00,
-    deficitSus: -276.00,
-  };
+    const consolidado = HubDespesasService.obterConsolidadoPaciente(cpf);
 
-  return NextResponse.json({
-    success: true,
-    data: mockJornada,
-    error: null,
-    meta: {
-      timestamp: new Date().toISOString(),
-      metodologia: 'CUSTEIO_DOOR_TO_DOOR_360',
-    },
-  });
+    if (!consolidado) {
+      return NextResponse.json(
+        { success: false, data: null, error: `Jornada não encontrada para o CPF: ${cpf}` },
+        { status: 404 }
+      );
+    }
+
+    const estacoesFormatadas = consolidado.estacoes.map(e => ({
+      ordem: e.estacaoNumero,
+      estacao: e.titulo,
+      moduloResponsavel: e.modulosRelacionados.join(', '),
+      horarioEntrada: '08:00',
+      horarioSaida: '10:00',
+      duracaoMinutos: Math.round(consolidado.paciente.tempoPermanenciaHoras * 60),
+      custoGerado: e.totalGasto,
+      descricao: `${e.quantidadeItens} itens de custo computados nesta estação.`,
+      detalhesIntegracao: `Módulos integrados: ${e.modulosRelacionados.join(' | ')}`,
+      status: e.quantidadeItens > 0 ? 'CONCLUIDO' : 'AGUARDANDO',
+      itensDetalhes: e.itens.map(it => ({
+        descricao: it.item_descricao,
+        valor: it.valor_total_imputado,
+        origem: it.origem_modulo,
+        lote: it.lote_fabricante,
+      })),
+    }));
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        cpf: consolidado.paciente.cpf,
+        nomePaciente: consolidado.paciente.nome,
+        convenio: 'Unimed Pleno (TUSS / SIGTAP)',
+        clinicaResponsavel: 'Clínica Especializada 360',
+        dataAtendimento: consolidado.paciente.dataAdmissao,
+        estacoes: estacoesFormatadas,
+        custoTotalAcumulado: consolidado.custoTotalReal,
+        faturamentoEsperado: consolidado.benchmarkFinanceiro.faturamentoPrevistoTuss,
+        margemFinal: consolidado.benchmarkFinanceiro.margemBrutaReais,
+        repasseSusSigtap: consolidado.benchmarkFinanceiro.repasseSigtapSus,
+        deficitSus: consolidado.benchmarkFinanceiro.deficitSusReais,
+      },
+      error: null,
+      meta: {
+        timestamp: new Date().toISOString(),
+        metodologia: 'CUSTEIO_DOOR_TO_DOOR_360',
+      },
+    });
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : 'Erro ao consultar jornada.';
+    return NextResponse.json({ success: false, data: null, error: errorMsg }, { status: 500 });
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+
+    if (!body.pacienteCpf || !body.itemDescricao || !body.valorUnitario) {
+      return NextResponse.json(
+        { success: false, error: 'Campos obrigatórios ausentes (pacienteCpf, itemDescricao, valorUnitario).' },
+        { status: 400 }
+      );
+    }
+
+    const resultado = HubDespesasService.ingerirLote({
+      origem_modulo: body.moduloOrigem || 'GESTAO_CLINICA',
+      despesas: [
+        {
+          id_transacao: `DSP-${Date.now()}`,
+          paciente_cpf: body.pacienteCpf,
+          paciente_nome: body.pacienteNome || 'Paciente Hospital 360',
+          prontuario_episodio: body.episodioId || 'EPIS-2026-001',
+          centro_custo: body.centroCusto || 'CENTRO_CUSTO_GERAL',
+          item_codigo: body.itemCodigo || 'ITEM-001',
+          item_descricao: body.itemDescricao,
+          lote_fabricante: body.lote,
+          quantidade: Number(body.quantidade) || 1,
+          unidade_medida: 'Unidade',
+          valor_unitario_medio: Number(body.valorUnitario),
+          valor_total_imputado: (Number(body.quantidade) || 1) * Number(body.valorUnitario),
+          data_consumo: new Date().toISOString(),
+          estacao_jornada: Number(body.estacaoNumero) || 1,
+        },
+      ],
+    });
+
+    const atualizado = HubDespesasService.obterConsolidadoPaciente(body.pacienteCpf);
+
+    return NextResponse.json(
+      {
+        success: true,
+        data: {
+          protocolo: resultado.protocolo,
+          novoCustoTotal: atualizado?.custoTotalReal,
+          consolidado: atualizado,
+        },
+        error: null,
+      },
+      { status: 201 }
+    );
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : 'Erro ao registrar item da jornada.';
+    return NextResponse.json({ success: false, data: null, error: errorMsg }, { status: 500 });
+  }
 }

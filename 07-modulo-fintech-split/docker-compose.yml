@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  postgres_fintech:
+    image: postgres:15-alpine
+    container_name: 360_postgres_fintech
+    restart: always
+    environment:
+      POSTGRES_DB: fintech_split_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_fintech_secret
+    ports:
+      - "5437:5432"
+    volumes:
+      - postgres_fintech_data:/var/lib/postgresql/data
+    networks:
+      - squad6_network
+
+networks:
+  squad6_network:
+    driver: bridge
+
+volumes:
+  postgres_fintech_data:

@@ -6,6 +6,7 @@ import { PageHeader } from '@/components/PageHeader';
 import { ModuloRbacBar } from '@/components/ModuloRbacBar';
 import { ModuloMenuLateral, MenuLateralItem } from '@/components/ModuloMenuLateral';
 import { KpiCard } from '@/components/KpiCard';
+import { CockpitCensoEbitda } from '@/components/CockpitCensoEbitda';
 import { ModuloRole, MODULO_ROLES_CATALOG, hasPermission } from '@/types/rbac';
 import {
   BarChart3,
@@ -358,6 +359,9 @@ export default function ExecutiveDashboardPage() {
           </Link>
         </div>
       </div>
+
+      {/* COCKPIT CENSO HOSPITALAR & MARGENS EBITDA (SPRINT 3 - SQUAD 1) */}
+      {abaAtiva === 'jornada' && <CockpitCensoEbitda />}
 
       {/* 2. OS 4 CARDS DE KPIS MINIMALISTAS (Máximo 3 linhas + Tooltip informativo) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
