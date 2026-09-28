@@ -1,82 +1,64 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
+import { OpenEMRDatabaseRepository } from "@/lib/openemrDatabaseRepository";
 
-export type ManchesterColor = 'VERMELHO' | 'LARANJA' | 'AMARELO' | 'VERDE' | 'AZUL';
-
-export interface TriagemManchesterPayload {
-  pacienteCpf: string;
-  pacienteNome: string;
-  pressaoArterial?: string;
-  frequenciaCardiaca?: number;
-  temperaturaCelsius?: number;
-  saturacaoO2?: number;
-  sintomasDescricao: string;
-  corManchester: ManchesterColor;
-  salaConsultorio?: string;
-  tenantId?: string;
+export interface TriagemManchesterRequest {
+  paciente_cpf: string;
+  paciente_nome: string;
+  sinais_vitais: {
+    pressao_arterial: string;
+    frequencia_cardiaca: number;
+    temperatura_c: number;
+    saturacao_oxigenio_pct: number;
+  };
+  queixa_principal: string;
+  tenant_id: string;
 }
 
-// Tabela de Tempo Máximo de Espera por Cor Manchester (Norma MS)
-const TEMPO_ESPERA_MANCHESTER: Record<ManchesterColor, { minutosMax: number; prioridadeText: string }> = {
-  VERMELHO: { minutosMax: 0, prioridadeText: 'Emergência (Atendimento Imediato)' },
-  LARANJA: { minutosMax: 10, prioridadeText: 'Muito Urgente (Até 10 min)' },
-  AMARELO: { minutosMax: 60, prioridadeText: 'Urgente (Até 60 min)' },
-  VERDE: { minutosMax: 120, prioridadeText: 'Pouco Urgente (Até 120 min)' },
-  AZUL: { minutosMax: 240, prioridadeText: 'Não Urgente (Até 240 min)' },
-};
-
-export async function POST(request: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
-    const body: TriagemManchesterPayload = await request.json();
+    const payload: TriagemManchesterRequest = await req.json();
 
-    if (!body.pacienteCpf || !body.corManchester || !body.sintomasDescricao) {
+    if (!payload.paciente_cpf || !payload.paciente_nome || !payload.tenant_id) {
       return NextResponse.json(
-        {
-          success: false,
-          error: 'Payload incompleto. pacienteCpf, corManchester e sintomasDescricao são obrigatórios.',
-        },
+        { erro: "Payload inválido. Informar paciente_cpf, paciente_nome e tenant_id." },
         { status: 400 }
       );
     }
 
-    const regManchester = TEMPO_ESPERA_MANCHESTER[body.corManchester] || TEMPO_ESPERA_MANCHESTER['VERDE'];
-    const protocoloTriagem = `TRIAG-${body.corManchester.slice(0, 3)}-${Date.now().toString().slice(-6)}`;
+    const encontro = OpenEMRDatabaseRepository.registrarTriagemManchester({
+      paciente_cpf: payload.paciente_cpf,
+      paciente_nome: payload.paciente_nome,
+      sinais_vitais: payload.sinais_vitais,
+      queixa_principal: payload.queixa_principal
+    });
 
-    const eventoTriagem = {
-      protocolo: protocoloTriagem,
-      tenantId: body.tenantId || 'tenant-cardiovida',
-      pacienteCpf: body.pacienteCpf,
-      pacienteNome: body.pacienteNome || 'Paciente Triado',
-      sinaisVitais: {
-        pa: body.pressaoArterial || '120/80 mmHg',
-        fc: body.frequenciaCardiaca || 75,
-        temp: body.temperaturaCelsius || 36.5,
-        satO2: body.saturacaoO2 || 98,
+    return NextResponse.json({
+      status: "TRIAGEM_REGISTRADA_OPENEMR",
+      mensagem: "Paciente classificado no protocolo de Manchester e inserido no banco de dados OpenEMR.",
+      encounter_id: encontro.encounter_id,
+      pid: encontro.pid,
+      paciente_nome: encontro.paciente_nome,
+      classificacao_manchester: {
+        cor: encontro.cor_classificacao,
+        prioridade_minutos: encontro.prioridade_minutos
       },
-      classificacaoRisco: {
-        cor: body.corManchester,
-        descricaoPrioridade: regManchester.prioridadeText,
-        tempoMaximoEsperaMinutos: regManchester.minutosMax,
-      },
-      salaConsultorioDesignada: body.salaConsultorio || 'Consultório 04 (Cardiologia)',
-      horarioTriagem: new Date().toISOString(),
-      statusFila: 'AGUARDANDO_CHAMADA',
-    };
+      tenant_id: payload.tenant_id,
+      timestamp: new Date().toISOString()
+    }, { status: 201 });
 
+  } catch (error: any) {
     return NextResponse.json(
-      {
-        success: true,
-        data: eventoTriagem,
-        error: null,
-        meta: {
-          timestamp: new Date().toISOString(),
-          sistema: 'OpenEMR v7.0 Triagem Manchester',
-          squad: 'Squad 2 - Clínicas Médicas',
-        },
-      },
-      { status: 201 }
+      { erro: "Erro ao registrar triagem no OpenEMR", detalhes: error.message },
+      { status: 500 }
     );
-  } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : 'Erro na triagem Manchester.';
-    return NextResponse.json({ success: false, data: null, error: msg }, { status: 500 });
   }
+}
+
+export async function GET() {
+  const fila = OpenEMRDatabaseRepository.listarFilaTriagem();
+  return NextResponse.json({
+    status: "SUCESSO",
+    total_fila: fila.length,
+    fila_atendimento: fila
+  }, { status: 200 });
 }

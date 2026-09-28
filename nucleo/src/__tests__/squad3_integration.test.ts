@@ -9,10 +9,11 @@ export async function executarSuiteDeTestesSquad3() {
 
   try {
     // TESTE 1: Consulta ao Catálogo de Exames LOINC
-    const resCatalogo = await CatalogoGET();
+    const reqCatalogo = new NextRequest("http://localhost:3000/api/senaite/catalogo?tenant_id=hospital_360_default");
+    const resCatalogo = await CatalogoGET(reqCatalogo);
     const bodyCatalogo = await resCatalogo.json();
 
-    if (resCatalogo.status === 200 && bodyCatalogo.totalExamesDisponiveis >= 6) {
+    if (resCatalogo.status === 200 && (bodyCatalogo.total_exames >= 6 || bodyCatalogo.totalExamesDisponiveis >= 6)) {
       resultados.push({ teste: '1. Catálogo de Exames Laboratoriais LOINC (/api/senaite/catalogo)', status: 'PASS' });
     } else {
       resultados.push({ teste: '1. Catálogo de Exames LOINC', status: 'FAIL', detalhe: 'Catálogo incompleto' });

@@ -1,112 +1,88 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { CATALOGO_EXAMES_SENAITE } from '../catalogo/route';
+import { NextRequest, NextResponse } from "next/server";
+import { SenaiteApiClient, ExameCatalogoLOINC } from "@/lib/senaiteApiClient";
 
-export interface SolicitacaoExameInput {
-  codigoLoinc: string;
-  nomeExame?: string;
-  prioridade?: 'ROTINA' | 'URGENTE' | 'EMERGENCIA';
+export interface WorkOrderRequest {
+  prescricao_id: string;
+  paciente_cpf: string;
+  paciente_nome: string;
+  medico_crm: string;
+  exames_codigo_loinc: string[];
+  tenant_id: string;
 }
 
-export interface WorkOrderInputPayload {
-  pacienteCpf: string;
-  pacienteNome: string;
-  prontuarioId?: string;
-  medicoSolicitante: string;
-  crmMedico: string;
-  origemModulo?: string; // Ex: OpenEMR / ProntoSocorro
-  exames: SolicitacaoExameInput[];
-  tenantId?: string;
-}
-
-export async function POST(request: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
-    const body: WorkOrderInputPayload = await request.json();
+    const payload: WorkOrderRequest = await req.json();
 
-    if (!body.pacienteCpf || !body.medicoSolicitante || !Array.isArray(body.exames) || body.exames.length === 0) {
+    if (!payload.prescricao_id || !payload.exames_codigo_loinc?.length || !payload.tenant_id) {
       return NextResponse.json(
-        {
-          success: false,
-          error: 'Payload inválido: pacienteCpf, medicoSolicitante e ao menos um exame são obrigatórios.',
-        },
+        { erro: "Payload inválido. Informar prescricao_id, exames_codigo_loinc e tenant_id." },
         { status: 400 }
       );
     }
 
-    const workorderId = `WO-SENAITE-${Date.now().toString().slice(-8)}`;
-    const amostraId = `SAM-${Date.now().toString().slice(-6)}`;
-    const dataCriacao = new Date().toISOString();
+    const catalogo = SenaiteApiClient.obterCatalogoExamesLOINC();
+    const examesValidados: ExameCatalogoLOINC[] = [];
+    const examesNaoEncontrados: string[] = [];
 
-    // Etiqueta com Código de Barras ZPL & QR Code SVG
-    const codigoBarrasZPL = `^XA^FO50,50^BY3^BCN,100,Y,N,N^FD${amostraId}^FS^FO50,180^A0N,25,25^FD${body.pacienteNome.slice(0, 20)}^FS^XZ`;
-    const qrCodeSvgData = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${amostraId}`;
+    for (const code of payload.exames_codigo_loinc) {
+      const achado = catalogo.find((e: ExameCatalogoLOINC) => e.codigo_loinc === code);
+      if (achado) {
+        examesValidados.push(achado);
+      } else {
+        examesNaoEncontrados.push(code);
+      }
+    }
 
-    let custoTotalReagentes = 0;
-    let tempoTotalBancada = 0;
+    if (!examesValidados.length) {
+      return NextResponse.json(
+        { erro: "Nenhum exame do catálogo LOINC foi localizado.", exames_nao_encontrados: examesNaoEncontrados },
+        { status: 422 }
+      );
+    }
 
-    const examesProcessados = body.exames.map((item, idx) => {
-      const infoCatalogo = CATALOGO_EXAMES_SENAITE.find(e => e.codigoLoinc === item.codigoLoinc || e.codigoInterno === item.codigoLoinc);
-      
-      const custoReagente = infoCatalogo ? infoCatalogo.custoReagenteBase + infoCatalogo.insumosDescartaveisCusto : 25.00;
-      const tempoBancada = infoCatalogo ? infoCatalogo.tempoBancadaMinutos : 15;
+    const workorderId = `WO-SEN-${Date.now()}`;
+    const amostrasComEtiquetas = examesValidados.map((exame: ExameCatalogoLOINC, idx: number) => {
+      const amostraId = `SMP-${workorderId}-${idx + 1}`;
+      const qrCodePayload = JSON.stringify({
+        amostra_id: amostraId,
+        workorder_id: workorderId,
+        loinc: exame.codigo_loinc,
+        paciente: payload.paciente_nome,
+        tenant_id: payload.tenant_id
+      });
 
-      custoTotalReagentes += custoReagente;
-      tempoTotalBancada += tempoBancada;
+      // Comando ZPL para impressora térmica de etiquetas em tubos de ensaio
+      const zplBarcode = `^XA^FO50,50^BY3^BCN,100,Y,N,N^FD${amostraId}^FS^FO50,180^A0N,25,25^FD${exame.nome_exame.slice(0, 25)}^FS^XZ`;
 
       return {
-        itemIndex: idx + 1,
-        codigoLoinc: item.codigoLoinc,
-        nomeExame: infoCatalogo?.nome || item.nomeExame || 'Exame de Análises Clínicas',
-        categoria: infoCatalogo?.categoria || 'BIOQUIMICA',
-        prioridade: item.prioridade || 'ROTINA',
-        custoReagente,
-        tempoBancadaMinutos: tempoBancada,
-        statusBancada: 'AGUARDANDO_COLETA',
-        bancadaDesignada: `Bancada de ${infoCatalogo?.categoria || 'BIOQUIMICA'}`,
+        amostra_id: amostraId,
+        codigo_loinc: exame.codigo_loinc,
+        nome_exame: exame.nome_exame,
+        bancada_alocada: exame.categoria,
+        zpl_etiqueta: zplBarcode,
+        qr_code_data: qrCodePayload
       };
     });
 
-    const workorderCriada = {
-      workorderId,
-      amostraId,
-      tenantId: body.tenantId || 'tenant-cardiovida',
+    return NextResponse.json({
+      status: "WORKORDER_CRIADA_SENAITE",
+      workorder_id: workorderId,
+      prescricao_id: payload.prescricao_id,
+      tenant_id: payload.tenant_id,
       paciente: {
-        cpf: body.pacienteCpf,
-        nome: body.pacienteNome,
-        prontuario: body.prontuarioId || 'PRON-001',
+        cpf: payload.paciente_cpf,
+        nome: payload.paciente_nome
       },
-      medico: {
-        nome: body.medicoSolicitante,
-        crm: body.crmMedico,
-      },
-      etiquetaAmostra: {
-        amostraId,
-        formatoZPL: codigoBarrasZPL,
-        qrCodeUrl: qrCodeSvgData,
-      },
-      resumoOperacional: {
-        totalExames: examesProcessados.length,
-        custoTotalEstimadoReagentes: custoTotalReagentes,
-        tempoTotalEstimadoBancadaMinutos: tempoTotalBancada,
-        dataEntrada: dataCriacao,
-      },
-      exames: examesProcessados,
-      statusGeral: 'WORKORDER_CRIADA_NA_FILA',
-    };
+      amostras_geradas: amostrasComEtiquetas,
+      exames_nao_encontrados: examesNaoEncontrados,
+      timestamp: new Date().toISOString()
+    }, { status: 201 });
 
+  } catch (error: any) {
     return NextResponse.json(
-      {
-        success: true,
-        data: workorderCriada,
-        error: null,
-        meta: {
-          timestamp: dataCriacao,
-          squad: 'Squad 3 - SENAITE LIMS',
-        },
-      },
-      { status: 201 }
+      { erro: "Erro ao criar WorkOrder no SENAITE LIMS", detalhes: error.message },
+      { status: 500 }
     );
-  } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : 'Erro ao criar WorkOrder no SENAITE.';
-    return NextResponse.json({ success: false, data: null, error: msg }, { status: 500 });
   }
 }

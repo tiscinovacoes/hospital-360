@@ -1,96 +1,75 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
+import { SenaiteApiClient } from "@/lib/senaiteApiClient";
 
-export interface EmitirLaudoInputPayload {
-  workorderId: string;
-  pacienteCpf: string;
-  pacienteNome: string;
-  codigoLoinc: string;
-  nomeExame: string;
-  resultadosParametros: Array<{
-    parametroNome: string;
-    valorEncontrado: number | string;
-    unidade: string;
-    valorReferencia: string;
-    alterado?: boolean;
-  }>;
-  biomedicoResponsavel: string;
-  crbmBiomedico: string;
-  tempoBancadaEfetivoMinutos?: number;
-  custoReagentesEfetivo?: number;
+export interface EmissaoLaudoRequest {
+  workorder_id: string;
+  paciente_cpf: string;
+  paciente_nome: string;
+  codigo_loinc: string;
+  resultado_medido: number;
+  biomedico_crbm: string;
+  tenant_id: string;
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
-    const body: EmitirLaudoInputPayload = await request.json();
+    const payload: EmissaoLaudoRequest = await req.json();
 
-    if (!body.workorderId || !body.pacienteCpf || !body.codigoLoinc || !Array.isArray(body.resultadosParametros)) {
+    if (!payload.workorder_id || !payload.codigo_loinc || !payload.tenant_id) {
       return NextResponse.json(
-        {
-          success: false,
-          error: 'Payload incompleto. workorderId, pacienteCpf, codigoLoinc e resultadosParametros são obrigatórios.',
-        },
+        { erro: "Payload inválido. Informar workorder_id, codigo_loinc e tenant_id." },
         { status: 400 }
       );
     }
 
-    // Task 3.1: Fórmula de Custeio Laboratorial Contábil de Precisão
-    const horaTecnicaBiomedico = 60.00; // R$ 60,00 por hora técnica de bancada
-    const tempoMinutos = body.tempoBancadaEfetivoMinutos || 20;
-    const custoReagentes = body.custoReagentesEfetivo || 35.00;
-    
-    const custoMaoDeObra = (tempoMinutos / 60) * horaTecnicaBiomedico;
-    const custoTotalRealExame = parseFloat((custoReagentes + custoMaoDeObra).toFixed(2));
+    // Calcular custo contábil e financeiro de bancada via SenaiteApiClient
+    const apuracaoCusto = SenaiteApiClient.calcularCustoRealProducao(payload.codigo_loinc);
+    const catalogo = SenaiteApiClient.obterCatalogoExamesLOINC();
+    const exameInfo = catalogo.find(e => e.codigo_loinc === payload.codigo_loinc) || catalogo[0];
 
-    const laudoId = `LAUDO-SENAITE-${Date.now().toString().slice(-6)}`;
-    const timestampConclusao = new Date().toISOString();
+    const ref = exameInfo.valores_referencia;
+    let interpretacao: "NORMAL" | "ALTERADO_ALTO" | "ALTERADO_BAIXO" = "NORMAL";
 
-    // Task 3.2: Layout e Simulação de Assinatura Digital ICP-Brasil / PKCS#7
-    const urlLaudoPdf = `https://hospital360.local/laudos/pdf/${laudoId}.pdf`;
-    const hashSha256Laudo = `sha256_${Date.now()}_${Math.floor(Math.random() * 1000000)}`;
+    if (payload.resultado_medido > ref.max) {
+      interpretacao = "ALTERADO_ALTO";
+    } else if (payload.resultado_medido < ref.min) {
+      interpretacao = "ALTERADO_BAIXO";
+    }
 
-    const laudoEmitido = {
-      laudoId,
-      workorderId: body.workorderId,
+    const laudoId = `LAUDO-SENAITE-${payload.workorder_id}`;
+    const urlPdfLaudo = `http://localhost:3000/api/senaite/laudo/${laudoId}.pdf`;
+
+    return NextResponse.json({
+      status: "LAUDO_ASSINADO_EMITIDO",
+      laudo_id: laudoId,
+      workorder_id: payload.workorder_id,
+      tenant_id: payload.tenant_id,
       paciente: {
-        cpf: body.pacienteCpf,
-        nome: body.pacienteNome,
+        cpf: payload.paciente_cpf,
+        nome: payload.paciente_nome
       },
       exame: {
-        codigoLoinc: body.codigoLoinc,
-        nome: body.nomeExame,
-        resultados: body.resultadosParametros,
+        codigo_loinc: exameInfo.codigo_loinc,
+        nome_exame: exameInfo.nome_exame,
+        resultado_medido: payload.resultado_medido,
+        unidade_medida: exameInfo.unidade_medida,
+        faixa_referencia: `${ref.min} a ${ref.max} ${ref.unidade}`,
+        interpretacao
       },
-      custeioApurado: {
-        custoReagentesInsumos: custoReagentes,
-        custoMaoDeObraBancada: parseFloat(custoMaoDeObra.toFixed(2)),
-        tempoBancadaMinutos: tempoMinutos,
-        custoTotalRealExame,
+      custo_apurado: apuracaoCusto,
+      assinatura_digital_icp_brasil: {
+        status: "ASSINADO_PKCS7_SHA256",
+        biomedico_crbm: payload.biomedico_crbm,
+        timestamp_ta: new Date().toISOString()
       },
-      assinaturaDigital: {
-        biomedico: body.biomedicoResponsavel || 'Dra. Patricia Lima',
-        registroProfissional: body.crbmBiomedico || 'CRBM/SP 4410',
-        tipoAssinatura: 'ICP-BRASIL_PKCS7_DIGITAL_SIGNATURE',
-        hashSha256: hashSha256Laudo,
-        carimboTempo: timestampConclusao,
-      },
-      urlDocumentoPdf: urlLaudoPdf,
-      status: 'LAUDO_ASSINADO_DISPONIVEL',
-    };
+      url_pdf_laudo: urlPdfLaudo,
+      timestamp: new Date().toISOString()
+    }, { status: 200 });
 
+  } catch (error: any) {
     return NextResponse.json(
-      {
-        success: true,
-        data: laudoEmitido,
-        error: null,
-        meta: {
-          timestamp: timestampConclusao,
-          squad: 'Squad 3 - SENAITE LIMS',
-        },
-      },
-      { status: 201 }
+      { erro: "Erro ao emitir laudo assinado no SENAITE LIMS", detalhes: error.message },
+      { status: 500 }
     );
-  } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : 'Erro ao emitir laudo no SENAITE.';
-    return NextResponse.json({ success: false, data: null, error: msg }, { status: 500 });
   }
 }
