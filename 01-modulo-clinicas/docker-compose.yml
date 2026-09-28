@@ -1,0 +1,52 @@
+name: hospital360-modulo-clinicas
+
+services:
+  openemr-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: 360-modulo-clinicas-app
+    restart: unless-stopped
+    ports:
+      - "${PORT:-8081}:8081"
+    env_file:
+      - .env.example
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 1.5G
+    depends_on:
+      openemr-db:
+        condition: service_healthy
+    networks:
+      - clinicas-net
+
+  openemr-db:
+    image: mariadb:10.11
+    container_name: 360-modulo-clinicas-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: secret_root_hospital360
+      MYSQL_DATABASE: openemr_tenant_cardiovida
+      MYSQL_USER: openemr_user
+      MYSQL_PASSWORD: openemr_pass_secure
+    volumes:
+      - clinicas-db-data:/var/lib/mysql
+      - ./config/init_multitenant_rn_ind.sql:/docker-entrypoint-initdb.d/init_rn_ind.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-psecret_root_hospital360"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - clinicas-net
+
+volumes:
+  clinicas-db-data:
+
+networks:
+  clinicas-net:
+    driver: bridge

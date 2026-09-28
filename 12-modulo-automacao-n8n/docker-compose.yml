@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  n8n_automacao:
+    image: docker.n8n.io/n8nio/n8n:latest
+    container_name: 360_n8n_automacao
+    restart: always
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_HOST=localhost
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - NODE_ENV=production
+      - N8N_ENCRYPTION_KEY=n8n_secret_encryption_key_360
+    volumes:
+      - n8n_data:/home/node/.n8n
+    networks:
+      - squad7_network
+
+networks:
+  squad7_network:
+    driver: bridge
+
+volumes:
+  n8n_data:

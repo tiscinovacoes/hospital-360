@@ -1,0 +1,50 @@
+name: hospital360-modulo-laboratorio
+
+services:
+  senaite-lims:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: 360-modulo-laboratorio-app
+    restart: unless-stopped
+    ports:
+      - "${PORT:-8082}:8082"
+    env_file:
+      - .env.example
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 1.5G
+    depends_on:
+      senaite-db:
+        condition: service_healthy
+    networks:
+      - laboratorio-net
+
+  senaite-db:
+    image: postgres:15-alpine
+    container_name: 360-modulo-laboratorio-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: senaite_lims_db
+      POSTGRES_USER: senaite_user
+      POSTGRES_PASSWORD: senaite_pass_secure
+    volumes:
+      - senaite-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U senaite_user -d senaite_lims_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - laboratorio-net
+
+volumes:
+  senaite-db-data:
+
+networks:
+  laboratorio-net:
+    driver: bridge

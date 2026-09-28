@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  mariadb_farmacia:
+    image: mariadb:10.11
+    container_name: 360_mariadb_farmacia
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root_farmacia_pass
+      MYSQL_DATABASE: openboxes_farmacia
+      MYSQL_USER: openboxes
+      MYSQL_PASSWORD: openboxes_secret_pass
+    ports:
+      - "3307:3306"
+    volumes:
+      - mariadb_farmacia_data:/var/lib/mysql
+    networks:
+      - squad4_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot_farmacia_pass"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  openboxes_farmacia:
+    image: openboxes/openboxes:latest
+    container_name: 360_openboxes_farmacia
+    restart: always
+    ports:
+      - "8084:8080"
+    environment:
+      OPENBOXES_DATABASE_URL: jdbc:mysql://mariadb_farmacia:3306/openboxes_farmacia?useSSL=false
+      OPENBOXES_DATABASE_USERNAME: openboxes
+      OPENBOXES_DATABASE_PASSWORD: openboxes_secret_pass
+      FEFO_RULE_ENABLED: "true"
+    depends_on:
+      mariadb_farmacia:
+        condition: service_healthy
+    networks:
+      - squad4_network
+
+networks:
+  squad4_network:
+    driver: bridge
+
+volumes:
+  mariadb_farmacia_data:
