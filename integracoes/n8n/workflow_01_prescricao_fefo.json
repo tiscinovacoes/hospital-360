@@ -1,0 +1,124 @@
+{
+  "name": "Workflow 01 — OpenEMR ➔ OpenBoxes FEFO ➔ Hub 360 Estação 4 ➔ WMS",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "webhook/prescricao.emitida",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Webhook Prescrição OpenEMR",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [200, 240],
+      "webhookId": "wh-openemr-prescricao-01"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Validação e Normalização da Prescrição Médica (n8n-workflow-patterns)\nconst body = items[0].json.body || items[0].json;\nconst headers = items[0].json.headers || {};\n\nif (!body.prescricao_id || !body.itens || !Array.isArray(body.itens)) {\n  throw new Error('INVALID_PAYLOAD: prescricao_id e array itens são obrigatórios');\n}\n\nreturn [{\n  json: {\n    prescricao_id: body.prescricao_id,\n    atendimento_id: body.atendimento_id || ('ATD-' + Date.now()),\n    paciente_id: body.paciente_id || '000.000.000-00',\n    paciente_nome: body.paciente_nome || 'Paciente Ambulatorial',\n    leito_unidade: body.leito_unidade || 'Posto Enfermagem Central',\n    medico_crm: body.medico_crm || 'CRM/SP 123456',\n    tenant_id: body.tenant_id || 'hospital_360_default',\n    itens: body.itens.map(it => ({\n      medicamento_id: it.medicamento_id || it.codigo_br,\n      codigo_br: it.codigo_br,\n      nome_medicamento: it.nome_medicamento || 'Medicamento Prescrito',\n      quantidade_solicitada: Number(it.quantidade_solicitada || 1),\n      unidade_medida: it.unidade_medida || 'UN'\n    }))\n  }\n}];"
+      },
+      "name": "Normalizar Prescrição",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [440, 240]
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "http://localhost:3000/api/openboxes/prescricao",
+        "options": {
+          "timeout": 5000
+        },
+        "bodyParametersUi": {
+          "parameter": [
+            { "name": "prescricao_id", "value": "={{$json.prescricao_id}}" },
+            { "name": "atendimento_id", "value": "={{$json.atendimento_id}}" },
+            { "name": "paciente_id", "value": "={{$json.paciente_id}}" },
+            { "name": "paciente_nome", "value": "={{$json.paciente_nome}}" },
+            { "name": "leito_unidade", "value": "={{$json.leito_unidade}}" },
+            { "name": "medico_crm", "value": "={{$json.medico_crm}}" },
+            { "name": "tenant_id", "value": "={{$json.tenant_id}}" },
+            { "name": "itens", "value": "={{$json.itens}}" }
+          ]
+        }
+      },
+      "name": "Baixa FEFO OpenBoxes & Estação 4",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [680, 240],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "responseCode": 200,
+        "options": {},
+        "responseBody": "={{JSON.stringify({ success: true, status: 'DISPENSADO_FEFO_HUB', data: $json })}}"
+      },
+      "name": "Responder Sucesso 200",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [920, 180]
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "http://localhost:3000/api/webhooks/n8n/dlq",
+        "options": {},
+        "bodyParametersUi": {
+          "parameter": [
+            { "name": "workflow", "value": "workflow_01_prescricao_fefo" },
+            { "name": "node_falha", "value": "Baixa FEFO OpenBoxes & Estação 4" },
+            { "name": "erro", "value": "={{$json.error ? $json.error.message : 'Falha na comunicação com OpenBoxes'}}" },
+            { "name": "payload_original", "value": "={{$node['Normalizar Prescrição'].json}}" }
+          ]
+        }
+      },
+      "name": "Registrar na DLQ",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [920, 360]
+    },
+    {
+      "parameters": {
+        "responseCode": 502,
+        "options": {},
+        "responseBody": "={{JSON.stringify({ success: false, error: 'UPSTREAM_FEFO_FAILURE', message: 'Falha ao dispensar no OpenBoxes. Encaminhado para Dead Letter Queue (DLQ).', dlq_registrado: true })}}"
+      },
+      "name": "Responder Erro 502",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1140, 360]
+    }
+  ],
+  "connections": {
+    "Webhook Prescrição OpenEMR": {
+      "main": [
+        [{ "node": "Normalizar Prescrição", "type": "main", "index": 0 }]
+      ]
+    },
+    "Normalizar Prescrição": {
+      "main": [
+        [{ "node": "Baixa FEFO OpenBoxes & Estação 4", "type": "main", "index": 0 }]
+      ]
+    },
+    "Baixa FEFO OpenBoxes & Estação 4": {
+      "main": [
+        [{ "node": "Responder Sucesso 200", "type": "main", "index": 0 }],
+        [{ "node": "Registrar na DLQ", "type": "main", "index": 0 }]
+      ]
+    },
+    "Registrar na DLQ": {
+      "main": [
+        [{ "node": "Responder Erro 502", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

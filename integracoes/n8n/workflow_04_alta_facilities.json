@@ -1,0 +1,114 @@
+{
+  "name": "Workflow 04 — Censo Leitos (Alta) ➔ Facilities Sabia (Ordem Higienização) ➔ Hub Estação 5",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "webhook/leitos.alta_medica",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Webhook Alta Médica NIR",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [200, 240],
+      "webhookId": "wh-leitos-alta-04"
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "http://localhost:3000/api/leitos/alta-facilities",
+        "options": {
+          "timeout": 5000
+        },
+        "bodyParametersUi": {
+          "parameter": [
+            { "name": "leitoId", "value": "={{$json.body.leitoId || $json.body.leito_id}}" },
+            { "name": "leitoNome", "value": "={{$json.body.leitoNome || $json.body.leito_nome || 'Leito Hospitalar'}}" },
+            { "name": "ala", "value": "={{$json.body.ala || 'UTI Geral'}}" },
+            { "name": "tipoLeito", "value": "={{$json.body.tipoLeito || $json.body.tipo_leito || 'UTI Adulto'}}" },
+            { "name": "pacienteNome", "value": "={{$json.body.pacienteNome || $json.body.paciente_nome}}" },
+            { "name": "pacienteCpf", "value": "={{$json.body.pacienteCpf || $json.body.paciente_cpf}}" },
+            { "name": "prontuarioEpisodio", "value": "={{$json.body.prontuarioEpisodio || ('EPIS-' + Date.now())}}" },
+            { "name": "motivoAlta", "value": "={{$json.body.motivoAlta || 'ALTA_CLINICA'}}" },
+            { "name": "tipoLimpeza", "value": "={{$json.body.tipoLimpeza || 'TERMINAL'}}" },
+            { "name": "tempoPermanenciaDias", "value": "={{$json.body.tempoPermanenciaDias || 3}}" },
+            { "name": "valorDiaria", "value": "={{$json.body.valorDiaria || 1450.0}}" },
+            { "name": "enfermeiroResponsavel", "value": "={{$json.body.enfermeiroResponsavel || 'Enf. Plantonista Central'}}" }
+          ]
+        }
+      },
+      "name": "Registrar Alta e Acionar Facilities",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [460, 240],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "responseCode": 200,
+        "options": {},
+        "responseBody": "={{JSON.stringify({ success: true, status: 'ALTA_PROCESSADA_FACILITIES', leito_liberado: $json.leito, chamado_facilities: $json.chamadoFacilities, hub_estacao_5: $json.hubCustos })}}"
+      },
+      "name": "Responder Alta Concluída 200",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [720, 180]
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "http://localhost:3000/api/webhooks/n8n/dlq",
+        "options": {},
+        "bodyParametersUi": {
+          "parameter": [
+            { "name": "workflow", "value": "workflow_04_alta_facilities" },
+            { "name": "node_falha", "value": "Registrar Alta e Acionar Facilities" },
+            { "name": "erro", "value": "={{$json.error ? $json.error.message : 'Falha ao registrar alta e acionar facilities'}}" },
+            { "name": "payload_original", "value": "={{$node['Webhook Alta Médica NIR'].json.body}}" }
+          ]
+        }
+      },
+      "name": "Registrar Alta na DLQ",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [720, 360]
+    },
+    {
+      "parameters": {
+        "responseCode": 500,
+        "options": {},
+        "responseBody": "={{JSON.stringify({ success: false, error: 'ALTA_FACILITIES_FAILURE', message: 'Falha ao registrar alta hospitalar. Chamado gravado na DLQ para conciliação imediata.', dlq_registrado: true })}}"
+      },
+      "name": "Responder Erro Alta 500",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [960, 360]
+    }
+  ],
+  "connections": {
+    "Webhook Alta Médica NIR": {
+      "main": [
+        [{ "node": "Registrar Alta e Acionar Facilities", "type": "main", "index": 0 }]
+      ]
+    },
+    "Registrar Alta e Acionar Facilities": {
+      "main": [
+        [{ "node": "Responder Alta Concluída 200", "type": "main", "index": 0 }],
+        [{ "node": "Registrar Alta na DLQ", "type": "main", "index": 0 }]
+      ]
+    },
+    "Registrar Alta na DLQ": {
+      "main": [
+        [{ "node": "Responder Erro Alta 500", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
