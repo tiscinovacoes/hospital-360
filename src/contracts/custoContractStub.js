@@ -7,7 +7,7 @@
  * - Função emitir_evento_custo(...)
  */
 
-export const MOCK_CENTROS_CUSTO = [
+const MOCK_CENTROS_CUSTO = [
   { id: 'CC-01', nome: 'Administração Geral', tipo: 'auxiliar', tenant_id: 'tenant-demo' },
   { id: 'CC-02', nome: 'Almoxarifado & Farmácia Central', tipo: 'auxiliar', tenant_id: 'tenant-demo' },
   { id: 'CC-03', nome: 'Manutenção & Limpeza', tipo: 'auxiliar', tenant_id: 'tenant-demo' },
@@ -17,7 +17,7 @@ export const MOCK_CENTROS_CUSTO = [
   { id: 'CC-07', nome: 'Laboratório Municipal', tipo: 'produtivo', tenant_id: 'tenant-demo' }
 ];
 
-export class CustoContractStub {
+class CustoContractStub {
   constructor() {
     this.eventosEmitidos = [];
     this.centrosCusto = [...MOCK_CENTROS_CUSTO];
@@ -81,4 +81,10 @@ export class CustoContractStub {
   }
 }
 
-export const custoContract = new CustoContractStub();
+const custoContract = new CustoContractStub();
+
+module.exports = {
+  MOCK_CENTROS_CUSTO,
+  CustoContractStub,
+  custoContract
+};

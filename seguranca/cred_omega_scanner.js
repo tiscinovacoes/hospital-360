@@ -15,7 +15,7 @@ const PATTERNS = [
   { name: 'Supabase Service Role JWT', regex: /eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+/g }
 ];
 
-const IGNORE_DIRS = ['.git', 'node_modules', '.next', 'dist', 'build', 'artifacts', 'tests'];
+const IGNORE_DIRS = ['.git', 'node_modules', '.next', 'dist', 'build', 'artifacts', 'tests', '.agents', '.gemini', '.claude', '.system_generated', 'references'];
 const ALLOWED_EXTS = ['.ts', '.tsx', '.js', '.jsx', '.json', '.yml', '.yaml', '.md', '.env.example'];
 
 function scanDirectory(dir, findings = []) {

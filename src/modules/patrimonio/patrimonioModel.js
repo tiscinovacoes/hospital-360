@@ -5,7 +5,7 @@
  * Gerencia Notas Fiscais de serviços/insumos indiretos e Ativos Fixos com depreciação linear.
  */
 
-export class NotaFiscalServico {
+class NotaFiscalServico {
   constructor({
     id = null,
     tenant_id = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
@@ -47,7 +47,7 @@ export class NotaFiscalServico {
   }
 }
 
-export class AtivoPatrimonial {
+class AtivoPatrimonial {
   constructor({
     id = null,
     tenant_id = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
@@ -98,3 +98,8 @@ export class AtivoPatrimonial {
     });
   }
 }
+
+module.exports = {
+  NotaFiscalServico,
+  AtivoPatrimonial
+};
