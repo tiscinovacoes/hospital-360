@@ -12,7 +12,9 @@
     "test:onda2": "node ../tests/onda2_conectores_satelites.spec.js",
     "test:onda3": "node ../tests/onda3_n8n_barramento_dlq.spec.js",
     "test:onda4": "node ../tests/onda4_docker_compose_validador.spec.js",
-    "test:all": "node ../tests/sprint4_acl_cmed_contracts.spec.js && node ../tests/sprint5_fefo_split_leitos_contracts.spec.js && node ../tests/sprint6_observability_a11y_contracts.spec.js && node ../tests/onda2_conectores_satelites.spec.js && node ../tests/onda3_n8n_barramento_dlq.spec.js && node ../tests/onda4_docker_compose_validador.spec.js && node ../tests/sprint7_e2e_doortodoor_smoke.spec.js"
+    "test:squads": "node ../tests/squads_integration_e2e.spec.js",
+    "test:k6": "node ../tests/k6/k6_load_runner.spec.js",
+    "test:all": "node ../tests/sprint4_acl_cmed_contracts.spec.js && node ../tests/sprint5_fefo_split_leitos_contracts.spec.js && node ../tests/sprint6_observability_a11y_contracts.spec.js && node ../tests/onda2_conectores_satelites.spec.js && node ../tests/onda3_n8n_barramento_dlq.spec.js && node ../tests/onda4_docker_compose_validador.spec.js && node ../tests/squads_integration_e2e.spec.js && node ../tests/k6/k6_load_runner.spec.js && node ../tests/sprint7_e2e_doortodoor_smoke.spec.js"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.4",

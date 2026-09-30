@@ -371,6 +371,7 @@ services:
       - "9090:9090"
     volumes:
       - ./16-infra-observabilidade-sre/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./16-infra-observabilidade-sre/prometheus/alert_rules.yml:/etc/prometheus/alert_rules.yml:ro
       - prometheus_data:/prometheus
     networks:
       - hospital360_network
@@ -398,6 +399,8 @@ services:
       - GF_USERS_ALLOW_SIGN_UP=false
     volumes:
       - grafana_data:/var/lib/grafana
+      - ./16-infra-observabilidade-sre/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./16-infra-observabilidade-sre/grafana/dashboards:/var/lib/grafana/dashboards:ro
     depends_on:
       - prometheus
     networks:

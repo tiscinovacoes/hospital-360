@@ -1,0 +1,253 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 100,
+      "title": "⚡ 1. LATÊNCIA — TEMPO DE RESPOSTA DAS ESTAÇÕES (SLA < 200ms)",
+      "type": "row"
+    },
+    {
+      "id": 1,
+      "title": "Latência P95 (Histórico)",
+      "type": "timeseries",
+      "gridPos": { "h": 7, "w": 12, "x": 0, "y": 1 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, rate(hospital360_http_request_duration_seconds_bucket[5m])) * 1000",
+          "legendFormat": "P95 {{ handler }}"
+        },
+        {
+          "expr": "histogram_quantile(0.50, rate(hospital360_http_request_duration_seconds_bucket[5m])) * 1000",
+          "legendFormat": "P50 {{ handler }}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 150 },
+              { "color": "red", "value": 200 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 2,
+      "title": "Latência P99 Atual",
+      "type": "gauge",
+      "gridPos": { "h": 7, "w": 6, "x": 12, "y": 1 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.99, rate(hospital360_http_request_duration_seconds_bucket[5m])) * 1000"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "min": 0,
+          "max": 500,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": 0 },
+              { "color": "yellow", "value": 200 },
+              { "color": "red", "value": 350 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 3,
+      "title": "Volume Total Acumulado no Hub",
+      "type": "stat",
+      "gridPos": { "h": 7, "w": 6, "x": 18, "y": 1 },
+      "targets": [
+        {
+          "expr": "hospital360_hub_despesas_valor_reais_total"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyBRL",
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{ "color": "blue", "value": null }]
+          }
+        }
+      }
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 8 },
+      "id": 200,
+      "title": "🚦 2. TRÁFEGO — REQUISIÇÕES POR ESTAÇÃO CLÍNICA (THROUGHPUT)",
+      "type": "row"
+    },
+    {
+      "id": 4,
+      "title": "Vazão de Requisições por Rota (/api)",
+      "type": "timeseries",
+      "gridPos": { "h": 7, "w": 12, "x": 0, "y": 9 },
+      "targets": [
+        {
+          "expr": "rate(hospital360_http_requests_total[1m])",
+          "legendFormat": "{{ handler }} [{{ status }}]"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps"
+        }
+      }
+    },
+    {
+      "id": 5,
+      "title": "Custo Distribuído por Estação Door-to-Door",
+      "type": "barchart",
+      "gridPos": { "h": 7, "w": 12, "x": 12, "y": 9 },
+      "targets": [
+        {
+          "expr": "hospital360_hub_despesas_estacao_reais",
+          "legendFormat": "Estação {{ estacao }}: {{ nome }}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyBRL"
+        }
+      }
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 16 },
+      "id": 300,
+      "title": "⚠️ 3. ERROS — TAXA DE FALHAS & RETENÇÃO NA DEAD LETTER QUEUE (DLQ)",
+      "type": "row"
+    },
+    {
+      "id": 6,
+      "title": "Mensagens Retidas na DLQ (n8n Barramento)",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 17 },
+      "targets": [
+        {
+          "expr": "hospital360_n8n_dlq_mensagens_total"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": 0 },
+              { "color": "yellow", "value": 1 },
+              { "color": "red", "value": 5 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 7,
+      "title": "Lotes em Risco Sanitário Anvisa (Farmácia)",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 17 },
+      "targets": [
+        {
+          "expr": "hospital360_fefo_lotes_risco_vencimento",
+          "legendFormat": "{{ status }}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": 0 },
+              { "color": "red", "value": 1 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 8,
+      "title": "Split Tripartite Liquidado Hyperswitch",
+      "type": "piechart",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 17 },
+      "targets": [
+        {
+          "expr": "hospital360_split_financeiro_reais_total",
+          "legendFormat": "{{ destinatario }}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyBRL"
+        }
+      }
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 23 },
+      "id": 400,
+      "title": "🛏️ 4. SATURAÇÃO — CAPACIDADE DE LEITOS & CONSUMO DE RECURSOS",
+      "type": "row"
+    },
+    {
+      "id": 9,
+      "title": "Ocupação Hospitalar por Ala (NIR)",
+      "type": "gauge",
+      "gridPos": { "h": 7, "w": 24, "x": 0, "y": 24 },
+      "targets": [
+        {
+          "expr": "hospital360_leitos_ocupacao_percent",
+          "legendFormat": "Ala {{ ala }}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": 0 },
+              { "color": "yellow", "value": 80 },
+              { "color": "red", "value": 90 }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": ["hospital360", "sre", "golden-signals", "producao"],
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timezone": "browser",
+  "title": "Hospital 360 — Dashboard SRE & 4 Golden Signals",
+  "uid": "hospital360-sre-golden-signals",
+  "version": 1
+}
