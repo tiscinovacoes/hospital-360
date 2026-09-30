@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  postgres_facilities:
+    image: postgres:15-alpine
+    container_name: 360_postgres_facilities
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: facilities_hotelaria_db
+      POSTGRES_USER: facilities_admin
+      POSTGRES_PASSWORD: ${FACILITIES_DB_PASSWORD:-facilities_secret_2026}
+    ports:
+      - "5439:5432"
+    volumes:
+      - postgres_facilities_data:/var/lib/postgresql/data
+    networks:
+      - squad9_facilities_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U facilities_admin -d facilities_hotelaria_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+  sabia_facilities:
+    image: ghcr.io/hospital360/facilities-sabia:latest
+    container_name: 360_sabia_facilities
+    restart: unless-stopped
+    ports:
+      - "${FACILITIES_PORT:-8089}:8080"
+    environment:
+      DATABASE_URL: postgresql://facilities_admin:${FACILITIES_DB_PASSWORD:-facilities_secret_2026}@postgres_facilities:5432/facilities_hotelaria_db
+      LEITOS_URL: ${LEITOS_URL:-http://localhost:3000/api/leitos/censo}
+      TENANT_ID: ${TENANT_ID:-hospital_360_default}
+      PORT: 8080
+    depends_on:
+      postgres_facilities:
+        condition: service_healthy
+    networks:
+      - squad9_facilities_network
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 1G
+
+networks:
+  squad9_facilities_network:
+    driver: bridge
+
+volumes:
+  postgres_facilities_data:
+    driver: local

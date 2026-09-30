@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  qdrant_ia:
+    image: qdrant/qdrant:v1.7.4
+    container_name: 360_qdrant_ia
+    restart: unless-stopped
+    ports:
+      - "6333:6333"
+    volumes:
+      - qdrant_ia_data:/qdrant/storage
+    networks:
+      - squad13_ia_network
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/6333'"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+
+  ia_diagnostica_api:
+    image: ghcr.io/hospital360/ia-diagnostica:latest
+    container_name: 360_ia_diagnostica
+    restart: unless-stopped
+    ports:
+      - "${IA_PORT:-8093}:8000"
+    environment:
+      QDRANT_URL: http://qdrant_ia:6333
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-sk-proj-test-key}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-AIzaSy_test_key}
+      TENANT_ID: ${TENANT_ID:-hospital_360_default}
+      PORT: 8000
+    depends_on:
+      qdrant_ia:
+        condition: service_healthy
+    networks:
+      - squad13_ia_network
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+
+networks:
+  squad13_ia_network:
+    driver: bridge
+
+volumes:
+  qdrant_ia_data:
+    driver: local

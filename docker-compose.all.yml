@@ -1,0 +1,447 @@
+# ==============================================================================
+# HOSPITAL 360 — ORQUESTRADOR MESTRE DE DESENVOLVIMENTO & PRODUÇÃO LOCAL
+# ==============================================================================
+# Execução completa:
+#   docker compose -f docker-compose.all.yml --profile all up -d
+# Execução padrão (Core + Barramento):
+#   docker compose -f docker-compose.all.yml up -d
+# Execução com Satélites:
+#   docker compose -f docker-compose.all.yml --profile satelites up -d
+# Execução com Observabilidade (Prometheus + Grafana):
+#   docker compose -f docker-compose.all.yml --profile observabilidade up -d
+# ==============================================================================
+
+version: '3.8'
+
+services:
+  # ============================================================================
+  # CAMADA 1: INFRAESTRUTURA CORE & DADOS CENTRAIS
+  # ============================================================================
+
+  postgres-core:
+    image: postgres:16-alpine
+    container_name: 360_postgres_core
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-hospital360_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-hospital360_secure_pwd_2026}
+      POSTGRES_DB: ${POSTGRES_DB:-hospital360_core}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_core_data:/var/lib/postgresql/data
+    networks:
+      - hospital360_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hospital360_admin -d hospital360_core"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 1G
+
+  redis-bus:
+    image: redis:7-alpine
+    container_name: 360_redis_bus
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-hospital360_redis_pwd}
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_bus_data:/data
+    networks:
+      - hospital360_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "hospital360_redis_pwd", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+  n8n-bus:
+    image: n8nio/n8n:latest
+    container_name: 360_n8n_bus
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=${N8N_USER:-admin_hospital360}
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_PASSWORD:-hospital360_n8n_master_pwd}
+      - N8N_HOST=localhost
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - NODE_ENV=production
+      - WEBHOOK_URL=http://localhost:5678/
+      - EXECUTIONS_DATA_PRUNE=true
+      - EXECUTIONS_DATA_MAX_AGE=168
+      - N8N_WEBHOOK_SECRET=hospital360-n8n-secret-key-2026
+      - QUEUE_BULL_REDIS_HOST=redis-bus
+      - QUEUE_BULL_REDIS_PORT=6379
+      - QUEUE_BULL_REDIS_PASSWORD=${REDIS_PASSWORD:-hospital360_redis_pwd}
+    volumes:
+      - n8n_bus_data:/home/node/.n8n
+    depends_on:
+      postgres-core:
+        condition: service_healthy
+      redis-bus:
+        condition: service_healthy
+    networks:
+      - hospital360_network
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+
+  hub-core:
+    build:
+      context: ./nucleo
+      dockerfile: Dockerfile
+    container_name: 360_hub_core
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - HOSTNAME=0.0.0.0
+      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL:-https://oogpcdaosexarxmvupiw.supabase.co}
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY:-sb_publishable_a0cwEmheXaFCeNuNYWRNPA_d4aEpQMI}
+      - DEFAULT_TENANT_ID=${DEFAULT_TENANT_ID:-a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11}
+      - N8N_WEBHOOK_SECRET=hospital360-n8n-secret-key-2026
+      - DATABASE_URL=postgresql://hospital360_admin:hospital360_secure_pwd_2026@postgres-core:5432/hospital360_core
+    depends_on:
+      postgres-core:
+        condition: service_healthy
+      redis-bus:
+        condition: service_healthy
+    networks:
+      - hospital360_network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+
+  # ============================================================================
+  # CAMADA 2: SATÉLITES CLÍNICOS & OPERACIONAIS (PROFILE: satelites, all)
+  # ============================================================================
+
+  # Módulo 01: Clínicas (OpenEMR / PHP-FPM + Nginx)
+  mariadb-clinicas:
+    profiles: ["satelites", "all"]
+    image: mariadb:10.11
+    container_name: 360_mariadb_clinicas
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${CLINICAS_ROOT_PASSWORD:-root_clinicas_pass_2026}
+      MYSQL_DATABASE: openemr_db
+      MYSQL_USER: openemr_user
+      MYSQL_PASSWORD: ${CLINICAS_PASSWORD:-openemr_pass_2026}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mariadb_clinicas_data:/var/lib/mysql
+    networks:
+      - hospital360_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot_clinicas_pass_2026"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  clinicas-openemr:
+    profiles: ["satelites", "all"]
+    build:
+      context: ./01-modulo-clinicas
+      dockerfile: Dockerfile
+    container_name: 360_clinicas_openemr
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      DB_HOST: mariadb-clinicas
+      DB_PORT: 3306
+      DB_NAME: openemr_db
+      DB_USER: openemr_user
+      DB_PASS: ${CLINICAS_PASSWORD:-openemr_pass_2026}
+      HUB_CORE_URL: http://hub-core:3000
+    depends_on:
+      mariadb-clinicas:
+        condition: service_healthy
+    networks:
+      - hospital360_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  # Módulo 02: Laboratório LIMS (SENAITE Gateway)
+  laboratorio-senaite:
+    profiles: ["satelites", "all"]
+    build:
+      context: ./02-modulo-laboratorio
+      dockerfile: Dockerfile
+    container_name: 360_laboratorio_senaite
+    restart: unless-stopped
+    ports:
+      - "8082:8082"
+    environment:
+      HUB_CORE_URL: http://hub-core:3000
+      PORT: 8082
+    networks:
+      - hospital360_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/api/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  # Módulo 03: Leitos & Censo NIR (Bahmni / OpenMRS)
+  leitos-nir-db:
+    profiles: ["satelites", "all"]
+    image: postgres:15-alpine
+    container_name: 360_leitos_nir_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: leitos_nir_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${LEITOS_DB_PASSWORD:-postgres_leitos_secret}
+    ports:
+      - "5435:5432"
+    volumes:
+      - postgres_leitos_data:/var/lib/postgresql/data
+    networks:
+      - hospital360_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d leitos_nir_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Módulo 04: Estoque & Farmácia Hospitalar (OpenBoxes FEFO)
+  mariadb-farmacia:
+    profiles: ["satelites", "all"]
+    image: mariadb:10.11
+    container_name: 360_mariadb_farmacia
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${FARMACIA_ROOT_PASSWORD:-root_farmacia_pass}
+      MYSQL_DATABASE: openboxes_farmacia
+      MYSQL_USER: openboxes
+      MYSQL_PASSWORD: ${FARMACIA_PASSWORD:-openboxes_secret_pass}
+    ports:
+      - "3307:3306"
+    volumes:
+      - mariadb_farmacia_data:/var/lib/mysql
+    networks:
+      - hospital360_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot_farmacia_pass"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  farmacia-openboxes:
+    profiles: ["satelites", "all"]
+    image: openboxes/openboxes:latest
+    container_name: 360_farmacia_openboxes
+    restart: unless-stopped
+    ports:
+      - "8084:8080"
+    environment:
+      OPENBOXES_DATABASE_URL: jdbc:mysql://mariadb-farmacia:3306/openboxes_farmacia?useSSL=false
+      OPENBOXES_DATABASE_USERNAME: openboxes
+      OPENBOXES_DATABASE_PASSWORD: ${FARMACIA_PASSWORD:-openboxes_secret_pass}
+      FEFO_RULE_ENABLED: "true"
+    depends_on:
+      mariadb-farmacia:
+        condition: service_healthy
+    networks:
+      - hospital360_network
+
+  # Módulo 05: WMS & Intralogística (Pick & Pack)
+  postgres-wms:
+    profiles: ["satelites", "all"]
+    image: postgres:15-alpine
+    container_name: 360_postgres_wms
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: openwms_intralogistica
+      POSTGRES_USER: openwms
+      POSTGRES_PASSWORD: ${WMS_DB_PASSWORD:-openwms_secret_2026}
+    ports:
+      - "5436:5432"
+    volumes:
+      - postgres_wms_data:/var/lib/postgresql/data
+    networks:
+      - hospital360_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U openwms -d openwms_intralogistica"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Módulo 07: Fintech & Split Tripartite (Hyperswitch)
+  postgres-fintech:
+    profiles: ["satelites", "all"]
+    image: postgres:15-alpine
+    container_name: 360_postgres_fintech
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: fintech_split_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${FINTECH_DB_PASSWORD:-postgres_fintech_secret}
+    ports:
+      - "5437:5432"
+    volumes:
+      - postgres_fintech_data:/var/lib/postgresql/data
+    networks:
+      - hospital360_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d fintech_split_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Módulo 14: Mensageria WhatsApp (Evolution API & Redis)
+  redis-whatsapp:
+    profiles: ["satelites", "all"]
+    image: redis:7-alpine
+    container_name: 360_redis_whatsapp
+    restart: unless-stopped
+    ports:
+      - "6382:6379"
+    volumes:
+      - redis_whatsapp_data:/data
+    networks:
+      - hospital360_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  evolution-whatsapp:
+    profiles: ["satelites", "all"]
+    image: atendai/evolution-api:v2.1.2
+    container_name: 360_evolution_whatsapp
+    restart: unless-stopped
+    ports:
+      - "8094:8080"
+    environment:
+      SERVER_TYPE: http
+      SERVER_PORT: 8080
+      DATABASE_ENABLED: "false"
+      CACHE_REDIS_ENABLED: "true"
+      CACHE_REDIS_URI: redis://redis-whatsapp:6379
+      AUTHENTICATION_API_KEY: ${AUTHENTICATION_API_KEY:-hospital360_wa_secret_2026}
+      TENANT_ID: ${TENANT_ID:-hospital_360_default}
+    depends_on:
+      redis-whatsapp:
+        condition: service_healthy
+    networks:
+      - hospital360_network
+
+  # ============================================================================
+  # CAMADA 3: OBSERVABILIDADE, MÉTRICAS & SRE (PROFILE: observabilidade, all)
+  # ============================================================================
+
+  prometheus:
+    profiles: ["observabilidade", "all"]
+    image: prom/prometheus:v2.51.0
+    container_name: 360_prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./16-infra-observabilidade-sre/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - hospital360_network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+  grafana:
+    profiles: ["observabilidade", "all"]
+    image: grafana/grafana:10.4.0
+    container_name: 360_grafana
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin_hospital360_sre_secret}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - hospital360_network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+# ==============================================================================
+# REDE UNIFICADA & VOLUMES PERSISTENTES
+# ==============================================================================
+
+networks:
+  hospital360_network:
+    name: hospital360_network
+    driver: bridge
+
+volumes:
+  postgres_core_data:
+    name: 360_postgres_core_data
+  redis_bus_data:
+    name: 360_redis_bus_data
+  n8n_bus_data:
+    name: 360_n8n_bus_data
+  mariadb_clinicas_data:
+    name: 360_mariadb_clinicas_data
+  postgres_leitos_data:
+    name: 360_postgres_leitos_data
+  mariadb_farmacia_data:
+    name: 360_mariadb_farmacia_data
+  postgres_wms_data:
+    name: 360_postgres_wms_data
+  postgres_fintech_data:
+    name: 360_postgres_fintech_data
+  redis_whatsapp_data:
+    name: 360_redis_whatsapp_data
+  prometheus_data:
+    name: 360_prometheus_data
+  grafana_data:
+    name: 360_grafana_data

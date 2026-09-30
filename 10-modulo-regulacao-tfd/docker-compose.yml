@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  postgres_regulacao:
+    image: postgres:15-alpine
+    container_name: 360_postgres_regulacao
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: regulacao_tfd_db
+      POSTGRES_USER: regulacao_admin
+      POSTGRES_PASSWORD: ${REGULACAO_DB_PASSWORD:-regulacao_secret_2026}
+    ports:
+      - "5440:5432"
+    volumes:
+      - postgres_regulacao_data:/var/lib/postgresql/data
+    networks:
+      - squad10_regulacao_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U regulacao_admin -d regulacao_tfd_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+  regulacao_tfd_service:
+    image: ghcr.io/hospital360/regulacao-tfd:latest
+    container_name: 360_regulacao_tfd
+    restart: unless-stopped
+    ports:
+      - "${REGULACAO_PORT:-8090}:8080"
+    environment:
+      DATABASE_URL: postgresql://regulacao_admin:${REGULACAO_DB_PASSWORD:-regulacao_secret_2026}@postgres_regulacao:5432/regulacao_tfd_db
+      SISREG_GOV_URL: ${SISREG_GOV_URL:-https://sisreg.saude.gov.br/api/v1}
+      TENANT_ID: ${TENANT_ID:-hospital_360_default}
+      PORT: 8080
+    depends_on:
+      postgres_regulacao:
+        condition: service_healthy
+    networks:
+      - squad10_regulacao_network
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 1G
+
+networks:
+  squad10_regulacao_network:
+    driver: bridge
+
+volumes:
+  postgres_regulacao_data:
+    driver: local

@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  redis_whatsapp:
+    image: redis:7-alpine
+    container_name: 360_redis_whatsapp
+    restart: unless-stopped
+    ports:
+      - "6382:6379"
+    volumes:
+      - redis_whatsapp_data:/data
+    networks:
+      - squad14_whatsapp_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+  evolution_whatsapp:
+    image: atendai/evolution-api:v2.1.2
+    container_name: 360_evolution_whatsapp
+    restart: unless-stopped
+    ports:
+      - "${WHATSAPP_PORT:-8094}:8080"
+    environment:
+      SERVER_TYPE: http
+      SERVER_PORT: 8080
+      DATABASE_ENABLED: "false"
+      CACHE_REDIS_ENABLED: "true"
+      CACHE_REDIS_URI: redis://redis_whatsapp:6379
+      AUTHENTICATION_API_KEY: ${AUTHENTICATION_API_KEY:-hospital360_wa_secret_2026}
+      META_WHATSAPP_TOKEN: ${META_WHATSAPP_TOKEN:-EAAG_demo_token}
+      WHATSAPP_PHONE_NUMBER_ID: ${WHATSAPP_PHONE_NUMBER_ID:-1092810291029}
+      TENANT_ID: ${TENANT_ID:-hospital_360_default}
+    depends_on:
+      redis_whatsapp:
+        condition: service_healthy
+    networks:
+      - squad14_whatsapp_network
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 1G
+
+networks:
+  squad14_whatsapp_network:
+    driver: bridge
+
+volumes:
+  redis_whatsapp_data:
+    driver: local
