@@ -2,6 +2,14 @@
  * Repositório de Estoque OpenBoxes (MariaDB 10.11) com Regra FEFO (First Expired, First Out)
  */
 
+import { createClient } from '@supabase/supabase-js';
+
+function getSupabaseClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://oogpcdaosexarxmvupiw.supabase.co';
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_a0cwEmheXaFCeNuNYWRNPA_d4aEpQMI';
+  return createClient(url, key);
+}
+
 export interface LoteEstoqueOpenBoxes {
   id: string;
   codigo_br: string;
@@ -14,6 +22,7 @@ export interface LoteEstoqueOpenBoxes {
   custo_unitario: number;
   temperatura_conservacao_c: number;
   status: "DISPONIVEL" | "QUARENTENA" | "VENCIDO";
+  origem_dados?: "SUPABASE_POSTGRES" | "CACHE_LOCAL_OPENBOXES";
 }
 
 // Repositório com suporte a busca FEFO real
@@ -114,6 +123,97 @@ export class OpenBoxesInventoryRepository {
         custo_unitario: lote.custo_unitario,
         custo_total_lote: Number((qtdAlocada * lote.custo_unitario).toFixed(2))
       });
+    }
+
+    return {
+      sucesso: qtdFaltante === 0,
+      quantidade_solicitada: quantidadeSolicitada,
+      quantidade_atendida: quantidadeSolicitada - qtdFaltante,
+      quantidade_faltante: qtdFaltante,
+      alocacoes
+    };
+  }
+
+  /**
+   * Executa busca assíncrona com conexão ao Supabase PostgreSQL / MariaDB satélites
+   * Com fallback gracioso para o cache oficial OpenBoxes em caso de 404/offline.
+   */
+  static async buscarLotesFEFOAsync(codigoBr: string): Promise<LoteEstoqueOpenBoxes[]> {
+    try {
+      const supabase = getSupabaseClient();
+      const hojeIso = new Date().toISOString().split("T")[0];
+      const { data, error } = await supabase
+        .from('lotes_medicamentos')
+        .select('*')
+        .eq('codigo_br', codigoBr)
+        .eq('status', 'DISPONIVEL')
+        .gt('data_vencimento', hojeIso)
+        .gt('quantidade_disponivel', 0)
+        .order('data_vencimento', { ascending: true });
+
+      if (!error && data && data.length > 0) {
+        return data.map((row: Record<string, unknown>) => ({
+          id: String(row.id || ''),
+          codigo_br: String(row.codigo_br || codigoBr),
+          nome_item: String(row.nome_item || ''),
+          numero_lote: String(row.numero_lote || ''),
+          data_fabricacao: String(row.data_fabricacao || ''),
+          data_vencimento: String(row.data_vencimento || ''),
+          quantidade_disponivel: Number(row.quantidade_disponivel || 0),
+          localizacao_prateleira: String(row.localizacao_prateleira || 'A-01'),
+          custo_unitario: Number(row.custo_unitario || 0),
+          temperatura_conservacao_c: Number(row.temperatura_conservacao_c || 20),
+          status: (row.status as "DISPONIVEL" | "QUARENTENA" | "VENCIDO") || 'DISPONIVEL',
+          origem_dados: 'SUPABASE_POSTGRES' as const
+        }));
+      }
+    } catch (err) {
+      console.warn('[OPENBOXES] Falha ao consultar lotes no Supabase, usando cache local:', err);
+    }
+
+    return this.buscarLotesFEFO(codigoBr).map(lote => ({
+      ...lote,
+      origem_dados: 'CACHE_LOCAL_OPENBOXES' as const
+    }));
+  }
+
+  /**
+   * Reserva e baixa lógica assíncrona no estoque FEFO
+   */
+  static async reservarEstoqueFEFOAsync(codigoBr: string, quantidadeSolicitada: number) {
+    const lotes = await this.buscarLotesFEFOAsync(codigoBr);
+    let qtdFaltante = quantidadeSolicitada;
+    const alocacoes = [];
+
+    for (const lote of lotes) {
+      if (qtdFaltante <= 0) break;
+
+      const qtdAlocada = Math.min(lote.quantidade_disponivel, qtdFaltante);
+      lote.quantidade_disponivel -= qtdAlocada;
+      qtdFaltante -= qtdAlocada;
+
+      alocacoes.push({
+        lote_id: lote.id,
+        numero_lote: lote.numero_lote,
+        data_vencimento: lote.data_vencimento,
+        quantidade_reservada: qtdAlocada,
+        localizacao_prateleira: lote.localizacao_prateleira,
+        custo_unitario: lote.custo_unitario,
+        custo_total_lote: Number((qtdAlocada * lote.custo_unitario).toFixed(2)),
+        origem_dados: lote.origem_dados
+      });
+
+      if (lote.origem_dados === 'SUPABASE_POSTGRES') {
+        try {
+          const supabase = getSupabaseClient();
+          await supabase
+            .from('lotes_medicamentos')
+            .update({ quantidade_disponivel: lote.quantidade_disponivel })
+            .eq('id', lote.id);
+        } catch (err) {
+          console.warn(`[OPENBOXES] Aviso: Falha na baixa remota do lote ${lote.id}:`, err);
+        }
+      }
     }
 
     return {

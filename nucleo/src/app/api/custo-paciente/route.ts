@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const cpf = searchParams.get('cpf') || '123.456.789-00';
 
-    const consolidado = HubDespesasService.obterConsolidadoPaciente(cpf);
+    const consolidado = await HubDespesasService.obterConsolidadoPacienteAsync(cpf);
 
     if (!consolidado) {
       return NextResponse.json(

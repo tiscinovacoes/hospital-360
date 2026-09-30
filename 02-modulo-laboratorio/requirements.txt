@@ -1,0 +1,2 @@
+# Dependências do Microserviço LIMS Wrapper (SENAITE)
+urllib3>=2.0.0

@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "node ../tests/sprint7_e2e_doortodoor_smoke.spec.js",
+    "test:contracts": "node ../tests/sprint4_acl_cmed_contracts.spec.js && node ../tests/sprint5_fefo_split_leitos_contracts.spec.js && node ../tests/sprint6_observability_a11y_contracts.spec.js",
+    "test:all": "node ../tests/sprint4_acl_cmed_contracts.spec.js && node ../tests/sprint5_fefo_split_leitos_contracts.spec.js && node ../tests/sprint6_observability_a11y_contracts.spec.js && node ../tests/sprint7_e2e_doortodoor_smoke.spec.js"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.4",

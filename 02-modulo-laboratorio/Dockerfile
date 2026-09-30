@@ -33,4 +33,4 @@ EXPOSE 8082
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD curl -f http://localhost:8082/api/health || exit 1
 
-CMD ["python", "-m", "http.server", "8082"]
+CMD ["python", "server.py"]
