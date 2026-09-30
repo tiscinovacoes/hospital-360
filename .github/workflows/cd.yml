@@ -16,12 +16,12 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Validar Build de Produção do Dockerfile Hub Core
+      - name: Validar Build de Produção do Dockerfile Núcleo Hub
         uses: docker/build-push-action@v5
         with:
-          context: ./00-hub-core
+          context: ./nucleo
           push: false
-          tags: hospital360/hub-core:latest
+          tags: hospital360/nucleo-hub:latest
 
       - name: Validar Build do Dockerfile SENAITE LIMS Laboratório
         uses: docker/build-push-action@v5
@@ -31,4 +31,4 @@ jobs:
           tags: hospital360/senaite-lims:latest
 
       - name: Notificar Sucesso do Deploy de Produção
-        run: echo "Hospital 360 v3.1 implantado em Produção com Sucesso!"
+        run: echo "Hospital 360 v3.2 implantado em Produção com Sucesso!"
