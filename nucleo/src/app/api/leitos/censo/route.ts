@@ -1,16 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { LeitosDatabaseRepository } from "@/lib/leitosDatabaseRepository";
-import { HubDespesasService } from "@/lib/hubDespesasStore";
+import { HubDespesasService, DespesaItem } from "@/lib/hubDespesasStore";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const tenantId = searchParams.get("tenant_id") || "hospital_360_default";
 
-  const censoData = LeitosDatabaseRepository.obterCensoHospitalar(tenantId);
+  const censoData = await LeitosDatabaseRepository.obterCensoHospitalarAsync(tenantId);
 
   return NextResponse.json({
     status: "SUCESSO",
-    fonte: "PostgreSQL Leitos & NIR Database",
+    fonte: `PostgreSQL Leitos & NIR Database (${censoData.origem || 'SUPABASE_POSTGRES'})`,
     censo: {
       total_leitos: censoData.total_leitos,
       ocupados: censoData.ocupados,
@@ -30,37 +30,54 @@ export async function POST(req: NextRequest) {
     const { acao, leito_id, paciente_cpf, paciente_nome, tenant_id } = body;
 
     if (acao === "ALTA_SOLICITAR_HIGIENIZACAO") {
-      const leitoAtualizado = LeitosDatabaseRepository.registrarAltaESolicitarHigienizacao(leito_id);
+      const leitoAtualizado = await LeitosDatabaseRepository.registrarAltaESolicitarHigienizacaoAsync(leito_id);
 
       if (!leitoAtualizado) {
         return NextResponse.json({ erro: `Leito ${leito_id} não encontrado no banco PostgreSQL` }, { status: 404 });
       }
 
-      // Imputar diária hospitalar na Estação 5 do Hub Core
-      HubDespesasService.ingerirLote({
+      const timestamp = new Date().toISOString();
+      const despesasDiarias: DespesaItem[] = [{
+        id_transacao: `DSP-LET-${leitoAtualizado.codigo_leito}-${Date.now()}`,
+        paciente_cpf: paciente_cpf || "123.456.789-00",
+        paciente_nome: paciente_nome || "Paciente em Alta",
+        prontuario_episodio: `EPIS-${leitoAtualizado.codigo_leito}`,
+        centro_custo: leitoAtualizado.unidade_ala,
+        leito_identificador: leitoAtualizado.codigo_leito,
+        item_codigo: "DIARIA-HOSPITALAR",
+        item_descricao: `Diária Hospitalar (${leitoAtualizado.tipo})`,
+        quantidade: 1,
+        unidade_medida: "Diária",
+        valor_unitario_medio: leitoAtualizado.diaria_valor_base,
+        valor_total_imputado: leitoAtualizado.diaria_valor_base,
+        data_consumo: timestamp,
         origem_modulo: "LEITOS_CENSO_NIR",
-        despesas: [{
-          id_transacao: `DSP-LET-${leitoAtualizado.codigo_leito}-${Date.now()}`,
-          paciente_cpf: paciente_cpf || "123.456.789-00",
-          paciente_nome: paciente_nome || "Paciente em Alta",
-          prontuario_episodio: `EPIS-${leitoAtualizado.codigo_leito}`,
-          centro_custo: leitoAtualizado.unidade_ala,
-          leito_identificador: leitoAtualizado.codigo_leito,
-          item_codigo: "DIARIA-HOSPITALAR",
-          item_descricao: `Diária Hospitalar (${leitoAtualizado.tipo})`,
-          quantidade: 1,
-          unidade_medida: "Diária",
-          valor_unitario_medio: leitoAtualizado.diaria_valor_base,
-          valor_total_imputado: leitoAtualizado.diaria_valor_base,
-          data_consumo: new Date().toISOString(),
-          estacao_jornada: 5
-        }]
+        estacao_jornada: 5
+      }];
+
+      // Imputar diária hospitalar na Estação 5 do Hub Core
+      const loteIngerido = HubDespesasService.ingerirLote({
+        origem_modulo: "LEITOS_CENSO_NIR",
+        cliente_id: "leitos_nir_censo",
+        lote_exportacao_id: `LOTE-LEI-${leitoAtualizado.id}`,
+        data_geracao: timestamp,
+        despesas: despesasDiarias
+      });
+
+      // Persistir no Supabase
+      await HubDespesasService.persistirLoteNoSupabase({
+        protocolo: loteIngerido.protocolo,
+        origem_modulo: "LEITOS_CENSO_NIR",
+        cliente_id: "leitos_nir_censo",
+        idempotency_key: `ALTA-CENSO-${leitoAtualizado.id}-${Date.now()}`,
+        itens: despesasDiarias
       });
 
       return NextResponse.json({
         status: "HIGIENIZACAO_SOLICITADA",
         mensagem: `Leito ${leitoAtualizado.codigo_leito} liberado para higienização no banco PostgreSQL. Diária de R$ ${leitoAtualizado.diaria_valor_base.toFixed(2)} imputada no Hub Core.`,
         leito: leitoAtualizado,
+        hub_protocolo: loteIngerido.protocolo,
         ordem_facilities_trigger: {
           leito_id: leitoAtualizado.id,
           prioridade: "ALTA",

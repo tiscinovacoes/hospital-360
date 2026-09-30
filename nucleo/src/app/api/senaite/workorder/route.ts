@@ -21,7 +21,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const catalogo = SenaiteApiClient.obterCatalogoExamesLOINC();
+    const client = new SenaiteApiClient();
+    const catalogo = await client.obterCatalogoExamesLOINCAsync();
     const examesValidados: ExameCatalogoLOINC[] = [];
     const examesNaoEncontrados: string[] = [];
 
@@ -41,7 +42,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const workorderId = `WO-SEN-${Date.now()}`;
+    // Chamada ao Gateway HTTP do SENAITE LIMS
+    const resultadoRemoto = await client.criarWorkOrderAsync({
+      pacienteCpf: payload.paciente_cpf,
+      pacienteNome: payload.paciente_nome,
+      exames: examesValidados.map(e => e.codigo_loinc),
+      solicitanteCrm: payload.medico_crm
+    });
+
+    const workorderId = resultadoRemoto.workorder_id || `WO-SEN-${Date.now()}`;
     const amostrasComEtiquetas = examesValidados.map((exame: ExameCatalogoLOINC, idx: number) => {
       const amostraId = `SMP-${workorderId}-${idx + 1}`;
       const qrCodePayload = JSON.stringify({
@@ -70,6 +79,7 @@ export async function POST(req: NextRequest) {
       workorder_id: workorderId,
       prescricao_id: payload.prescricao_id,
       tenant_id: payload.tenant_id,
+      origem_integracao: resultadoRemoto.origem,
       paciente: {
         cpf: payload.paciente_cpf,
         nome: payload.paciente_nome

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { HubDespesasService } from '@/lib/hubDespesasStore';
+import { LeitosDatabaseRepository } from '@/lib/leitosDatabaseRepository';
 
 export interface AltaFacilitiesPayload {
   leitoId: string;
@@ -49,39 +50,53 @@ export async function POST(request: NextRequest) {
     const diaria = Number(valorDiaria) || 1450.0;
     const custoTotalDiarias = Number((dias * diaria).toFixed(2));
 
-    // 1. Ingestão Automática no Hub de Custos: Estação 5 (Internação UTI & Hotelaria)
+    // 1. Atualização do Leito no Censo NIR (PostgreSQL / Supabase + Cache Local)
+    const leitoAtualizado = await LeitosDatabaseRepository.registrarAltaESolicitarHigienizacaoAsync(leitoId);
+
+    // 2. Ingestão Automática no Hub de Custos: Estação 5 (Internação UTI & Hotelaria)
+    const despesasDiarias = [
+      {
+        id_transacao: `DSP-LEI-${Date.now()}-DIARIA`,
+        paciente_cpf: pacienteCpf,
+        paciente_nome: pacienteNome,
+        prontuario_episodio: prontuarioEpisodio || `EPIS-${Date.now()}`,
+        centro_custo: ala.toUpperCase().replace(/\s+/g, '_'),
+        leito_identificador: `${leitoId} (${leitoNome})`,
+        item_codigo: `DIAR-${tipoLeito.toUpperCase().slice(0, 4)}`,
+        item_descricao: `Diárias Hospitalares de ${tipoLeito} (${dias} dias) com Enfermagem e Hotelaria`,
+        quantidade: dias,
+        unidade_medida: 'Diária',
+        valor_unitario_medio: diaria,
+        valor_total_imputado: custoTotalDiarias,
+        data_consumo: timestamp,
+        origem_modulo: 'LEITOS_CENSO_NIR',
+        estacao_jornada: 5, // Estação 5: Internação UTI & Honorários
+        metadados: {
+          motivo_alta: motivoAlta,
+          ala,
+          enfermeiro_responsavel: enfermeiroResponsavel,
+        },
+      },
+    ];
+
     const resultadoIngestaoHub = HubDespesasService.ingerirLote({
       origem_modulo: 'LEITOS_CENSO_NIR',
       cliente_id: 'leitos_nir_central',
       lote_exportacao_id: `LOTE-LEI-${Date.now()}`,
       data_geracao: timestamp,
-      despesas: [
-        {
-          id_transacao: `DSP-LEI-${Date.now()}-DIARIA`,
-          paciente_cpf: pacienteCpf,
-          paciente_nome: pacienteNome,
-          prontuario_episodio: prontuarioEpisodio || `EPIS-${Date.now()}`,
-          centro_custo: ala.toUpperCase().replace(/\s+/g, '_'),
-          leito_identificador: `${leitoId} (${leitoNome})`,
-          item_codigo: `DIAR-${tipoLeito.toUpperCase().slice(0, 4)}`,
-          item_descricao: `Diárias Hospitalares de ${tipoLeito} (${dias} dias) com Enfermagem e Hotelaria`,
-          quantidade: dias,
-          unidade_medida: 'Diária',
-          valor_unitario_medio: diaria,
-          valor_total_imputado: custoTotalDiarias,
-          data_consumo: timestamp,
-          origem_modulo: 'LEITOS_CENSO_NIR',
-          estacao_jornada: 5, // Estação 5: Internação UTI & Honorários
-          metadados: {
-            motivo_alta: motivoAlta,
-            ala,
-            enfermeiro_responsavel: enfermeiroResponsavel,
-          },
-        },
-      ],
+      despesas: despesasDiarias,
     });
 
-    // 2. Abertura do Chamado Automático em Facilities (Desinfecção Terminal)
+    // 3. Persistência assíncrona no PostgreSQL / Supabase
+    await HubDespesasService.persistirLoteNoSupabase({
+      protocolo: resultadoIngestaoHub.protocolo,
+      origem_modulo: 'LEITOS_CENSO_NIR',
+      cliente_id: 'leitos_nir_central',
+      idempotency_key: `ALTA-${leitoId}-${Date.now()}`,
+      itens: despesasDiarias,
+    });
+
+    // 4. Abertura do Chamado Automático em Facilities (Desinfecção Terminal)
     const chamadoId = `FAC-${Date.now().toString().slice(-6)}`;
     const isUtiOuIsolamento = ala.toUpperCase().includes('UTI') || ala.toUpperCase().includes('ISOLAMENTO');
     const slaMinutos = isUtiOuIsolamento ? 45 : 30; // 45min UTI (com UV/peróxido), 30min enfermaria
@@ -110,7 +125,9 @@ export async function POST(request: NextRequest) {
         id: leitoId,
         nome: leitoNome,
         statusAnterior: 'Ocupado',
-        statusAtual: 'HIGIENIZACAO_PENDENTE',
+        statusAtual: leitoAtualizado ? leitoAtualizado.status : 'HIGIENIZACAO_PENDENTE',
+        origemDados: leitoAtualizado?.origem_dados || 'CACHE_LOCAL_NIR',
+        updated_at: leitoAtualizado?.updated_at || timestamp,
       },
       chamadoFacilities,
       hubCustos: {
