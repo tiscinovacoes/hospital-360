@@ -4,6 +4,14 @@
  * mapeamento das 5 Estações Clínicas e apuração de margens TUSS / SIGTAP / CMED.
  */
 
+import { createClient } from '@supabase/supabase-js';
+
+function getSupabaseClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://oogpcdaosexarxmvupiw.supabase.co';
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_a0cwEmheXaFCeNuNYWRNPA_d4aEpQMI';
+  return createClient(url, key);
+}
+
 export type ModuloOrigem =
   | 'ESTOQUE_CENTRAL'
   | 'COMPRAS_PUBLICAS'
@@ -333,6 +341,77 @@ export class HubDespesasService {
   }
 
   /**
+   * Persiste o lote de despesas ingerido no Supabase PostgreSQL de forma resiliente
+   */
+  static async persistirLoteNoSupabase(params: {
+    protocolo: string;
+    origem_modulo: ModuloOrigem;
+    cliente_id?: string;
+    idempotency_key?: string;
+    itens: DespesaItem[];
+  }): Promise<{ sucesso: boolean; mensagem: string }> {
+    try {
+      const supabase = getSupabaseClient();
+      const tenantId = (process.env.DEFAULT_TENANT_ID || 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11');
+
+      // Tenta gravar cabeçalho do lote no Supabase
+      const { error: errLote } = await supabase
+        .from('hub_lotes_ingestao')
+        .insert({
+          protocolo: params.protocolo,
+          tenant_id: tenantId,
+          origem_modulo: params.origem_modulo,
+          cliente_id: params.cliente_id || null,
+          idempotency_key: params.idempotency_key || null,
+          total_despesas: params.itens.length,
+          valor_total_bruto: params.itens.reduce((acc, it) => acc + it.valor_total_imputado, 0),
+          status: 'PROCESSADO'
+        });
+
+      if (errLote && errLote.code !== 'PGRST205') {
+        console.warn('ℹ️ Supabase lote ingestão aviso:', errLote.message);
+      }
+
+      // Prepara e persiste os itens individuais da estação
+      const linhasEstacoes = params.itens.map(it => ({
+        tenant_id: tenantId,
+        protocolo_lote: params.protocolo,
+        id_transacao: it.id_transacao,
+        paciente_cpf: it.paciente_cpf,
+        paciente_nome: it.paciente_nome,
+        prontuario_episodio: it.prontuario_episodio,
+        centro_custo: it.centro_custo,
+        leito_identificador: it.leito_identificador || null,
+        item_codigo: it.item_codigo,
+        item_descricao: it.item_descricao,
+        lote_fabricante: it.lote_fabricante || null,
+        quantidade: it.quantidade,
+        unidade_medida: it.unidade_medida,
+        valor_unitario_medio: it.valor_unitario_medio,
+        valor_total_imputado: it.valor_total_imputado,
+        data_consumo: it.data_consumo,
+        origem_modulo: it.origem_modulo,
+        estacao_jornada: it.estacao_jornada || inferirEstacaoJornada(it.origem_modulo, it.centro_custo),
+        status_auditoria: 'APROVADO_PREVENTIVO',
+        metadados: it.metadados || {}
+      }));
+
+      const { error: errItens } = await supabase
+        .from('hub_despesas_estacoes')
+        .insert(linhasEstacoes);
+
+      if (errItens) {
+        return { sucesso: false, mensagem: errItens.message };
+      }
+
+      return { sucesso: true, mensagem: `Persistido com sucesso no Supabase: ${linhasEstacoes.length} despesa(s).` };
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      return { sucesso: false, mensagem: msg };
+    }
+  }
+
+  /**
    * Consulta despesas com múltiplos filtros opcionais
    */
   static listarDespesas(filtros?: {
@@ -504,5 +583,59 @@ export class HubDespesasService {
       },
       alertasVigiaCustos: alertas
     };
+  }
+
+  /**
+   * Busca despesas de um paciente diretamente do Supabase PostgreSQL com fallback
+   */
+  static async buscarDespesasPorPacienteAsync(cpf: string): Promise<DespesaItem[]> {
+    try {
+      const supabase = getSupabaseClient();
+      const { data, error } = await supabase
+        .from('hub_despesas_estacoes')
+        .select('*')
+        .eq('paciente_cpf', cpf);
+
+      if (!error && data && data.length > 0) {
+        return data.map((d: Record<string, unknown>) => ({
+          id_transacao: String(d.id_transacao || ''),
+          paciente_cpf: String(d.paciente_cpf || cpf),
+          paciente_nome: String(d.paciente_nome || ''),
+          prontuario_episodio: String(d.prontuario_episodio || ''),
+          centro_custo: String(d.centro_custo || ''),
+          leito_identificador: d.leito_identificador ? String(d.leito_identificador) : undefined,
+          item_codigo: String(d.item_codigo || ''),
+          item_descricao: String(d.item_descricao || ''),
+          lote_fabricante: d.lote_fabricante ? String(d.lote_fabricante) : undefined,
+          quantidade: Number(d.quantidade || 1),
+          unidade_medida: String(d.unidade_medida || 'UN'),
+          valor_unitario_medio: Number(d.valor_unitario_medio || 0),
+          valor_total_imputado: Number(d.valor_total_imputado || 0),
+          data_consumo: String(d.data_consumo || new Date().toISOString()),
+          origem_modulo: (d.origem_modulo as ModuloOrigem) || 'GESTAO_CLINICA',
+          estacao_jornada: d.estacao_jornada ? Number(d.estacao_jornada) : undefined,
+          metadados: (d.metadados as Record<string, unknown>) || {}
+        }));
+      }
+    } catch (err) {
+      console.warn('[HUB_DESPESAS] Consulta remota Supabase falhou, utilizando cache local:', err);
+    }
+
+    return globalStore.despesas.filter(d => d.paciente_cpf === cpf);
+  }
+
+  /**
+   * Consolida a jornada Door-to-Door de forma assíncrona, sincronizando e priorizando o banco PostgreSQL
+   */
+  static async obterConsolidadoPacienteAsync(cpf: string): Promise<ConsolidadoDoorToDoor | null> {
+    const itensRemotos = await this.buscarDespesasPorPacienteAsync(cpf);
+    if (itensRemotos.length > 0) {
+      for (const item of itensRemotos) {
+        if (!globalStore.despesas.some(d => d.id_transacao === item.id_transacao)) {
+          globalStore.despesas.push(item);
+        }
+      }
+    }
+    return this.obterConsolidadoPaciente(cpf);
   }
 }

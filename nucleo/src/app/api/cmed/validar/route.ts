@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     }
 
     const chaveBusca = payload.codigo_br || payload.ean || payload.nome_medicamento;
-    const resultado = CMEDDatabaseStore.validarCotacao({
+    const resultado = await CMEDDatabaseStore.validarCotacaoAsync({
       codigo_br_ou_ean: chaveBusca,
       preco_fornecedor: payload.preco_fornecedor_unitario
     });

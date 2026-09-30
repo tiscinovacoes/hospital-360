@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { FintechGatewayClient } from "@/lib/fintechGatewayClient";
+import { FintechGatewayClient, SplitRole } from "@/lib/fintechGatewayClient";
 
 export interface RegraSplit {
   recebedor_id: string;
-  papel: "HOSPITAL" | "MEDICO" | "LABORATORIO" | "PLATAFORMA";
+  papel: SplitRole;
   percentual: number;
 }
 
@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const resultadoGateway = FintechGatewayClient.processarTransacaoSplit({
+    const resultadoGateway = await FintechGatewayClient.processarTransacaoSplitAsync({
       transacaoId: payload.transacao_id,
       valorTotal: payload.valor_total,
       metodoPagamento: payload.metodo_pagamento,
@@ -36,7 +36,12 @@ export async function POST(req: NextRequest) {
         recipient_id: r.recebedor_id,
         role: r.papel,
         percentage: r.percentual
-      }))
+      })),
+      metadata: {
+        atendimento_id: payload.atendimento_id,
+        paciente_nome: payload.paciente_nome,
+        tenant_id: payload.tenant_id
+      }
     });
 
     return NextResponse.json({
@@ -44,6 +49,8 @@ export async function POST(req: NextRequest) {
       gateway_transacao_id: resultadoGateway.gateway_transaction_id,
       transacao_id: payload.transacao_id,
       tenant_id: payload.tenant_id,
+      origem_gateway: resultadoGateway.origem_gateway,
+      idempotency_key: resultadoGateway.idempotency_key,
       valor_total: payload.valor_total,
       metodo_pagamento: payload.metodo_pagamento,
       settlement_date: resultadoGateway.settlement_date,
@@ -53,6 +60,7 @@ export async function POST(req: NextRequest) {
         percentual: s.percentage,
         valor_calculado: s.amount_formatted
       })),
+      dre_condominio: resultadoGateway.dre_evento,
       timestamp: new Date().toISOString()
     }, { status: 200 });
 

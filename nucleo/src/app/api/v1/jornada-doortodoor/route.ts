@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const cpf = searchParams.get('cpf') || '123.456.789-00';
 
-    const consolidado = HubDespesasService.obterConsolidadoPaciente(cpf);
+    const consolidado = await HubDespesasService.obterConsolidadoPacienteAsync(cpf);
 
     if (!consolidado) {
       return NextResponse.json(
@@ -124,8 +124,15 @@ export async function POST(request: NextRequest) {
       ],
     });
 
+    // Persistência assíncrona no Supabase PostgreSQL
+    await HubDespesasService.persistirLoteNoSupabase({
+      protocolo: resultadoIngestao.protocolo,
+      origem_modulo: body.moduloOrigem || 'GESTAO_CLINICA',
+      itens: resultadoIngestao.itensAdicionados
+    });
+
     // Reobter consolidado atualizado
-    const consolidadoAtualizado = HubDespesasService.obterConsolidadoPaciente(body.pacienteCpf);
+    const consolidadoAtualizado = await HubDespesasService.obterConsolidadoPacienteAsync(body.pacienteCpf);
 
     return NextResponse.json(
       {

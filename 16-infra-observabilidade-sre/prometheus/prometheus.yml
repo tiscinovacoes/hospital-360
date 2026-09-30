@@ -2,18 +2,40 @@ global:
   scrape_interval: 15s
   evaluation_interval: 15s
 
+rule_files:
+  - 'alert_rules.yml'
+
 scrape_configs:
-  - job_name: 'hospital360_nucleo_backend'
-    metrics_path: '/api/health'
+  - job_name: 'hospital360_hub_metrics'
+    metrics_path: '/api/metrics'
+    scrape_interval: 10s
     static_configs:
-      - targets: ['localhost:3000']
+      - targets: ['hub-core:3000', 'localhost:3000', 'host.docker.internal:3000']
+        labels:
+          env: 'production'
+          service: '00-hub-core'
+          squad: 'Squad 1'
 
   - job_name: 'hospital360_senaite_lims'
-    metrics_path: '/senaite/@@api/v1/health'
+    metrics_path: '/health'
     static_configs:
-      - targets: ['localhost:8082']
+      - targets: ['laboratorio-senaite:8082', 'localhost:8082']
+        labels:
+          service: '02-modulo-laboratorio'
+          squad: 'Squad 3'
 
-  - job_name: 'hospital360_openboxes_estoque'
+  - job_name: 'hospital360_openboxes_farmacia'
     metrics_path: '/openboxes/health'
     static_configs:
-      - targets: ['localhost:8084']
+      - targets: ['farmacia-openboxes:8084', 'localhost:8084']
+        labels:
+          service: '04-modulo-estoque-farmacia'
+          squad: 'Squad 4'
+
+  - job_name: 'hospital360_n8n_bus'
+    metrics_path: '/healthz'
+    static_configs:
+      - targets: ['n8n-bus:5678', 'localhost:5678']
+        labels:
+          service: '12-modulo-automacao-n8n'
+          squad: 'Squad 7'

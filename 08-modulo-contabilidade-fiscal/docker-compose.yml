@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  postgres_fiscal:
+    image: postgres:15-alpine
+    container_name: 360_postgres_fiscal
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: contabilidade_fiscal_db
+      POSTGRES_USER: fiscal_admin
+      POSTGRES_PASSWORD: ${FISCAL_DB_PASSWORD:-fiscal_secret_2026}
+    ports:
+      - "5438:5432"
+    volumes:
+      - postgres_fiscal_data:/var/lib/postgresql/data
+    networks:
+      - squad8_fiscal_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fiscal_admin -d contabilidade_fiscal_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+  healvista_fiscal:
+    image: healvista/healvista-core:latest
+    container_name: 360_healvista_fiscal
+    restart: unless-stopped
+    ports:
+      - "${CONTABILIDADE_PORT:-8088}:8080"
+    environment:
+      DATABASE_URL: postgresql://fiscal_admin:${FISCAL_DB_PASSWORD:-fiscal_secret_2026}@postgres_fiscal:5432/contabilidade_fiscal_db
+      NFSE_CERTIFICADO_PATH: ${NFSE_PREFEITURA_CERTIFICADO_PATH:-/certs/hospital360_pfx.p12}
+      TENANT_ID: ${TENANT_ID:-hospital_360_default}
+      PORT: 8080
+    depends_on:
+      postgres_fiscal:
+        condition: service_healthy
+    networks:
+      - squad8_fiscal_network
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 1G
+
+networks:
+  squad8_fiscal_network:
+    driver: bridge
+
+volumes:
+  postgres_fiscal_data:
+    driver: local

@@ -87,6 +87,15 @@ export async function POST(request: NextRequest) {
     // Ingestão e validação através do HubDespesasService
     const resultado = HubDespesasService.ingerirLote(body);
 
+    // Persistência assíncrona no PostgreSQL / Supabase
+    const persistencia = await HubDespesasService.persistirLoteNoSupabase({
+      protocolo: resultado.protocolo,
+      origem_modulo: body.origem_modulo,
+      cliente_id: body.cliente_id,
+      idempotency_key: body.lote_exportacao_id,
+      itens: resultado.itensAdicionados
+    });
+
     return NextResponse.json({
       success: true,
       protocolo: resultado.protocolo,
@@ -96,6 +105,8 @@ export async function POST(request: NextRequest) {
         itens_processados: resultado.itensAdicionados.length,
         valor_total: Number(resultado.valorTotal.toFixed(2)),
         pacientes_impactados: resultado.cpfsImpactados.length,
+        persistencia_db: persistencia.sucesso ? 'PERSISTIDO_POSTGRESQL' : 'CACHE_LOCAL_RESILIENTE',
+        detalhe_persistencia: persistencia.mensagem,
         timestamp_processamento: new Date().toISOString()
       },
       itens_ingeridos: resultado.itensAdicionados

@@ -1,0 +1,141 @@
+{
+  "name": "Workflow 03 — SENAITE LIMS (Laudo Concluído) ➔ Hub Estação 2 ➔ WhatsApp Paciente",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "webhook/senaite.laudo_concluido",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Webhook Laudo Concluído SENAITE",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [200, 240],
+      "webhookId": "wh-senaite-laudo-03"
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "http://localhost:3000/api/senaite/disparo-conclusao",
+        "options": {
+          "timeout": 5000
+        },
+        "bodyParametersUi": {
+          "parameter": [
+            { "name": "workorderId", "value": "={{$json.body.workorderId || $json.body.workorder_id}}" },
+            { "name": "pacienteCpf", "value": "={{$json.body.pacienteCpf || $json.body.paciente_cpf}}" },
+            { "name": "pacienteNome", "value": "={{$json.body.pacienteNome || $json.body.paciente_nome || 'Paciente LIMS'}}" },
+            { "name": "codigoExame", "value": "={{$json.body.codigoExame || $json.body.codigo_loinc || '57021-8'}}" },
+            { "name": "nomeExame", "value": "={{$json.body.nomeExame || $json.body.nome_exame || 'Hemograma Completo'}}" },
+            { "name": "custoTotalRealExame", "value": "={{$json.body.custoTotalRealExame || $json.body.custo_total || 0}}" },
+            { "name": "urlLaudoPdf", "value": "={{$json.body.urlLaudoPdf || $json.body.url_pdf || ('/laudos/' + ($json.body.workorderId || 'laudo') + '.pdf')}}" }
+          ]
+        }
+      },
+      "name": "Ingerir Despesa no Hub Estação 2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [460, 240],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "http://localhost:3000/api/mensageria/whatsapp",
+        "options": {
+          "timeout": 5000
+        },
+        "bodyParametersUi": {
+          "parameter": [
+            { "name": "telefone_destino", "value": "={{$node['Webhook Laudo Concluído SENAITE'].json.body.telefone || '11999998888'}}" },
+            { "name": "paciente_nome", "value": "={{$node['Webhook Laudo Concluído SENAITE'].json.body.pacienteNome || 'Paciente'}}" },
+            { "name": "mensagem", "value": "={{'Olá ' + ($node['Webhook Laudo Concluído SENAITE'].json.body.pacienteNome || 'Paciente') + ', seu laudo laboratorial do exame ' + ($node['Webhook Laudo Concluído SENAITE'].json.body.nomeExame || 'solicitado') + ' já está disponível para consulta com seu médico assistente no Hospital 360.'}}" },
+            { "name": "template_nome", "value": "aviso_laudo_pronto" },
+            { "name": "tenant_id", "value": "hospital_360_default" }
+          ]
+        }
+      },
+      "name": "Notificar Paciente via WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [720, 180],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "responseCode": 200,
+        "options": {},
+        "responseBody": "={{JSON.stringify({ success: true, status: 'LAUDO_PROCESSADO_E_NOTIFICADO', hub_estacao_2: $node['Ingerir Despesa no Hub Estação 2'].json, whatsapp_notificacao: $json })}}"
+      },
+      "name": "Responder Sucesso 200",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [960, 180]
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "http://localhost:3000/api/webhooks/n8n/dlq",
+        "options": {},
+        "bodyParametersUi": {
+          "parameter": [
+            { "name": "workflow", "value": "workflow_03_laudo_hub" },
+            { "name": "node_falha", "value": "={{$node['Ingerir Despesa no Hub Estação 2'].json.error ? 'Ingerir Despesa no Hub Estação 2' : 'Notificar Paciente via WhatsApp'}}" },
+            { "name": "erro", "value": "={{$json.error ? $json.error.message : 'Falha na esteira de conclusão de laudo'}}" },
+            { "name": "payload_original", "value": "={{$node['Webhook Laudo Concluído SENAITE'].json.body}}" }
+          ]
+        }
+      },
+      "name": "Registrar Laudo na DLQ",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [720, 360]
+    },
+    {
+      "parameters": {
+        "responseCode": 500,
+        "options": {},
+        "responseBody": "={{JSON.stringify({ success: false, error: 'LAUDO_PROCESSING_FAILURE', message: 'Falha no processamento do laudo. Evento salvo na DLQ para reprocessamento.', dlq_registrado: true })}}"
+      },
+      "name": "Responder Erro Laudo 500",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [960, 360]
+    }
+  ],
+  "connections": {
+    "Webhook Laudo Concluído SENAITE": {
+      "main": [
+        [{ "node": "Ingerir Despesa no Hub Estação 2", "type": "main", "index": 0 }]
+      ]
+    },
+    "Ingerir Despesa no Hub Estação 2": {
+      "main": [
+        [{ "node": "Notificar Paciente via WhatsApp", "type": "main", "index": 0 }],
+        [{ "node": "Registrar Laudo na DLQ", "type": "main", "index": 0 }]
+      ]
+    },
+    "Notificar Paciente via WhatsApp": {
+      "main": [
+        [{ "node": "Responder Sucesso 200", "type": "main", "index": 0 }],
+        [{ "node": "Registrar Laudo na DLQ", "type": "main", "index": 0 }]
+      ]
+    },
+    "Registrar Laudo na DLQ": {
+      "main": [
+        [{ "node": "Responder Erro Laudo 500", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

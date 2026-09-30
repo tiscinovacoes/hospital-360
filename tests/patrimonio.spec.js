@@ -2,9 +2,9 @@
  * Vigia Compras & Patrimônio — Suíte de Testes Automatizados (Sprint 7 / OS-01)
  */
 
-import assert from 'node:assert/strict';
-import { NotaFiscalServico, AtivoPatrimonial } from '../src/modules/patrimonio/patrimonioModel.js';
-import { CustoContractStub } from '../src/contracts/custoContractStub.js';
+const assert = require('node:assert/strict');
+const { NotaFiscalServico, AtivoPatrimonial } = require('../src/modules/patrimonio/patrimonioModel.js');
+const { CustoContractStub } = require('../src/contracts/custoContractStub.js');
 
 console.log('🧪 Iniciando testes unitários do Vigia Compras & Patrimônio (Sprint 7 / OS-01)...\n');
 

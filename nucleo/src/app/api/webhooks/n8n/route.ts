@@ -145,6 +145,19 @@ export async function POST(request: NextRequest) {
       ],
     });
 
+    // 5. Persistência assíncrona resiliente no Supabase
+    let persistenciaSupabase = { sucesso: false, mensagem: 'Não executado' };
+    try {
+      persistenciaSupabase = await HubDespesasService.persistirLoteNoSupabase({
+        protocolo: resultadoIngestao.protocolo,
+        origem_modulo: moduloOrigem,
+        idempotency_key: payload.event_id,
+        itens: resultadoIngestao.itensAdicionados,
+      });
+    } catch (e: any) {
+      console.warn(`[n8n-bus] Aviso ao persistir no Supabase: ${e?.message || e}`);
+    }
+
     const consolidadoAtualizado = HubDespesasService.obterConsolidadoPaciente(payload.patient_id);
 
     return NextResponse.json(
@@ -158,6 +171,7 @@ export async function POST(request: NextRequest) {
           protocolo: resultadoIngestao.protocolo,
           valorTotalImputado: vTot,
           novoCustoTotalPaciente: consolidadoAtualizado?.custoTotalReal || vTot,
+          supabase_persistencia: persistenciaSupabase.sucesso,
         },
         error: null,
         meta: {

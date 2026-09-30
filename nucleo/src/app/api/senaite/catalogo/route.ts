@@ -5,7 +5,8 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const tenantId = searchParams.get("tenant_id") || "hospital_360_default";
 
-  const catalogo = SenaiteApiClient.obterCatalogoExamesLOINC();
+  const client = new SenaiteApiClient();
+  const catalogo = await client.obterCatalogoExamesLOINCAsync();
 
   return NextResponse.json({
     status: "SUCESSO",

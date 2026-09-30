@@ -1,0 +1,88 @@
+version: '3.8'
+
+services:
+  mariadb_compras:
+    image: mariadb:10.11
+    container_name: 360_mariadb_compras
+    restart: unless-stopped
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --innodb-file-format=Barracuda
+      - --innodb-file-per-table=1
+      - --innodb-large-prefix=1
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root_compras_pass_2026}
+      MYSQL_DATABASE: erpnext_compras
+      MYSQL_USER: frappe
+      MYSQL_PASSWORD: ${DB_PASSWORD:-frappe_secret_2026}
+    ports:
+      - "3308:3306"
+    volumes:
+      - mariadb_compras_data:/var/lib/mysql
+    networks:
+      - squad6_compras_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot_compras_pass_2026"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+
+  redis_compras:
+    image: redis:7-alpine
+    container_name: 360_redis_compras
+    restart: unless-stopped
+    ports:
+      - "6381:6379"
+    volumes:
+      - redis_compras_data:/data
+    networks:
+      - squad6_compras_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  erpnext_compras:
+    image: frappe/erpnext:v15.0.0
+    container_name: 360_erpnext_compras
+    restart: unless-stopped
+    ports:
+      - "${ERPNEXT_PORT:-8086}:8000"
+    environment:
+      DB_HOST: mariadb_compras
+      DB_NAME: erpnext_compras
+      DB_USER: frappe
+      DB_PASSWORD: ${DB_PASSWORD:-frappe_secret_2026}
+      REDIS_CACHE: redis_compras:6379
+      REDIS_QUEUE: redis_compras:6379
+      CMED_VALIDATOR_URL: ${CMED_VALIDATOR_URL:-http://localhost:3000/api/cmed/validar}
+      TENANT_ID: ${TENANT_ID:-hospital_360_default}
+    depends_on:
+      mariadb_compras:
+        condition: service_healthy
+      redis_compras:
+        condition: service_healthy
+    networks:
+      - squad6_compras_network
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+
+networks:
+  squad6_compras_network:
+    driver: bridge
+
+volumes:
+  mariadb_compras_data:
+    driver: local
+  redis_compras_data:
+    driver: local

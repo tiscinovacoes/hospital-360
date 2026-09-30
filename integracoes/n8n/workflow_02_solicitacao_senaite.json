@@ -1,0 +1,122 @@
+{
+  "name": "Workflow 02 — OpenEMR ➔ SENAITE LIMS (WorkOrder & Etiquetas ZPL)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "webhook/exame.solicitado",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Webhook Pedido Exame OpenEMR",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [200, 240],
+      "webhookId": "wh-openemr-exame-02"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Validação e Normalização de Pedido de Exames LOINC (n8n-workflow-patterns)\nconst body = items[0].json.body || items[0].json;\n\nif (!body.prescricao_id || !body.paciente_cpf || !body.exames_codigo_loinc) {\n  throw new Error('INVALID_PAYLOAD: prescricao_id, paciente_cpf e exames_codigo_loinc são obrigatórios');\n}\n\nreturn [{\n  json: {\n    prescricao_id: body.prescricao_id,\n    paciente_cpf: body.paciente_cpf,\n    paciente_nome: body.paciente_nome || 'Paciente LIMS',\n    medico_crm: body.medico_crm || 'CRM/SP 987654',\n    exames_codigo_loinc: Array.isArray(body.exames_codigo_loinc) ? body.exames_codigo_loinc : [body.exames_codigo_loinc],\n    tenant_id: body.tenant_id || 'hospital_360_default'\n  }\n}];"
+      },
+      "name": "Normalizar Pedido LOINC",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [440, 240]
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "http://localhost:3000/api/senaite/workorder",
+        "options": {
+          "timeout": 5000
+        },
+        "bodyParametersUi": {
+          "parameter": [
+            { "name": "prescricao_id", "value": "={{$json.prescricao_id}}" },
+            { "name": "paciente_cpf", "value": "={{$json.paciente_cpf}}" },
+            { "name": "paciente_nome", "value": "={{$json.paciente_nome}}" },
+            { "name": "medico_crm", "value": "={{$json.medico_crm}}" },
+            { "name": "exames_codigo_loinc", "value": "={{$json.exames_codigo_loinc}}" },
+            { "name": "tenant_id", "value": "={{$json.tenant_id}}" }
+          ]
+        }
+      },
+      "name": "Criar WorkOrder SENAITE LIMS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [680, 240],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "responseCode": 201,
+        "options": {},
+        "responseBody": "={{JSON.stringify({ success: true, status: 'WORKORDER_CRIADA', workorder_id: $json.workorder_id, amostras: $json.amostras_geradas })}}"
+      },
+      "name": "Responder WorkOrder Criada 201",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [920, 180]
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "http://localhost:3000/api/webhooks/n8n/dlq",
+        "options": {},
+        "bodyParametersUi": {
+          "parameter": [
+            { "name": "workflow", "value": "workflow_02_solicitacao_senaite" },
+            { "name": "node_falha", "value": "Criar WorkOrder SENAITE LIMS" },
+            { "name": "erro", "value": "={{$json.error ? $json.error.message : 'Falha na comunicação com gateway SENAITE LIMS'}}" },
+            { "name": "payload_original", "value": "={{$node['Normalizar Pedido LOINC'].json}}" }
+          ]
+        }
+      },
+      "name": "Registrar Falha SENAITE na DLQ",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [920, 360]
+    },
+    {
+      "parameters": {
+        "responseCode": 502,
+        "options": {},
+        "responseBody": "={{JSON.stringify({ success: false, error: 'UPSTREAM_SENAITE_FAILURE', message: 'Gateway LIMS indisponível. Pedido enviado para Dead Letter Queue para sincronização posterior.', dlq_registrado: true })}}"
+      },
+      "name": "Responder Erro LIMS 502",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1140, 360]
+    }
+  ],
+  "connections": {
+    "Webhook Pedido Exame OpenEMR": {
+      "main": [
+        [{ "node": "Normalizar Pedido LOINC", "type": "main", "index": 0 }]
+      ]
+    },
+    "Normalizar Pedido LOINC": {
+      "main": [
+        [{ "node": "Criar WorkOrder SENAITE LIMS", "type": "main", "index": 0 }]
+      ]
+    },
+    "Criar WorkOrder SENAITE LIMS": {
+      "main": [
+        [{ "node": "Responder WorkOrder Criada 201", "type": "main", "index": 0 }],
+        [{ "node": "Registrar Falha SENAITE na DLQ", "type": "main", "index": 0 }]
+      ]
+    },
+    "Registrar Falha SENAITE na DLQ": {
+      "main": [
+        [{ "node": "Responder Erro LIMS 502", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

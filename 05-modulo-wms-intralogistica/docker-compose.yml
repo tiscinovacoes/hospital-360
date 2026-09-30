@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  postgres_wms:
+    image: postgres:15-alpine
+    container_name: 360_postgres_wms
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: openwms_intralogistica
+      POSTGRES_USER: openwms
+      POSTGRES_PASSWORD: ${WMS_DB_PASSWORD:-openwms_secret_2026}
+    ports:
+      - "5436:5432"
+    volumes:
+      - postgres_wms_data:/var/lib/postgresql/data
+    networks:
+      - squad5_wms_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U openwms -d openwms_intralogistica"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+  openwms_core:
+    image: openwms/org.openwms.wms.movements:latest
+    container_name: 360_openwms_core
+    restart: unless-stopped
+    ports:
+      - "${WMS_PORT:-8085}:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres_wms:5432/openwms_intralogistica
+      SPRING_DATASOURCE_USERNAME: openwms
+      SPRING_DATASOURCE_PASSWORD: ${WMS_DB_PASSWORD:-openwms_secret_2026}
+      OPENBOXES_URL: ${OPENBOXES_URL:-http://localhost:8084}
+      TENANT_ID: ${TENANT_ID:-hospital_360_default}
+    depends_on:
+      postgres_wms:
+        condition: service_healthy
+    networks:
+      - squad5_wms_network
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 1G
+
+networks:
+  squad5_wms_network:
+    driver: bridge
+
+volumes:
+  postgres_wms_data:
+    driver: local

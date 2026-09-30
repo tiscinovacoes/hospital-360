@@ -3,8 +3,8 @@ name: hospital360-hub-core
 services:
   hub-core:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ../nucleo
+      dockerfile: ../00-hub-core/Dockerfile
     container_name: 360-hub-core-app
     restart: unless-stopped
     ports:

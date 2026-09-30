@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  postgres_cmed:
+    image: postgres:15-alpine
+    container_name: 360_postgres_cmed
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: cmed_bps_db
+      POSTGRES_USER: cmed_admin
+      POSTGRES_PASSWORD: ${CMED_DB_PASSWORD:-cmed_secret_2026}
+    ports:
+      - "5445:5432"
+    volumes:
+      - postgres_cmed_data:/var/lib/postgresql/data
+    networks:
+      - squad15_cmed_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cmed_admin -d cmed_bps_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+  cmed_validator:
+    image: ghcr.io/hospital360/cmed-validator:latest
+    container_name: 360_cmed_validator
+    restart: unless-stopped
+    ports:
+      - "${CMED_PORT:-8095}:8000"
+    environment:
+      DATABASE_URL: postgresql://cmed_admin:${CMED_DB_PASSWORD:-cmed_secret_2026}@postgres_cmed:5432/cmed_bps_db
+      CATMAT_VERSION: ${CATMAT_VERSION:-2026_04_24}
+      BPS_VERSION: ${BPS_VERSION:-2026_04_24}
+      CMED_VERSION: ${CMED_VERSION:-2026_04_24}
+      TENANT_ID: ${TENANT_ID:-hospital_360_default}
+      PORT: 8000
+    depends_on:
+      postgres_cmed:
+        condition: service_healthy
+    networks:
+      - squad15_cmed_network
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 1G
+
+networks:
+  squad15_cmed_network:
+    driver: bridge
+
+volumes:
+  postgres_cmed_data:
+    driver: local

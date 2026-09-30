@@ -4,23 +4,38 @@ services:
   n8n_automacao:
     image: docker.n8n.io/n8nio/n8n:latest
     container_name: 360_n8n_automacao
-    restart: always
+    restart: unless-stopped
     ports:
-      - "5678:5678"
+      - "${N8N_PORT:-5678}:5678"
     environment:
-      - N8N_HOST=localhost
+      - N8N_HOST=0.0.0.0
       - N8N_PORT=5678
       - N8N_PROTOCOL=http
+      - WEBHOOK_URL=${WEBHOOK_URL:-http://localhost:5678/}
       - NODE_ENV=production
-      - N8N_ENCRYPTION_KEY=n8n_secret_encryption_key_360
+      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY:-n8n_secret_encryption_key_360_hospital}
+      - N8N_WEBHOOK_SECRET=${N8N_WEBHOOK_SECRET:-hospital360-n8n-secret-key-2026}
+      - EXECUTIONS_DATA_PRUNE=true
+      - EXECUTIONS_DATA_MAX_AGE=168
+      - N8N_DEFAULT_BINARY_DATA_MODE=filesystem
+      - GENERIC_TIMEZONE=America/Sao_Paulo
+      - TZ=America/Sao_Paulo
     volumes:
       - n8n_data:/home/node/.n8n
     networks:
-      - squad7_network
+      - hospital360_bus_network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:5678/healthz || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
 
 networks:
-  squad7_network:
+  hospital360_bus_network:
+    name: hospital360_bus_network
     driver: bridge
 
 volumes:
   n8n_data:
+    name: 360_n8n_data

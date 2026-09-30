@@ -1,0 +1,42 @@
+groups:
+  - name: hospital360_sre_alerts
+    rules:
+      - alert: HighHttpLatencyP95
+        expr: histogram_quantile(0.95, rate(hospital360_http_request_duration_seconds_bucket[5m])) > 0.200
+        for: 1m
+        labels:
+          severity: warning
+          squad: squad1_hub_core
+        annotations:
+          summary: "Latência P95 superior ao SLA de 200ms"
+          description: "A latência da API hospitalar está em {{ $value | humanizeDuration }}, violando o SLA clínico."
+
+      - alert: BedOccupancyCritical
+        expr: hospital360_leitos_ocupacao_percent{ala="uti_geral"} > 90.0
+        for: 2m
+        labels:
+          severity: critical
+          squad: squad5_leitos_nir
+        annotations:
+          summary: "Taxa de ocupação da UTI em nível crítico (>90%)"
+          description: "A ala UTI Geral atingiu {{ $value }}% de ocupação. Acionar NIR e regulação TFD."
+
+      - alert: HighDlqRetention
+        expr: hospital360_n8n_dlq_mensagens_total > 5
+        for: 1m
+        labels:
+          severity: warning
+          squad: squad7_n8n_bus
+        annotations:
+          summary: "Eventos retidos na Dead Letter Queue (DLQ)"
+          description: "Há {{ $value }} eventos com falha acumulados no barramento n8n aguardando reprocessamento."
+
+      - alert: FefoRiskUrgent
+        expr: hospital360_fefo_lotes_risco_vencimento{status="critico_urgente"} > 0
+        for: 1m
+        labels:
+          severity: critical
+          squad: squad4_farmacia
+        annotations:
+          summary: "Medicamento com risco iminente de vencimento sanitário Anvisa"
+          description: "Detectados lotes farmacêuticos com validade inferior a 30 dias na farmácia hospitalar."

@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  postgres_escala:
+    image: postgres:15-alpine
+    container_name: 360_postgres_escala
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: escala_medica_db
+      POSTGRES_USER: escala_admin
+      POSTGRES_PASSWORD: ${ESCALA_DB_PASSWORD:-escala_secret_2026}
+    ports:
+      - "5441:5432"
+    volumes:
+      - postgres_escala_data:/var/lib/postgresql/data
+    networks:
+      - squad11_escala_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U escala_admin -d escala_medica_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+  escala_medica_service:
+    image: ghcr.io/hospital360/escala-medica:latest
+    container_name: 360_escala_medica
+    restart: unless-stopped
+    ports:
+      - "${ESCALA_PORT:-8091}:8080"
+    environment:
+      DATABASE_URL: postgresql://escala_admin:${ESCALA_DB_PASSWORD:-escala_secret_2026}@postgres_escala:5432/escala_medica_db
+      HUB_CORE_URL: ${HUB_CORE_URL:-http://localhost:3000/api/ingestao-modulos}
+      TENANT_ID: ${TENANT_ID:-hospital_360_default}
+      PORT: 8080
+    depends_on:
+      postgres_escala:
+        condition: service_healthy
+    networks:
+      - squad11_escala_network
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 1G
+
+networks:
+  squad11_escala_network:
+    driver: bridge
+
+volumes:
+  postgres_escala_data:
+    driver: local

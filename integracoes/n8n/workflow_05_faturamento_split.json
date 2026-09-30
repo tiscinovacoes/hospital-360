@@ -1,0 +1,123 @@
+{
+  "name": "Workflow 05 — Checkout Paciente ➔ Split Tripartite Hyperswitch ➔ DRE & NFS-e HealVista",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "webhook/paciente.checkout",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Webhook Checkout Paciente",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [200, 240],
+      "webhookId": "wh-checkout-split-05"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Normalização do Split Tripartite (85% Médico / 15% Condomínio/Hospital) (n8n-workflow-patterns)\nconst body = items[0].json.body || items[0].json;\n\nif (!body.transacao_id || !body.valor_total) {\n  throw new Error('INVALID_PAYLOAD: transacao_id e valor_total são estritamente obrigatórios');\n}\n\nconst regrasDefault = [\n  { recebedor_id: body.medico_id || 'MED-CLINICO-01', papel: 'MEDICO', percentual: 85.0 },\n  { recebedor_id: 'HOSP-CONDOMINIO-CENTRAL', papel: 'CONDOMINIO', percentual: 15.0 }\n];\n\nreturn [{\n  json: {\n    transacao_id: body.transacao_id,\n    atendimento_id: body.atendimento_id || ('ATD-' + Date.now()),\n    paciente_nome: body.paciente_nome || 'Paciente Checkout',\n    valor_total: Number(body.valor_total),\n    metodo_pagamento: body.metodo_pagamento || 'PIX',\n    regras_split: body.regras_split || regrasDefault,\n    tenant_id: body.tenant_id || 'hospital_360_default'\n  }\n}];"
+      },
+      "name": "Normalizar Split Tripartite",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [440, 240]
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "http://localhost:3000/api/fintech/split",
+        "options": {
+          "timeout": 5000
+        },
+        "bodyParametersUi": {
+          "parameter": [
+            { "name": "transacao_id", "value": "={{$json.transacao_id}}" },
+            { "name": "atendimento_id", "value": "={{$json.atendimento_id}}" },
+            { "name": "paciente_nome", "value": "={{$json.paciente_nome}}" },
+            { "name": "valor_total", "value": "={{$json.valor_total}}" },
+            { "name": "metodo_pagamento", "value": "={{$json.metodo_pagamento}}" },
+            { "name": "regras_split", "value": "={{$json.regras_split}}" },
+            { "name": "tenant_id", "value": "={{$json.tenant_id}}" }
+          ]
+        }
+      },
+      "name": "Processar Split no Gateway",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [680, 240],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "responseCode": 200,
+        "options": {},
+        "responseBody": "={{JSON.stringify({ success: true, status: 'SPLIT_LIQUIDADO_DRE', transacao_id: $json.transacao_id, gateway_id: $json.gateway_transacao_id, splits: $json.splits, dre_condominio: $json.dre_condominio })}}"
+      },
+      "name": "Responder Sucesso Split 200",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [920, 180]
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "http://localhost:3000/api/webhooks/n8n/dlq",
+        "options": {},
+        "bodyParametersUi": {
+          "parameter": [
+            { "name": "workflow", "value": "workflow_05_faturamento_split" },
+            { "name": "node_falha", "value": "Processar Split no Gateway" },
+            { "name": "erro", "value": "={{$json.error ? $json.error.message : 'Falha na liquidação do split fintech'}}" },
+            { "name": "payload_original", "value": "={{$node['Normalizar Split Tripartite'].json}}" }
+          ]
+        }
+      },
+      "name": "Registrar Falha Split na DLQ",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [920, 360]
+    },
+    {
+      "parameters": {
+        "responseCode": 502,
+        "options": {},
+        "responseBody": "={{JSON.stringify({ success: false, error: 'FINTECH_GATEWAY_FAILURE', message: 'Gateway de split temporariamente indisponível. Transação enviada para DLQ para retry automático.', dlq_registrado: true })}}"
+      },
+      "name": "Responder Erro Split 502",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1140, 360]
+    }
+  ],
+  "connections": {
+    "Webhook Checkout Paciente": {
+      "main": [
+        [{ "node": "Normalizar Split Tripartite", "type": "main", "index": 0 }]
+      ]
+    },
+    "Normalizar Split Tripartite": {
+      "main": [
+        [{ "node": "Processar Split no Gateway", "type": "main", "index": 0 }]
+      ]
+    },
+    "Processar Split no Gateway": {
+      "main": [
+        [{ "node": "Responder Sucesso Split 200", "type": "main", "index": 0 }],
+        [{ "node": "Registrar Falha Split na DLQ", "type": "main", "index": 0 }]
+      ]
+    },
+    "Registrar Falha Split na DLQ": {
+      "main": [
+        [{ "node": "Responder Erro Split 502", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
